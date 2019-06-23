@@ -17,12 +17,12 @@ contract FileSystem {
     uint permissions;
     uint lastModified;
     uint links;
+    bytes32[] keys;
     mapping(bytes32 => bytes32) data;
   }
 
   address m_owner;
   Inode[] m_inode;
-  mapping(bytes32 => uint) m_root;
 
   modifier onlyOwner {
     require(msg.sender == m_owner, "EPERM");
@@ -30,7 +30,11 @@ contract FileSystem {
   }
 
   constructor() public {
-    m_inode.length++;
+    // Set up root inode
+    m_inode.length = 2;
+    m_inode[1].owner = msg.sender;
+    m_inode[1].fileType = FileType.Directory;
+    m_inode[1].lastModified = now;
   }
 
   function mount() external {
@@ -42,31 +46,35 @@ contract FileSystem {
     m_owner = address(0);
   }
 
-  function pathToInode(bytes32[] memory path) private view returns(uint) {
-    uint inode = m_root[path[0]];
+  function pathToInode(bytes32[] memory path, bool dirOnly) private view returns(uint) {
+    uint inode = 1;
+    for (uint i = 0; i < path.length; i++) {
+      require(inode > 0, "ENOENT");
+      require(m_inode[inode].fileType == FileType.Directory, "ENOTDIR");
+      if (dirOnly && i == path.length-1) break;
+      inode = uint(m_inode[inode].data[path[i]]);
+    }
     return inode;
   }
 
   function create(address owner, bytes32[] memory path) private returns(uint) {
-    uint inode = m_inode.length;
-    m_inode.push(Inode({
-      owner: owner,
-      fileType: FileType.Data,
-      permissions: 0,
-      lastModified: now,
-      links: 1
-    }));
-    m_root[path[0]] = inode;
+    uint dirInode = pathToInode(path, true);
+    uint inode = m_inode.length++;
+    m_inode[inode].owner = owner;
+    m_inode[inode].fileType = FileType.Data;
+    m_inode[inode].lastModified = now;
+    m_inode[inode].links = 1;
+    m_inode[dirInode].data[path[path.length-1]] = bytes32(inode);
     return inode;
   }
 
   function open(address sender, bytes32[] calldata path, uint flags) external onlyOwner returns(uint) {
-    uint inode = pathToInode(path);
+    uint inode = pathToInode(path, false);
     if (flags & O_CREAT > 0) {
       if (flags & O_EXCL > 0) require(inode == 0, "EEXIST");
       if (inode == 0) inode = create(sender, path);
     }
-    require(inode != 0, "ENOENT");
+    require(inode > 0, "ENOENT");
     require(sender == m_inode[inode].owner, "EACCES");
     return inode;
   }
@@ -81,16 +89,18 @@ contract FileSystem {
   }
 
   function link(bytes32[] calldata source, bytes32[] calldata target) external onlyOwner {
-    uint inode = pathToInode(source);
-    require(inode != 0, "ENOENT");
-    m_root[target[0]] = inode;
+    uint inode = pathToInode(source, false);
+    require(inode > 0, "ENOENT");
+    uint dirInode = pathToInode(target, true);
+    m_inode[dirInode].data[target[target.length-1]] = bytes32(inode);
     m_inode[inode].links++;
   }
 
   function unlink(bytes32[] calldata path) external onlyOwner {
-    uint inode = pathToInode(path);
-    require(inode != 0, "ENOENT");
-    delete m_root[path[0]];
+    uint dirInode = pathToInode(path, true);
+    uint inode = uint(m_inode[dirInode].data[path[path.length-1]]);
+    require(inode > 0, "ENOENT");
+    delete m_inode[dirInode].data[path[path.length-1]];
     uint links = --m_inode[inode].links;
     if (links == 0) {
       delete m_inode[inode];
