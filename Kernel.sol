@@ -57,4 +57,19 @@ contract KernelImpl is Kernel {
     require(m_fileDescriptors[msg.sender][fd].inode > 0, "EBADF");
     delete m_fileDescriptors[msg.sender][fd];
   }
+
+  function link(bytes32[] calldata source, bytes32[] calldata target) external {
+    m_fileSystem.link(source, target);
+  }
+
+  function unlink(bytes32[] calldata path) external {
+    m_fileSystem.unlink(path);
+  }
+
+  function linkContract(address source, bytes32[] calldata target) external {
+    uint size;
+    assembly { size := extcodesize(source) }
+    require(size > 0, "EINVAL");
+    m_fileSystem.linkContract(source, target);
+  }
 }

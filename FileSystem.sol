@@ -59,7 +59,7 @@ contract FileSystemImpl is FileSystem {
     return inode;
   }
 
-  function create(address owner, bytes32[] memory path) private returns(uint) {
+  function creat(address owner, bytes32[] memory path) private returns(uint) {
     uint dirInode = pathToInode(path, true);
     uint inode = m_inode.length++;
     m_inode[inode].owner = owner;
@@ -74,7 +74,7 @@ contract FileSystemImpl is FileSystem {
     uint inode = pathToInode(path, false);
     if (flags & O_CREAT > 0) {
       if (flags & O_EXCL > 0) require(inode == 0, "EEXIST");
-      if (inode == 0) inode = create(sender, path);
+      if (inode == 0) inode = creat(sender, path);
     }
     require(inode > 0, "ENOENT");
     require(sender == m_inode[inode].owner, "EACCES");
@@ -107,5 +107,15 @@ contract FileSystemImpl is FileSystem {
     if (links == 0) {
       delete m_inode[inode];
     }
+  }
+
+  function linkContract(address source, bytes32[] calldata target) external onlyOwner {
+    uint dirInode = pathToInode(target, true);
+    uint inode = m_inode.length++;
+    m_inode[inode].owner = source;
+    m_inode[inode].fileType = FileType.Contract;
+    m_inode[inode].lastModified = now;
+    m_inode[inode].links = 1;
+    m_inode[dirInode].data[target[target.length-1]] = bytes32(inode);
   }
 }
