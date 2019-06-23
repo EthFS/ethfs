@@ -1,6 +1,6 @@
 pragma solidity >= 0.5.9;
 
-import "./interface/Kernel.sol";
+import "../interface/Kernel.sol";
 
 contract TestDapp {
   function main(Kernel kernel) public returns (uint) {
