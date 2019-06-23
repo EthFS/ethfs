@@ -17,12 +17,12 @@ contract KernelImpl is Kernel {
     uint flags;
   }
 
-  address m_superUser;
+  address m_rootUser;
   FileSystem m_fileSystem;
   mapping(address => FileDescriptor[]) m_fileDescriptors;
 
   constructor(FileSystem fileSystem) public {
-    m_superUser = msg.sender;
+    m_rootUser = msg.sender;
     m_fileSystem = fileSystem;
     m_fileSystem.mount();
   }
@@ -37,7 +37,7 @@ contract KernelImpl is Kernel {
     return fd;
   }
 
-  function read(uint fd, bytes32 key) external view returns(bytes32) {
+  function read(uint fd, bytes32 key) external view returns (bytes32) {
     require(m_fileDescriptors[msg.sender][fd].inode > 0, "EBADF");
     uint flags = m_fileDescriptors[msg.sender][fd].flags;
     require(flags == O_RDONLY || flags == O_RDWR, "EBADF");
@@ -71,5 +71,9 @@ contract KernelImpl is Kernel {
     assembly { size := extcodesize(source) }
     require(size > 0, "EINVAL");
     m_fileSystem.linkContract(source, target);
+  }
+
+  function readdir(bytes32[] calldata path) external view returns (bytes32[] memory) {
+    return m_fileSystem.readdir(path);
   }
 }

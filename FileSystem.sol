@@ -19,6 +19,7 @@ contract FileSystemImpl is FileSystem {
     uint permissions;
     uint lastModified;
     uint links;
+    uint entries;
     bytes32[] keys;
     mapping(bytes32 => bytes32) data;
   }
@@ -48,7 +49,7 @@ contract FileSystemImpl is FileSystem {
     m_owner = address(0);
   }
 
-  function pathToInode(bytes32[] memory path, bool dirOnly) private view returns(uint) {
+  function pathToInode(bytes32[] memory path, bool dirOnly) private view returns (uint) {
     uint inode = 1;
     for (uint i = 0; i < path.length; i++) {
       require(inode > 0, "ENOENT");
@@ -59,18 +60,27 @@ contract FileSystemImpl is FileSystem {
     return inode;
   }
 
-  function creat(address owner, bytes32[] memory path) private returns(uint) {
+  function writeToInode(uint inode, bytes32 key, bytes32 data) private {
+    if (m_inode[inode].data[key] == 0) {
+      m_inode[inode].entries++;
+      m_inode[inode].keys.push(key);
+    }
+    m_inode[inode].data[key] = data;
+    m_inode[inode].lastModified = now;
+  }
+
+  function creat(address owner, bytes32[] memory path) private returns (uint) {
     uint dirInode = pathToInode(path, true);
     uint inode = m_inode.length++;
     m_inode[inode].owner = owner;
     m_inode[inode].fileType = FileType.Data;
     m_inode[inode].lastModified = now;
     m_inode[inode].links = 1;
-    m_inode[dirInode].data[path[path.length-1]] = bytes32(inode);
+    writeToInode(dirInode, path[path.length-1], bytes32(inode));
     return inode;
   }
 
-  function open(address sender, bytes32[] calldata path, uint flags) external onlyOwner returns(uint) {
+  function open(address sender, bytes32[] calldata path, uint flags) external onlyOwner returns (uint) {
     uint inode = pathToInode(path, false);
     if (flags & O_CREAT > 0) {
       if (flags & O_EXCL > 0) require(inode == 0, "EEXIST");
@@ -81,20 +91,21 @@ contract FileSystemImpl is FileSystem {
     return inode;
   }
 
-  function read(uint inode, bytes32 key) external view onlyOwner returns(bytes32) {
+  function read(uint inode, bytes32 key) external view onlyOwner returns (bytes32) {
     return m_inode[inode].data[key];
   }
 
   function write(uint inode, bytes32 key, bytes32 data) external onlyOwner {
-    m_inode[inode].data[key] = data;
-    m_inode[inode].lastModified = now;
+    writeToInode(inode, key, data);
   }
 
   function link(bytes32[] calldata source, bytes32[] calldata target) external onlyOwner {
     uint inode = pathToInode(source, false);
     require(inode > 0, "ENOENT");
     uint dirInode = pathToInode(target, true);
-    m_inode[dirInode].data[target[target.length-1]] = bytes32(inode);
+    bytes32 key = target[target.length-1];
+    require(m_inode[dirInode].data[key] == 0, "EEXIST");
+    writeToInode(dirInode, key, bytes32(inode));
     m_inode[inode].links++;
   }
 
@@ -102,6 +113,7 @@ contract FileSystemImpl is FileSystem {
     uint dirInode = pathToInode(path, true);
     uint inode = uint(m_inode[dirInode].data[path[path.length-1]]);
     require(inode > 0, "ENOENT");
+    m_inode[dirInode].entries--;
     delete m_inode[dirInode].data[path[path.length-1]];
     uint links = --m_inode[inode].links;
     if (links == 0) {
@@ -116,6 +128,24 @@ contract FileSystemImpl is FileSystem {
     m_inode[inode].fileType = FileType.Contract;
     m_inode[inode].lastModified = now;
     m_inode[inode].links = 1;
-    m_inode[dirInode].data[target[target.length-1]] = bytes32(inode);
+    writeToInode(dirInode, target[target.length-1], bytes32(inode));
+  }
+
+  function readdir(bytes32[] calldata path) external view returns (bytes32[] memory) {
+    uint inode = pathToInode(path, false);
+    require(inode > 0, "ENOENT");
+    require(m_inode[inode].fileType == FileType.Directory, "ENOTDIR");
+    bytes32[] memory dirent = new bytes32[](m_inode[inode].entries);
+    if (dirent.length > 0) {
+      uint j = 0;
+      for (uint i = 0; i < m_inode[inode].keys.length; i++) {
+        bytes32 key = m_inode[inode].keys[i];
+        if (m_inode[inode].data[key] != 0) {
+          dirent[j++] = key;
+          if (j == dirent.length) break;
+        }
+      }
+    }
+    return dirent;
   }
 }
