@@ -1,0 +1,10 @@
+{
+  "name": "EthExeEnv-sh",
+  "version": "0.0.1",
+  "main": "index.js",
+  "author": "Hector Chu",
+  "license": "MIT",
+  "dependencies": {
+    "web3-eth": "^1.0.0-beta.55"
+  }
+}
