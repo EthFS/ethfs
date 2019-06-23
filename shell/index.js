@@ -1,3 +1,9 @@
-const Eth = require('web3-eth')
+const Kernel = artifacts.require('KernelImpl')
+const TestDapp = artifacts.require('TestDapp')
 
-const eth = new Eth('https://rinkeby.infura.io')
+module.exports = async callback => {
+  const kernel = await Kernel.deployed()
+  const testDapp = await TestDapp.deployed()
+  await testDapp.main(kernel.address)
+  callback()
+}
