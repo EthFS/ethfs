@@ -39,7 +39,8 @@ contract FileSystemImpl is FileSystem {
     m_inode.length = 2;
     m_inode[1].owner = tx.origin;
     m_inode[1].fileType = FileType.Directory;
-    m_inode[1].lastModified = now;
+    writeToInode(1, ".", hex"01");
+    writeToInode(1, "..", hex"01");
   }
 
   function mount() external {
@@ -161,6 +162,8 @@ contract FileSystemImpl is FileSystem {
     m_inode[inode].fileType = FileType.Directory;
     m_inode[inode].lastModified = now;
     writeToInode(dirInode, key, bytes32(inode));
+    writeToInode(inode, ".", bytes32(inode));
+    writeToInode(inode, "..", bytes32(dirInode));
   }
 
   function rmdir(bytes32[] calldata path, uint curdir) external onlyOwner {
@@ -169,7 +172,7 @@ contract FileSystemImpl is FileSystem {
     uint inode = uint(m_inode[dirInode].data[key]);
     require(inode > 0, "ENOENT");
     require(m_inode[inode].fileType == FileType.Directory, "ENOTDIR");
-    require(m_inode[inode].entries == 0, "ENOTEMPTY");
+    require(m_inode[inode].entries == 2, "ENOTEMPTY");
     removeFromInode(dirInode, key);
     delete m_inode[inode];
   }
