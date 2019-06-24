@@ -10,6 +10,7 @@ interface Kernel {
   function link(bytes32[] calldata source, bytes32[] calldata target) external;
   function unlink(bytes32[] calldata path) external;
   function linkContract(address source, bytes32[] calldata target) external;
+  function chdir(bytes32[] calldata path) external;
   function mkdir(bytes32[] calldata path) external;
   function rmdir(bytes32[] calldata path) external;
   function list(bytes32[] calldata path) external view returns (bytes32[] memory);

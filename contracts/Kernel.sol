@@ -10,18 +10,25 @@ contract KernelImpl is Kernel {
   uint constant O_RDWR    = 0x0002;
   uint constant O_ACCMODE = 0x0003;
 
-  uint constant O_CREAT = 0x0200;
-  uint constant O_EXCL  = 0x0800;
+  uint constant O_CREAT = 0x0100;
+  uint constant O_EXCL  = 0x0200;
+
+  uint constant O_DIRECTORY = 0x00200000;
 
   struct FileDescriptor {
     uint inode;
     uint flags;
   }
 
+  struct UserArea {
+    bytes32 result;
+    uint curdir;  // inode
+    FileDescriptor[] fildes;
+  }
+
   address m_rootUser;
   FileSystem m_fileSystem;
-  mapping(address => FileDescriptor[]) m_fileDescriptors;
-  mapping(address => bytes32) m_result;
+  mapping(address => UserArea) m_userArea;
 
   constructor(FileSystem fileSystem) public {
     m_rootUser = tx.origin;
@@ -30,24 +37,24 @@ contract KernelImpl is Kernel {
   }
 
   function result() external view returns (bytes32) {
-    return m_result[msg.sender];
+    return m_userArea[msg.sender].result;
   }
 
   function open(bytes32[] calldata path, uint flags) external returns (uint) {
     uint inode = m_fileSystem.open(path, flags);
-    uint fd = m_fileDescriptors[msg.sender].length;
-    m_fileDescriptors[msg.sender].push(FileDescriptor({
+    uint fd = m_userArea[msg.sender].fildes.length;
+    m_userArea[msg.sender].fildes.push(FileDescriptor({
       inode: inode,
       flags: flags & O_ACCMODE
     }));
-    m_result[msg.sender] = bytes32(fd);
+    m_userArea[msg.sender].result = bytes32(fd);
     return fd;
   }
 
   function read(uint fd, bytes32 key) external view returns (bytes32) {
-    uint inode = m_fileDescriptors[msg.sender][fd].inode;
+    uint inode = m_userArea[msg.sender].fildes[fd].inode;
     require(inode > 0, "EBADF");
-    uint flags = m_fileDescriptors[msg.sender][fd].flags;
+    uint flags = m_userArea[msg.sender].fildes[fd].flags;
     require(flags == O_RDONLY || flags == O_RDWR, "EBADF");
     return m_fileSystem.read(inode, key);
   }
@@ -58,16 +65,16 @@ contract KernelImpl is Kernel {
   }
 
   function write(uint fd, bytes32 key, bytes32 data) external {
-    require(m_fileDescriptors[msg.sender][fd].inode > 0, "EBADF");
-    uint flags = m_fileDescriptors[msg.sender][fd].flags;
+    require(m_userArea[msg.sender].fildes[fd].inode > 0, "EBADF");
+    uint flags = m_userArea[msg.sender].fildes[fd].flags;
     require(flags == O_WRONLY || flags == O_RDWR, "EBADF");
-    uint inode = m_fileDescriptors[msg.sender][fd].inode;
+    uint inode = m_userArea[msg.sender].fildes[fd].inode;
     m_fileSystem.write(inode, key, data);
   }
 
   function close(uint fd) external {
-    require(m_fileDescriptors[msg.sender][fd].inode > 0, "EBADF");
-    delete m_fileDescriptors[msg.sender][fd];
+    require(m_userArea[msg.sender].fildes[fd].inode > 0, "EBADF");
+    delete m_userArea[msg.sender].fildes[fd];
   }
 
   function link(bytes32[] calldata source, bytes32[] calldata target) external {
@@ -80,6 +87,11 @@ contract KernelImpl is Kernel {
 
   function linkContract(address source, bytes32[] calldata target) external {
     m_fileSystem.linkContract(source, target);
+  }
+
+  function chdir(bytes32[] calldata path) external {
+    uint inode = m_fileSystem.openOnly(path, O_DIRECTORY);
+    m_userArea[msg.sender].curdir = inode;
   }
 
   function mkdir(bytes32[] calldata path) external {

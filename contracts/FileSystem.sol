@@ -8,8 +8,10 @@ contract FileSystemImpl is FileSystem {
   uint constant O_RDWR    = 0x0002;
   uint constant O_ACCMODE = 0x0003;
 
-  uint constant O_CREAT = 0x0200;
-  uint constant O_EXCL  = 0x0800;
+  uint constant O_CREAT = 0x0100;
+  uint constant O_EXCL  = 0x0200;
+
+  uint constant O_DIRECTORY = 0x00200000;
 
   enum FileType { None, Contract, Data, Directory }
 
@@ -86,21 +88,27 @@ contract FileSystemImpl is FileSystem {
     return inode;
   }
 
+  function checkOpen(uint inode, uint flags) private view {
+    require(inode > 0, "ENOENT");
+    require(tx.origin == m_inode[inode].owner, "EACCES");
+    if (flags & O_DIRECTORY > 0) {
+      require(m_inode[inode].fileType == FileType.Directory, "ENOTDIR");
+    }
+  }
+
   function open(bytes32[] calldata path, uint flags) external onlyOwner returns (uint) {
     uint inode = pathToInode(path, false);
     if (flags & O_CREAT > 0) {
       if (flags & O_EXCL > 0) require(inode == 0, "EEXIST");
       if (inode == 0) inode = creat(path);
     }
-    require(inode > 0, "ENOENT");
-    require(tx.origin == m_inode[inode].owner, "EACCES");
+    checkOpen(inode, flags);
     return inode;
   }
 
-  function openOnly(bytes32[] calldata path, uint) external view onlyOwner returns (uint) {
+  function openOnly(bytes32[] calldata path, uint flags) external view onlyOwner returns (uint) {
     uint inode = pathToInode(path, false);
-    require(inode > 0, "ENOENT");
-    require(tx.origin == m_inode[inode].owner, "EACCES");
+    checkOpen(inode, flags);
     return inode;
   }
 
@@ -159,7 +167,7 @@ contract FileSystemImpl is FileSystem {
     uint inode = uint(m_inode[dirInode].data[key]);
     require(inode > 0, "ENOENT");
     require(m_inode[inode].fileType == FileType.Directory, "ENOTDIR");
-    require(m_inode[inode].entries == 0, "ENOTEMPTY")
+    require(m_inode[inode].entries == 0, "ENOTEMPTY");
     removeFromInode(dirInode, key);
     delete m_inode[inode];
   }
