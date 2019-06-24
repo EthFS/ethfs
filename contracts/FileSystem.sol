@@ -91,7 +91,7 @@ contract FileSystemImpl is FileSystem {
     return inode;
   }
 
-  function openOnly(address sender, bytes32[] calldata path, uint flags) external view onlyOwner returns (uint) {
+  function openOnly(address sender, bytes32[] calldata path, uint) external view onlyOwner returns (uint) {
     uint inode = pathToInode(path, false);
     require(inode > 0, "ENOENT");
     require(sender == m_inode[inode].owner, "EACCES");

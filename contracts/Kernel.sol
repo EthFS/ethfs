@@ -23,13 +23,13 @@ contract KernelImpl is Kernel {
   mapping(address => FileDescriptor[]) m_fileDescriptors;
 
   constructor(FileSystem fileSystem) public {
-    m_rootUser = msg.sender;
+    m_rootUser = tx.origin;
     m_fileSystem = fileSystem;
     m_fileSystem.mount();
   }
 
   function open(bytes32[] calldata path, uint flags) external returns (uint) {
-    uint inode = m_fileSystem.open(msg.sender, path, flags);
+    uint inode = m_fileSystem.open(tx.origin, path, flags);
     uint fd = m_fileDescriptors[msg.sender].length;
     m_fileDescriptors[msg.sender].push(FileDescriptor({
       inode: inode,
@@ -39,10 +39,15 @@ contract KernelImpl is Kernel {
   }
 
   function read(uint fd, bytes32 key) external view returns (bytes32) {
-    require(m_fileDescriptors[msg.sender][fd].inode > 0, "EBADF");
+    uint inode = m_fileDescriptors[msg.sender][fd].inode;
+    require(inode > 0, "EBADF");
     uint flags = m_fileDescriptors[msg.sender][fd].flags;
     require(flags == O_RDONLY || flags == O_RDWR, "EBADF");
-    uint inode = m_fileDescriptors[msg.sender][fd].inode;
+    return m_fileSystem.read(inode, key);
+  }
+
+  function read2(bytes32[] calldata path, bytes32 key) external view returns (bytes32) {
+    uint inode = m_fileSystem.openOnly(tx.origin, path, 0);
     return m_fileSystem.read(inode, key);
   }
 
@@ -72,7 +77,7 @@ contract KernelImpl is Kernel {
   }
 
   function list(bytes32[] calldata path) external view returns (bytes32[] memory) {
-    uint inode = m_fileSystem.openOnly(msg.sender, path, 0);
+    uint inode = m_fileSystem.openOnly(tx.origin, path, 0);
     return m_fileSystem.list(inode);
   }
 
