@@ -34,7 +34,7 @@ contract KernelImpl is Kernel {
   }
 
   function open(bytes32[] calldata path, uint flags) external returns (uint) {
-    uint inode = m_fileSystem.open(tx.origin, path, flags);
+    uint inode = m_fileSystem.open(path, flags);
     uint fd = m_fileDescriptors[msg.sender].length;
     m_fileDescriptors[msg.sender].push(FileDescriptor({
       inode: inode,
@@ -53,7 +53,7 @@ contract KernelImpl is Kernel {
   }
 
   function read2(bytes32[] calldata path, bytes32 key) external view returns (bytes32) {
-    uint inode = m_fileSystem.openOnly(tx.origin, path, 0);
+    uint inode = m_fileSystem.openOnly(path, 0);
     return m_fileSystem.read(inode, key);
   }
 
@@ -82,8 +82,16 @@ contract KernelImpl is Kernel {
     m_fileSystem.linkContract(source, target);
   }
 
+  function mkdir(bytes32[] calldata path) external {
+    return m_fileSystem.mkdir(path);
+  }
+
+  function rmdir(bytes32[] calldata path) external {
+    return m_fileSystem.rmdir(path);
+  }
+
   function list(bytes32[] calldata path) external view returns (bytes32[] memory) {
-    uint inode = m_fileSystem.openOnly(tx.origin, path, 0);
+    uint inode = m_fileSystem.openOnly(path, 0);
     return m_fileSystem.list(inode);
   }
 

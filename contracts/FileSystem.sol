@@ -35,7 +35,7 @@ contract FileSystemImpl is FileSystem {
   constructor() public {
     // Set up root inode
     m_inode.length = 2;
-    m_inode[1].owner = msg.sender;
+    m_inode[1].owner = tx.origin;
     m_inode[1].fileType = FileType.Directory;
     m_inode[1].lastModified = now;
   }
@@ -69,10 +69,16 @@ contract FileSystemImpl is FileSystem {
     m_inode[inode].lastModified = now;
   }
 
-  function creat(address owner, bytes32[] memory path) private returns (uint) {
+  function removeFromInode(uint inode, bytes32 key) private {
+    m_inode[inode].entries--;
+    delete m_inode[inode].data[key];
+    m_inode[inode].lastModified = now;
+  }
+
+  function creat(bytes32[] memory path) private returns (uint) {
     uint dirInode = pathToInode(path, true);
     uint inode = m_inode.length++;
-    m_inode[inode].owner = owner;
+    m_inode[inode].owner = tx.origin;
     m_inode[inode].fileType = FileType.Data;
     m_inode[inode].lastModified = now;
     m_inode[inode].links = 1;
@@ -80,21 +86,21 @@ contract FileSystemImpl is FileSystem {
     return inode;
   }
 
-  function open(address sender, bytes32[] calldata path, uint flags) external onlyOwner returns (uint) {
+  function open(bytes32[] calldata path, uint flags) external onlyOwner returns (uint) {
     uint inode = pathToInode(path, false);
     if (flags & O_CREAT > 0) {
       if (flags & O_EXCL > 0) require(inode == 0, "EEXIST");
-      if (inode == 0) inode = creat(sender, path);
+      if (inode == 0) inode = creat(path);
     }
     require(inode > 0, "ENOENT");
-    require(sender == m_inode[inode].owner, "EACCES");
+    require(tx.origin == m_inode[inode].owner, "EACCES");
     return inode;
   }
 
-  function openOnly(address sender, bytes32[] calldata path, uint) external view onlyOwner returns (uint) {
+  function openOnly(bytes32[] calldata path, uint) external view onlyOwner returns (uint) {
     uint inode = pathToInode(path, false);
     require(inode > 0, "ENOENT");
-    require(sender == m_inode[inode].owner, "EACCES");
+    require(tx.origin == m_inode[inode].owner, "EACCES");
     return inode;
   }
 
@@ -118,14 +124,12 @@ contract FileSystemImpl is FileSystem {
 
   function unlink(bytes32[] calldata path) external onlyOwner {
     uint dirInode = pathToInode(path, true);
-    uint inode = uint(m_inode[dirInode].data[path[path.length-1]]);
+    bytes32 key = path[path.length-1];
+    uint inode = uint(m_inode[dirInode].data[key]);
     require(inode > 0, "ENOENT");
-    m_inode[dirInode].entries--;
-    delete m_inode[dirInode].data[path[path.length-1]];
-    uint links = --m_inode[inode].links;
-    if (links == 0) {
-      delete m_inode[inode];
-    }
+    require(m_inode[inode].fileType != FileType.Directory, "EISDIR");
+    removeFromInode(dirInode, key);
+    if (--m_inode[inode].links == 0) delete m_inode[inode];
   }
 
   function linkContract(address source, bytes32[] calldata target) external onlyOwner {
@@ -136,6 +140,28 @@ contract FileSystemImpl is FileSystem {
     m_inode[inode].lastModified = now;
     m_inode[inode].links = 1;
     writeToInode(dirInode, target[target.length-1], bytes32(inode));
+  }
+
+  function mkdir(bytes32[] calldata path) external onlyOwner {
+    uint dirInode = pathToInode(path, true);
+    bytes32 key = path[path.length-1];
+    require(m_inode[dirInode].data[key] == 0, "EEXIST");
+    uint inode = m_inode.length++;
+    m_inode[inode].owner = tx.origin;
+    m_inode[inode].fileType = FileType.Directory;
+    m_inode[inode].lastModified = now;
+    writeToInode(dirInode, key, bytes32(inode));
+  }
+
+  function rmdir(bytes32[] calldata path) external onlyOwner {
+    uint dirInode = pathToInode(path, true);
+    bytes32 key = path[path.length-1];
+    uint inode = uint(m_inode[dirInode].data[key]);
+    require(inode > 0, "ENOENT");
+    require(m_inode[inode].fileType == FileType.Directory, "ENOTDIR");
+    require(m_inode[inode].entries == 0, "ENOTEMPTY")
+    removeFromInode(dirInode, key);
+    delete m_inode[inode];
   }
 
   function list(uint inode) external view onlyOwner returns (bytes32[] memory) {
