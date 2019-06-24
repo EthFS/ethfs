@@ -41,7 +41,7 @@ contract KernelImpl is Kernel {
   }
 
   function open(bytes32[] calldata path, uint flags) external returns (uint) {
-    uint inode = m_fileSystem.open(path, flags);
+    uint inode = m_fileSystem.open(path, m_userArea[msg.sender].curdir, flags);
     uint fd = m_userArea[msg.sender].fildes.length;
     m_userArea[msg.sender].fildes.push(FileDescriptor({
       inode: inode,
@@ -60,7 +60,7 @@ contract KernelImpl is Kernel {
   }
 
   function read2(bytes32[] calldata path, bytes32 key) external view returns (bytes32) {
-    uint inode = m_fileSystem.openOnly(path, 0);
+    uint inode = m_fileSystem.openOnly(path, m_userArea[msg.sender].curdir, 0);
     return m_fileSystem.read(inode, key);
   }
 
@@ -78,37 +78,37 @@ contract KernelImpl is Kernel {
   }
 
   function link(bytes32[] calldata source, bytes32[] calldata target) external {
-    m_fileSystem.link(source, target);
+    m_fileSystem.link(source, target, m_userArea[msg.sender].curdir);
   }
 
   function unlink(bytes32[] calldata path) external {
-    m_fileSystem.unlink(path);
+    m_fileSystem.unlink(path, m_userArea[msg.sender].curdir);
   }
 
   function linkContract(address source, bytes32[] calldata target) external {
-    m_fileSystem.linkContract(source, target);
+    m_fileSystem.linkContract(source, target, m_userArea[msg.sender].curdir);
   }
 
   function chdir(bytes32[] calldata path) external {
-    uint inode = m_fileSystem.openOnly(path, O_DIRECTORY);
+    uint inode = m_fileSystem.openOnly(path, m_userArea[msg.sender].curdir, O_DIRECTORY);
     m_userArea[msg.sender].curdir = inode;
   }
 
   function mkdir(bytes32[] calldata path) external {
-    return m_fileSystem.mkdir(path);
+    return m_fileSystem.mkdir(path, m_userArea[msg.sender].curdir);
   }
 
   function rmdir(bytes32[] calldata path) external {
-    return m_fileSystem.rmdir(path);
+    return m_fileSystem.rmdir(path, m_userArea[msg.sender].curdir);
   }
 
   function list(bytes32[] calldata path) external view returns (bytes32[] memory) {
-    uint inode = m_fileSystem.openOnly(path, 0);
+    uint inode = m_fileSystem.openOnly(path, m_userArea[msg.sender].curdir, 0);
     return m_fileSystem.list(inode);
   }
 
   function exec(bytes32[] calldata path, bytes32[] calldata args) external returns (uint) {
-    App app = App(m_fileSystem.readContract(path));
+    App app = App(m_fileSystem.readContract(path, m_userArea[msg.sender].curdir));
     app.main(this, args);
   }
 }

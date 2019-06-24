@@ -12,7 +12,7 @@ contract TestDapp is App {
   function main(Kernel kernel, bytes32[] calldata) external returns (uint) {
     bytes32[] memory path = new bytes32[](1);
     path[0] = "test_file";
-    uint fd = kernel.open(path, 0x0001 | 0x0200);
+    uint fd = kernel.open(path, 0x0101);
     kernel.write(fd, "foo", "bar");
     kernel.close(fd);
     return 0;

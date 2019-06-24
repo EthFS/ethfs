@@ -2,10 +2,13 @@ const KernelImpl = artifacts.require('KernelImpl')
 
 const enc = x => web3.utils.asciiToHex(x)
 const dec = x => web3.utils.hexToAscii(x).replace(/\0+$/, '')
-const pathenc = x => x ? x.split('/').map(enc) : []
+
+function pathenc(path) {
+  if (path === '/') path = ''
+  return path.split('/').map(enc)
+}
 
 async function ls(kernel, path, isData) {
-  path = pathenc(path)
   const keys = await kernel.list(path)
   await Promise.all(keys.map(async key => {
     if (isData) {
@@ -19,20 +22,21 @@ async function ls(kernel, path, isData) {
 
 module.exports = async callback => {
   const kernel = await KernelImpl.deployed()
-  await kernel.exec(pathenc('TestDapp'), [])
-  await ls(kernel, '')
-  await ls(kernel, 'test_file', true)
-  await kernel.open(pathenc('test_file'), 0x0201)
+  await kernel.exec(pathenc('/TestDapp'), [])
+  await ls(kernel, pathenc('/'))
+  await ls(kernel, pathenc('/test_file'), true)
+  await kernel.open(pathenc('/test_file'), 0x0101)
   let fd = await kernel.result()
   await kernel.write(fd, enc('foo2'), enc('bar2'))
   await kernel.close(fd)
   try {
-    await kernel.mkdir(pathenc('test_dir'))
+    await kernel.mkdir(pathenc('/test_dir'))
   } catch (e) {}
-  await kernel.open(pathenc('test_dir/test_file'), 0x0201)
+  await kernel.chdir(pathenc('/test_dir'))
+  await kernel.open(pathenc('test_file'), 0x0101)
   fd = await kernel.result()
   await kernel.write(fd, enc('foo2'), enc('bar2'))
   await kernel.close(fd)
-  await ls(kernel, 'test_dir')
+  await ls(kernel, [])
   callback()
 }
