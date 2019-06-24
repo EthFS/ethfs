@@ -21,11 +21,16 @@ contract KernelImpl is Kernel {
   address m_rootUser;
   FileSystem m_fileSystem;
   mapping(address => FileDescriptor[]) m_fileDescriptors;
+  mapping(address => bytes32) m_result;
 
   constructor(FileSystem fileSystem) public {
     m_rootUser = tx.origin;
     m_fileSystem = fileSystem;
     m_fileSystem.mount();
+  }
+
+  function result() external view returns (bytes32) {
+    return m_result[msg.sender];
   }
 
   function open(bytes32[] calldata path, uint flags) external returns (uint) {
@@ -35,6 +40,7 @@ contract KernelImpl is Kernel {
       inode: inode,
       flags: flags & O_ACCMODE
     }));
+    m_result[msg.sender] = bytes32(fd);
     return fd;
   }
 

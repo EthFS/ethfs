@@ -1,6 +1,7 @@
 pragma solidity >= 0.5.8;
 
 interface Kernel {
+  function result() external view returns (bytes32);
   function open(bytes32[] calldata path, uint flags) external returns (uint);
   function read(uint fd, bytes32 key) external view returns (bytes32);
   function read2(bytes32[] calldata path, bytes32 key) external view returns (bytes32);
