@@ -4,6 +4,6 @@ const TestDapp = artifacts.require("TestDapp");
 
 module.exports = function(deployer) {
   deployer.deploy(FileSystem)
-    .then(() => deployer.deploy(Kernel, FileSystem.address));
-  deployer.deploy(TestDapp);
+    .then(() => deployer.deploy(Kernel, FileSystem.address))
+    .then(() => deployer.deploy(TestDapp, Kernel.address))
 };

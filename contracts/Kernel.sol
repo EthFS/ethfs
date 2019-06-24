@@ -2,6 +2,7 @@ pragma solidity >= 0.5.8;
 
 import "../interface/Kernel.sol";
 import "../interface/FileSystem.sol";
+import "../interface/App.sol";
 
 contract KernelImpl is Kernel {
   uint constant O_RDONLY  = 0x0000;
@@ -67,13 +68,15 @@ contract KernelImpl is Kernel {
   }
 
   function linkContract(address source, bytes32[] calldata target) external {
-    uint size;
-    assembly { size := extcodesize(source) }
-    require(size > 0, "EINVAL");
     m_fileSystem.linkContract(source, target);
   }
 
   function readdir(bytes32[] calldata path) external view returns (bytes32[] memory) {
     return m_fileSystem.readdir(path);
+  }
+
+  function exec(bytes32[] calldata path, bytes32[] calldata args) external returns (uint) {
+    App app = App(m_fileSystem.readContract(path));
+    app.main(this, args);
   }
 }

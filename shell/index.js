@@ -1,9 +1,7 @@
-const Kernel = artifacts.require('KernelImpl')
-const TestDapp = artifacts.require('TestDapp')
+const KernelImpl = artifacts.require('KernelImpl')
 
 module.exports = async callback => {
-  const kernel = await Kernel.deployed()
-  const testDapp = await TestDapp.deployed()
-  await testDapp.main(kernel.address)
+  const kernel = await KernelImpl.deployed()
+  await kernel.exec(['TestDapp'].map(web3.utils.fromAscii), [])
   callback()
 }

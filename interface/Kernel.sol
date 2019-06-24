@@ -9,4 +9,5 @@ interface Kernel {
   function unlink(bytes32[] calldata path) external;
   function linkContract(address source, bytes32[] calldata target) external;
   function readdir(bytes32[] calldata path) external view returns (bytes32[] memory);
+  function exec(bytes32[] calldata path, bytes32[] calldata args) external returns (uint);
 }

@@ -1,9 +1,15 @@
 pragma solidity >= 0.5.8;
 
-import "../interface/Kernel.sol";
+import "../interface/App.sol";
 
-contract TestDapp {
-  function main(Kernel kernel) public returns (uint) {
+contract TestDapp is App {
+  constructor(Kernel kernel) public {
+    bytes32[] memory path = new bytes32[](1);
+    path[0] = "TestDapp";
+    kernel.linkContract(address(this), path);
+  }
+
+  function main(Kernel kernel, bytes32[] calldata) external returns (uint) {
     bytes32[] memory path = new bytes32[](1);
     path[0] = "test_file";
     uint fd = kernel.open(path, 0x0001 | 0x0200);

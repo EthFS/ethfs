@@ -11,7 +11,7 @@ contract FileSystemImpl is FileSystem {
   uint constant O_CREAT = 0x0200;
   uint constant O_EXCL  = 0x0800;
 
-  enum FileType { Contract, Data, Directory }
+  enum FileType { None, Contract, Data, Directory }
 
   struct Inode {
     address owner;
@@ -147,5 +147,12 @@ contract FileSystemImpl is FileSystem {
       }
     }
     return dirent;
+  }
+
+  function readContract(bytes32[] calldata path) external view returns (address) {
+    uint inode = pathToInode(path, false);
+    require(inode > 0, "ENOENT");
+    require(m_inode[inode].fileType == FileType.Contract, "ENOEXEC");
+    return m_inode[inode].owner;
   }
 }
