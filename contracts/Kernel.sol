@@ -71,8 +71,9 @@ contract KernelImpl is Kernel {
     m_fileSystem.linkContract(source, target);
   }
 
-  function readdir(bytes32[] calldata path) external view returns (bytes32[] memory) {
-    return m_fileSystem.readdir(path);
+  function list(bytes32[] calldata path) external view returns (bytes32[] memory) {
+    uint inode = m_fileSystem.openOnly(msg.sender, path, 0);
+    return m_fileSystem.list(inode);
   }
 
   function exec(bytes32[] calldata path, bytes32[] calldata args) external returns (uint) {

@@ -91,6 +91,13 @@ contract FileSystemImpl is FileSystem {
     return inode;
   }
 
+  function openOnly(address sender, bytes32[] calldata path, uint flags) external view onlyOwner returns (uint) {
+    uint inode = pathToInode(path, false);
+    require(inode > 0, "ENOENT");
+    require(sender == m_inode[inode].owner, "EACCES");
+    return inode;
+  }
+
   function read(uint inode, bytes32 key) external view onlyOwner returns (bytes32) {
     return m_inode[inode].data[key];
   }
@@ -131,25 +138,22 @@ contract FileSystemImpl is FileSystem {
     writeToInode(dirInode, target[target.length-1], bytes32(inode));
   }
 
-  function readdir(bytes32[] calldata path) external view returns (bytes32[] memory) {
-    uint inode = pathToInode(path, false);
-    require(inode > 0, "ENOENT");
-    require(m_inode[inode].fileType == FileType.Directory, "ENOTDIR");
-    bytes32[] memory dirent = new bytes32[](m_inode[inode].entries);
-    if (dirent.length > 0) {
+  function list(uint inode) external view onlyOwner returns (bytes32[] memory) {
+    bytes32[] memory keys = new bytes32[](m_inode[inode].entries);
+    if (keys.length > 0) {
       uint j = 0;
       for (uint i = 0; i < m_inode[inode].keys.length; i++) {
         bytes32 key = m_inode[inode].keys[i];
         if (m_inode[inode].data[key] != 0) {
-          dirent[j++] = key;
-          if (j == dirent.length) break;
+          keys[j++] = key;
+          if (j == keys.length) break;
         }
       }
     }
-    return dirent;
+    return keys;
   }
 
-  function readContract(bytes32[] calldata path) external view returns (address) {
+  function readContract(bytes32[] calldata path) external view onlyOwner returns (address) {
     uint inode = pathToInode(path, false);
     require(inode > 0, "ENOENT");
     require(m_inode[inode].fileType == FileType.Contract, "ENOEXEC");
