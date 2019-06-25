@@ -16,23 +16,33 @@ async function ls(kernel, args) {
   }, Promise.resolve())
 }
 
+async function cd(kernel, args) {
+  if (args.length > 1) {
+    throw new Error('Too many arguments.')
+  }
+  await kernel.chdir(pathenc(args[0] || '/'))
+}
+
 async function main() {
   const Kernel = contract(require('../build/contracts/KernelImpl'))
   Kernel.setProvider(new Web3.providers.HttpProvider('http://localhost:7545'))
+  const accounts = await Kernel.web3.eth.getAccounts()
+  Kernel.defaults({from: accounts[0]})
   const kernel = await Kernel.deployed()
   while (true) {
     const args = (await prompt('> ')).split(/\s+/).filter(x => x.length)
     const cmd = args.shift()
     try {
       switch (cmd) {
-        case 'ls': {
+        case 'ls':
           await ls(kernel, args)
           break
-        }
-        default: {
+        case 'cd':
+          await cd(kernel, args)
+          break
+        default:
           console.log('Unrecognized command:', cmd)
           break
-        }
       }
     } catch (e) {
       console.log(e.message);
