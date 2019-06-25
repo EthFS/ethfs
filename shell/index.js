@@ -23,6 +23,10 @@ async function cd(kernel, args) {
   await kernel.chdir(pathenc(args[0] || '/'))
 }
 
+async function exec(kernel, cmd, args) {
+  await kernel.exec(pathenc(cmd), args.map(enc))
+}
+
 async function main() {
   const Kernel = contract(require('../build/contracts/KernelImpl'))
   Kernel.setProvider(new Web3.providers.HttpProvider('http://localhost:7545'))
@@ -41,7 +45,7 @@ async function main() {
           await cd(kernel, args)
           break
         default:
-          console.log('Unrecognized command:', cmd)
+          await exec(kernel, cmd, args)
           break
       }
     } catch (e) {

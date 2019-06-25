@@ -109,6 +109,8 @@ contract KernelImpl is Kernel {
 
   function exec(bytes32[] calldata path, bytes32[] calldata args) external returns (uint) {
     App app = App(m_fileSystem.readContract(path, m_userArea[msg.sender].curdir));
-    app.main(this, args);
+    uint ret = app.main(this, args);
+    m_userArea[msg.sender].result = bytes32(ret);
+    return ret;
   }
 }
