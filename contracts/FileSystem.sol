@@ -1,6 +1,6 @@
 pragma solidity >= 0.5.8;
 
-import "../interface/FileSystem.sol";
+import "./interface/FileSystem.sol";
 
 contract FileSystemImpl is FileSystem {
   uint constant O_RDONLY  = 0x0000;
@@ -44,8 +44,8 @@ contract FileSystemImpl is FileSystem {
     m_inode.length = 2;
     m_inode[1].owner = tx.origin;
     m_inode[1].fileType = FileType.Directory;
-    writeToInode(1, ".", hex"01");
-    writeToInode(1, "..", hex"01");
+    writeToInode(1, ".", bytes32(uint(1)));
+    writeToInode(1, "..", bytes32(uint(1)));
   }
 
   function mount() external {
@@ -61,9 +61,10 @@ contract FileSystemImpl is FileSystem {
     if (curdir == 0) curdir = 1;
     bool fromRoot = path.length > 0 && path[0] == 0;
     uint inode = fromRoot ? 1 : curdir;
-    for (uint i = fromRoot ? 1 : 0; i < path.length; i++) {
+    for (uint i = 0; i < path.length; i++) {
       require(inode > 0, "ENOENT");
       require(m_inode[inode].fileType == FileType.Directory, "ENOTDIR");
+      if (path[i] == 0) continue;
       if (dirOnly && i == path.length-1) break;
       if (m_inode[inode].data[path[i]].index > 0) {
         inode = uint(m_inode[inode].data[path[i]].value);

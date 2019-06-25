@@ -1,6 +1,6 @@
 pragma solidity >= 0.5.8;
 
-import "../interface/App.sol";
+import "./interface/App.sol";
 
 contract TestDapp is App {
   constructor(Kernel kernel) public {

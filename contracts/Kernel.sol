@@ -1,8 +1,8 @@
 pragma solidity >= 0.5.8;
 
-import "../interface/Kernel.sol";
-import "../interface/FileSystem.sol";
-import "../interface/App.sol";
+import "./interface/Kernel.sol";
+import "./interface/FileSystem.sol";
+import "./interface/App.sol";
 
 contract KernelImpl is Kernel {
   uint constant O_RDONLY  = 0x0000;

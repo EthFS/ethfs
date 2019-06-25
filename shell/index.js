@@ -5,13 +5,10 @@ const prompt = require('./prompt')
 
 const enc = x => asciiToHex(x)
 const dec = x => hexToAscii(x).replace(/\0+$/, '')
-
-function pathenc(path) {
-  if (path === '/') path = ''
-  return path.split('/').map(enc)
-}
+const pathenc = x => x.split('/').map(enc)
 
 async function ls(kernel, args) {
+  if (!args.length) args = ['.']
   await args.reduce(async (promise, x) => {
     await promise
     const keys = await kernel.list(pathenc(x))
