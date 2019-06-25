@@ -87,7 +87,8 @@ contract FileSystemImpl is FileSystem {
 
   function removeFromInode(uint inode, bytes32 key) private {
     m_inode[inode].entries--;
-    m_inode[inode].data[key].index = 0;
+    delete m_inode[inode].keys[m_inode[inode].data[key].index-1];
+    delete m_inode[inode].data[key];
     m_inode[inode].lastModified = now;
   }
 
@@ -140,6 +141,7 @@ contract FileSystemImpl is FileSystem {
     require(inode > 0, "ENOENT");
     uint dirInode = pathToInode(target, curdir, true);
     bytes32 key = target[target.length-1];
+    if (key == 0) key = source[source.length-1];
     require(m_inode[dirInode].data[key].index == 0, "EEXIST");
     writeToInode(dirInode, key, bytes32(inode));
     m_inode[inode].links++;
@@ -148,6 +150,7 @@ contract FileSystemImpl is FileSystem {
   function unlink(bytes32[] calldata path, uint curdir) external onlyOwner {
     uint dirInode = pathToInode(path, curdir, true);
     bytes32 key = path[path.length-1];
+    require(key != 0, "EISDIR");
     require(m_inode[dirInode].data[key].index > 0, "ENOENT");
     uint inode = uint(m_inode[dirInode].data[key].value);
     require(m_inode[inode].fileType != FileType.Directory, "EISDIR");
@@ -157,17 +160,21 @@ contract FileSystemImpl is FileSystem {
 
   function linkContract(address source, bytes32[] calldata target, uint curdir) external onlyOwner {
     uint dirInode = pathToInode(target, curdir, true);
+    bytes32 key = target[target.length-1];
+    require(key != 0, "EISDIR");
+    require(m_inode[dirInode].data[key].index == 0, "EEXIST");
     uint inode = m_inode.length++;
     m_inode[inode].owner = source;
     m_inode[inode].fileType = FileType.Contract;
     m_inode[inode].lastModified = now;
     m_inode[inode].links = 1;
-    writeToInode(dirInode, target[target.length-1], bytes32(inode));
+    writeToInode(dirInode, key, bytes32(inode));
   }
 
   function mkdir(bytes32[] calldata path, uint curdir) external onlyOwner {
     uint dirInode = pathToInode(path, curdir, true);
     bytes32 key = path[path.length-1];
+    require(key != 0, "EEXIST");
     require(m_inode[dirInode].data[key].index == 0, "EEXIST");
     uint inode = m_inode.length++;
     m_inode[inode].owner = tx.origin;
