@@ -1,6 +1,8 @@
+const fs = require('fs')
 const Web3 = require('web3')
 const {asciiToHex, hexToAscii} = require('web3-utils')
 const contract = require('truffle-contract')
+const HDWalletProvider = require('truffle-hdwallet-provider')
 const prompt = require('./prompt')
 
 const enc = x => asciiToHex(x)
@@ -29,7 +31,14 @@ async function exec(kernel, cmd, args) {
 
 async function main() {
   const Kernel = contract(require('../build/contracts/KernelImpl'))
-  Kernel.setProvider(new Web3.providers.HttpProvider('http://localhost:7545'))
+  let provider = new Web3.providers.HttpProvider('http://localhost:7545')
+  if (process.argv[2]) {
+    provider = new HDWalletProvider(
+      fs.readFileSync('.secret').toString().trim(),
+      `https://${process.argv[2]}.infura.io/v3/59389cd0fe54420785906cf571a7d7c0`
+    )
+  }
+  Kernel.setProvider(provider)
   const accounts = await Kernel.web3.eth.getAccounts()
   Kernel.defaults({from: accounts[0]})
   const kernel = await Kernel.deployed()
@@ -54,4 +63,4 @@ async function main() {
   }
 }
 
-main()
+main().catch(console.log).then(process.exit)
