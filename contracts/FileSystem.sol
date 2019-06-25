@@ -23,7 +23,12 @@ contract FileSystemImpl is FileSystem {
     uint links;
     uint entries;
     bytes32[] keys;
-    mapping(bytes32 => bytes32) data;
+    mapping(bytes32 => InodeData) data;
+  }
+
+  struct InodeData {
+    bytes32 value;
+    uint index;
   }
 
   address m_owner;
@@ -60,23 +65,28 @@ contract FileSystemImpl is FileSystem {
       require(inode > 0, "ENOENT");
       require(m_inode[inode].fileType == FileType.Directory, "ENOTDIR");
       if (dirOnly && i == path.length-1) break;
-      inode = uint(m_inode[inode].data[path[i]]);
+      if (m_inode[inode].data[path[i]].index > 0) {
+        inode = uint(m_inode[inode].data[path[i]].value);
+      } else {
+        inode = 0;
+      }
     }
     return inode;
   }
 
-  function writeToInode(uint inode, bytes32 key, bytes32 data) private {
-    if (m_inode[inode].data[key] == 0) {
+  function writeToInode(uint inode, bytes32 key, bytes32 value) private {
+    if (m_inode[inode].data[key].index == 0) {
       m_inode[inode].entries++;
       m_inode[inode].keys.push(key);
+      m_inode[inode].data[key].index = m_inode[inode].keys.length;  // index+1
     }
-    m_inode[inode].data[key] = data;
+    m_inode[inode].data[key].value = value;
     m_inode[inode].lastModified = now;
   }
 
   function removeFromInode(uint inode, bytes32 key) private {
     m_inode[inode].entries--;
-    delete m_inode[inode].data[key];
+    m_inode[inode].data[key].index = 0;
     m_inode[inode].lastModified = now;
   }
 
@@ -116,7 +126,8 @@ contract FileSystemImpl is FileSystem {
   }
 
   function read(uint inode, bytes32 key) external view onlyOwner returns (bytes32) {
-    return m_inode[inode].data[key];
+    require(m_inode[inode].data[key].index > 0, "EINVAL");
+    return m_inode[inode].data[key].value;
   }
 
   function write(uint inode, bytes32 key, bytes32 data) external onlyOwner {
@@ -128,7 +139,7 @@ contract FileSystemImpl is FileSystem {
     require(inode > 0, "ENOENT");
     uint dirInode = pathToInode(target, curdir, true);
     bytes32 key = target[target.length-1];
-    require(m_inode[dirInode].data[key] == 0, "EEXIST");
+    require(m_inode[dirInode].data[key].index == 0, "EEXIST");
     writeToInode(dirInode, key, bytes32(inode));
     m_inode[inode].links++;
   }
@@ -136,8 +147,8 @@ contract FileSystemImpl is FileSystem {
   function unlink(bytes32[] calldata path, uint curdir) external onlyOwner {
     uint dirInode = pathToInode(path, curdir, true);
     bytes32 key = path[path.length-1];
-    uint inode = uint(m_inode[dirInode].data[key]);
-    require(inode > 0, "ENOENT");
+    require(m_inode[dirInode].data[key].index > 0, "ENOENT");
+    uint inode = uint(m_inode[dirInode].data[key].value);
     require(m_inode[inode].fileType != FileType.Directory, "EISDIR");
     removeFromInode(dirInode, key);
     if (--m_inode[inode].links == 0) delete m_inode[inode];
@@ -156,7 +167,7 @@ contract FileSystemImpl is FileSystem {
   function mkdir(bytes32[] calldata path, uint curdir) external onlyOwner {
     uint dirInode = pathToInode(path, curdir, true);
     bytes32 key = path[path.length-1];
-    require(m_inode[dirInode].data[key] == 0, "EEXIST");
+    require(m_inode[dirInode].data[key].index == 0, "EEXIST");
     uint inode = m_inode.length++;
     m_inode[inode].owner = tx.origin;
     m_inode[inode].fileType = FileType.Directory;
@@ -169,8 +180,8 @@ contract FileSystemImpl is FileSystem {
   function rmdir(bytes32[] calldata path, uint curdir) external onlyOwner {
     uint dirInode = pathToInode(path, curdir, true);
     bytes32 key = path[path.length-1];
-    uint inode = uint(m_inode[dirInode].data[key]);
-    require(inode > 0, "ENOENT");
+    require(m_inode[dirInode].data[key].index > 0, "ENOENT");
+    uint inode = uint(m_inode[dirInode].data[key].value);
     require(m_inode[inode].fileType == FileType.Directory, "ENOTDIR");
     require(m_inode[inode].entries == 2, "ENOTEMPTY");
     removeFromInode(dirInode, key);
@@ -183,7 +194,7 @@ contract FileSystemImpl is FileSystem {
       uint j = 0;
       for (uint i = 0; i < m_inode[inode].keys.length; i++) {
         bytes32 key = m_inode[inode].keys[i];
-        if (m_inode[inode].data[key] != 0) {
+        if (m_inode[inode].data[key].index == i+1) {
           keys[j++] = key;
           if (j == keys.length) break;
         }
