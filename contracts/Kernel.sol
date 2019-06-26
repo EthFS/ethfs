@@ -16,13 +16,13 @@ contract KernelImpl is Kernel {
   uint constant O_DIRECTORY = 0x00200000;
 
   struct FileDescriptor {
-    uint inode;
+    uint ino;
     uint flags;
   }
 
   struct UserArea {
     bytes32 result;
-    uint curdir;  // inode
+    uint curdir;  // ino
     FileDescriptor[] fildes;
   }
 
@@ -41,84 +41,96 @@ contract KernelImpl is Kernel {
   }
 
   function open(bytes32[] calldata path, uint flags) external returns (uint) {
-    uint inode = m_fileSystem.open(path, m_userArea[msg.sender].curdir, flags);
-    uint fd = m_userArea[msg.sender].fildes.length;
-    m_userArea[msg.sender].fildes.push(FileDescriptor({
-      inode: inode,
+    UserArea storage u = m_userArea[msg.sender];
+    uint ino = m_fileSystem.open(path, u.curdir, flags);
+    uint fd = u.fildes.length;
+    u.fildes.push(FileDescriptor({
+      ino: ino,
       flags: flags & O_ACCMODE
     }));
-    m_userArea[msg.sender].result = bytes32(fd);
+    u.result = bytes32(fd);
     return fd;
   }
 
   function read(uint fd, bytes32 key) external view returns (bytes32) {
-    uint inode = m_userArea[msg.sender].fildes[fd].inode;
-    require(inode > 0, "EBADF");
-    uint flags = m_userArea[msg.sender].fildes[fd].flags;
-    require(flags == O_RDONLY || flags == O_RDWR, "EBADF");
-    return m_fileSystem.read(inode, key);
+    UserArea storage u = m_userArea[msg.sender];
+    FileDescriptor storage fildes = u.fildes[fd];
+    require(fildes.ino > 0, "EBADF");
+    require(fildes.flags == O_RDONLY || fildes.flags == O_RDWR, "EBADF");
+    return m_fileSystem.read(fildes.ino, key);
   }
 
   function read2(bytes32[] calldata path, bytes32 key) external view returns (bytes32) {
-    uint inode = m_fileSystem.openOnly(path, m_userArea[msg.sender].curdir, 0);
-    return m_fileSystem.read(inode, key);
+    UserArea storage u = m_userArea[msg.sender];
+    uint ino = m_fileSystem.openOnly(path, u.curdir, 0);
+    return m_fileSystem.read(ino, key);
   }
 
   function write(uint fd, bytes32 key, bytes32 data) external {
-    require(m_userArea[msg.sender].fildes[fd].inode > 0, "EBADF");
-    uint flags = m_userArea[msg.sender].fildes[fd].flags;
-    require(flags == O_WRONLY || flags == O_RDWR, "EBADF");
-    uint inode = m_userArea[msg.sender].fildes[fd].inode;
-    m_fileSystem.write(inode, key, data);
+    UserArea storage u = m_userArea[msg.sender];
+    FileDescriptor storage fildes = u.fildes[fd];
+    require(fildes.ino > 0, "EBADF");
+    require(fildes.flags == O_WRONLY || fildes.flags == O_RDWR, "EBADF");
+    m_fileSystem.write(fildes.ino, key, data);
   }
 
   function clear(uint fd, bytes32 key) external {
-    require(m_userArea[msg.sender].fildes[fd].inode > 0, "EBADF");
-    uint flags = m_userArea[msg.sender].fildes[fd].flags;
-    require(flags == O_WRONLY || flags == O_RDWR, "EBADF");
-    uint inode = m_userArea[msg.sender].fildes[fd].inode;
-    m_fileSystem.clear(inode, key);
+    UserArea storage u = m_userArea[msg.sender];
+    FileDescriptor storage fildes = u.fildes[fd];
+    require(fildes.ino > 0, "EBADF");
+    require(fildes.flags == O_WRONLY || fildes.flags == O_RDWR, "EBADF");
+    m_fileSystem.clear(fildes.ino, key);
   }
 
   function close(uint fd) external {
-    require(m_userArea[msg.sender].fildes[fd].inode > 0, "EBADF");
-    delete m_userArea[msg.sender].fildes[fd];
+    UserArea storage u = m_userArea[msg.sender];
+    FileDescriptor storage fildes = u.fildes[fd];
+    require(fildes.ino > 0, "EBADF");
+    delete u.fildes[fd];
   }
 
   function link(bytes32[] calldata source, bytes32[] calldata target) external {
-    m_fileSystem.link(source, target, m_userArea[msg.sender].curdir);
+    UserArea storage u = m_userArea[msg.sender];
+    m_fileSystem.link(source, target, u.curdir);
   }
 
   function unlink(bytes32[] calldata path) external {
-    m_fileSystem.unlink(path, m_userArea[msg.sender].curdir);
+    UserArea storage u = m_userArea[msg.sender];
+    m_fileSystem.unlink(path, u.curdir);
   }
 
   function linkContract(address source, bytes32[] calldata target) external {
-    m_fileSystem.linkContract(source, target, m_userArea[msg.sender].curdir);
+    UserArea storage u = m_userArea[msg.sender];
+    m_fileSystem.linkContract(source, target, u.curdir);
   }
 
   function chdir(bytes32[] calldata path) external {
-    uint inode = m_fileSystem.openOnly(path, m_userArea[msg.sender].curdir, O_DIRECTORY);
-    m_userArea[msg.sender].curdir = inode;
+    UserArea storage u = m_userArea[msg.sender];
+    uint ino = m_fileSystem.openOnly(path, u.curdir, O_DIRECTORY);
+    u.curdir = ino;
   }
 
   function mkdir(bytes32[] calldata path) external {
-    return m_fileSystem.mkdir(path, m_userArea[msg.sender].curdir);
+    UserArea storage u = m_userArea[msg.sender];
+    return m_fileSystem.mkdir(path, u.curdir);
   }
 
   function rmdir(bytes32[] calldata path) external {
-    return m_fileSystem.rmdir(path, m_userArea[msg.sender].curdir);
+    UserArea storage u = m_userArea[msg.sender];
+    return m_fileSystem.rmdir(path, u.curdir);
   }
 
   function list(bytes32[] calldata path) external view returns (bytes32[] memory) {
-    uint inode = m_fileSystem.openOnly(path, m_userArea[msg.sender].curdir, 0);
-    return m_fileSystem.list(inode);
+    UserArea storage u = m_userArea[msg.sender];
+    uint ino = m_fileSystem.openOnly(path, u.curdir, 0);
+    return m_fileSystem.list(ino);
   }
 
   function exec(bytes32[] calldata path, bytes32[] calldata args) external returns (uint) {
-    App app = App(m_fileSystem.readContract(path, m_userArea[msg.sender].curdir));
+    UserArea storage u = m_userArea[msg.sender];
+    App app = App(m_fileSystem.readContract(path, u.curdir));
     uint ret = app.main(this, args);
-    m_userArea[msg.sender].result = bytes32(ret);
+    u.result = bytes32(ret);
     return ret;
   }
 }

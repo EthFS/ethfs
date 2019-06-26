@@ -41,11 +41,12 @@ contract FileSystemImpl is FileSystem {
 
   constructor() public {
     // Set up root inode
-    m_inode.length = 2;
-    m_inode[1].owner = tx.origin;
-    m_inode[1].fileType = FileType.Directory;
-    writeToInode(1, ".", bytes32(uint(1)));
-    writeToInode(1, "..", bytes32(uint(1)));
+    uint ino = 1;
+    m_inode.length = ino+1;
+    m_inode[ino].owner = tx.origin;
+    m_inode[ino].fileType = FileType.Directory;
+    writeToInode(ino, ".", bytes32(ino));
+    writeToInode(ino, "..", bytes32(ino));
   }
 
   function mount() external {
@@ -60,162 +61,181 @@ contract FileSystemImpl is FileSystem {
   function pathToInode(bytes32[] memory path, uint curdir, bool dirOnly) private view returns (uint) {
     if (curdir == 0) curdir = 1;
     bool fromRoot = path.length > 0 && path[0] == 0;
-    uint inode = fromRoot ? 1 : curdir;
+    uint ino = fromRoot ? 1 : curdir;
     for (uint i = 0; i < path.length; i++) {
-      require(inode > 0, "ENOENT");
-      require(m_inode[inode].fileType == FileType.Directory, "ENOTDIR");
+      require(ino > 0, "ENOENT");
+      Inode storage inode = m_inode[ino];
+      require(inode.fileType == FileType.Directory, "ENOTDIR");
       if (path[i] == 0) continue;
       if (dirOnly && i == path.length-1) break;
-      inode = uint(m_inode[inode].data[path[i]].value);
+      ino = uint(inode.data[path[i]].value);
     }
-    return inode;
+    return ino;
   }
 
-  function writeToInode(uint inode, bytes32 key, bytes32 value) private {
-    if (m_inode[inode].data[key].index == 0) {
-      m_inode[inode].entries++;
-      m_inode[inode].keys.push(key);
-      m_inode[inode].data[key].index = m_inode[inode].keys.length;  // index+1
+  function writeToInode(uint ino, bytes32 key, bytes32 value) private {
+    Inode storage inode = m_inode[ino];
+    InodeData storage data = inode.data[key];
+    if (data.index == 0) {
+      inode.entries++;
+      inode.keys.push(key);
+      data.index = inode.keys.length;  // index+1
     }
-    m_inode[inode].data[key].value = value;
-    m_inode[inode].lastModified = now;
+    data.value = value;
+    inode.lastModified = now;
   }
 
-  function removeFromInode(uint inode, bytes32 key) private {
-    m_inode[inode].entries--;
-    delete m_inode[inode].keys[m_inode[inode].data[key].index-1];
-    delete m_inode[inode].data[key];
-    m_inode[inode].lastModified = now;
+  function removeFromInode(uint ino, bytes32 key) private {
+    Inode storage inode = m_inode[ino];
+    inode.entries--;
+    delete inode.keys[inode.data[key].index-1];
+    delete inode.data[key];
+    inode.lastModified = now;
   }
 
   function creat(bytes32[] memory path, uint curdir) private returns (uint) {
-    uint dirInode = pathToInode(path, curdir, true);
-    uint inode = m_inode.length++;
-    m_inode[inode].owner = tx.origin;
-    m_inode[inode].fileType = FileType.Data;
-    m_inode[inode].lastModified = now;
-    m_inode[inode].links = 1;
-    writeToInode(dirInode, path[path.length-1], bytes32(inode));
-    return inode;
+    uint dirIno = pathToInode(path, curdir, true);
+    uint ino = m_inode.length++;
+    Inode storage inode = m_inode[ino];
+    inode.owner = tx.origin;
+    inode.fileType = FileType.Data;
+    inode.lastModified = now;
+    inode.links = 1;
+    writeToInode(dirIno, path[path.length-1], bytes32(ino));
+    return ino;
   }
 
-  function checkOpen(uint inode, uint flags) private view {
-    require(inode > 0, "ENOENT");
-    require(tx.origin == m_inode[inode].owner, "EACCES");
+  function checkOpen(uint ino, uint flags) private view {
+    require(ino > 0, "ENOENT");
+    Inode storage inode = m_inode[ino];
+    require(tx.origin == inode.owner, "EACCES");
     if (flags & O_DIRECTORY > 0) {
-      require(m_inode[inode].fileType == FileType.Directory, "ENOTDIR");
+      require(inode.fileType == FileType.Directory, "ENOTDIR");
     }
   }
 
   function open(bytes32[] calldata path, uint curdir, uint flags) external onlyOwner returns (uint) {
-    uint inode = pathToInode(path, curdir, false);
+    uint ino = pathToInode(path, curdir, false);
     if (flags & O_CREAT > 0) {
-      if (flags & O_EXCL > 0) require(inode == 0, "EEXIST");
-      if (inode == 0) inode = creat(path, curdir);
+      if (flags & O_EXCL > 0) require(ino == 0, "EEXIST");
+      if (ino == 0) ino = creat(path, curdir);
     }
-    checkOpen(inode, flags);
-    return inode;
+    checkOpen(ino, flags);
+    return ino;
   }
 
   function openOnly(bytes32[] calldata path, uint curdir, uint flags) external view onlyOwner returns (uint) {
-    uint inode = pathToInode(path, curdir, false);
-    checkOpen(inode, flags);
-    return inode;
+    uint ino = pathToInode(path, curdir, false);
+    checkOpen(ino, flags);
+    return ino;
   }
 
-  function read(uint inode, bytes32 key) external view onlyOwner returns (bytes32) {
-    require(m_inode[inode].data[key].index > 0, "EINVAL");
-    return m_inode[inode].data[key].value;
+  function read(uint ino, bytes32 key) external view onlyOwner returns (bytes32) {
+    InodeData storage data = m_inode[ino].data[key];
+    require(data.index > 0, "EINVAL");
+    return data.value;
   }
 
-  function write(uint inode, bytes32 key, bytes32 data) external onlyOwner {
-    writeToInode(inode, key, data);
+  function write(uint ino, bytes32 key, bytes32 data) external onlyOwner {
+    writeToInode(ino, key, data);
   }
 
-  function clear(uint inode, bytes32 key) external onlyOwner {
-    require(m_inode[inode].data[key].index > 0, "EINVAL");
-    removeFromInode(inode, key);
+  function clear(uint ino, bytes32 key) external onlyOwner {
+    InodeData storage data = m_inode[ino].data[key];
+    require(data.index > 0, "EINVAL");
+    removeFromInode(ino, key);
   }
 
   function link(bytes32[] calldata source, bytes32[] calldata target, uint curdir) external onlyOwner {
-    uint inode = pathToInode(source, curdir, false);
-    require(inode > 0, "ENOENT");
-    uint dirInode = pathToInode(target, curdir, true);
+    uint ino = pathToInode(source, curdir, false);
+    require(ino > 0, "ENOENT");
+    uint dirIno = pathToInode(target, curdir, true);
     bytes32 key = target[target.length-1];
     if (key == 0) key = source[source.length-1];
-    require(m_inode[dirInode].data[key].index == 0, "EEXIST");
-    writeToInode(dirInode, key, bytes32(inode));
-    m_inode[inode].links++;
+    InodeData storage data = m_inode[dirIno].data[key];
+    require(data.index == 0, "EEXIST");
+    writeToInode(dirIno, key, bytes32(ino));
+    m_inode[ino].links++;
   }
 
   function unlink(bytes32[] calldata path, uint curdir) external onlyOwner {
-    uint dirInode = pathToInode(path, curdir, true);
+    uint dirIno = pathToInode(path, curdir, true);
     bytes32 key = path[path.length-1];
     require(key != 0, "EISDIR");
-    require(m_inode[dirInode].data[key].index > 0, "ENOENT");
-    uint inode = uint(m_inode[dirInode].data[key].value);
-    require(m_inode[inode].fileType != FileType.Directory, "EISDIR");
-    removeFromInode(dirInode, key);
-    if (--m_inode[inode].links == 0) delete m_inode[inode];
+    InodeData storage data = m_inode[dirIno].data[key];
+    require(data.index > 0, "ENOENT");
+    uint ino = uint(data.value);
+    Inode storage inode = m_inode[ino];
+    require(inode.fileType != FileType.Directory, "EISDIR");
+    removeFromInode(dirIno, key);
+    if (--inode.links == 0) delete m_inode[ino];
   }
 
   function linkContract(address source, bytes32[] calldata target, uint curdir) external onlyOwner {
-    uint dirInode = pathToInode(target, curdir, true);
+    uint dirIno = pathToInode(target, curdir, true);
     bytes32 key = target[target.length-1];
     require(key != 0, "EISDIR");
-    require(m_inode[dirInode].data[key].index == 0, "EEXIST");
-    uint inode = m_inode.length++;
-    m_inode[inode].owner = source;
-    m_inode[inode].fileType = FileType.Contract;
-    m_inode[inode].lastModified = now;
-    m_inode[inode].links = 1;
-    writeToInode(dirInode, key, bytes32(inode));
+    InodeData storage data = m_inode[dirIno].data[key];
+    require(data.index == 0, "EEXIST");
+    uint ino = m_inode.length++;
+    Inode storage inode = m_inode[ino];
+    inode.owner = source;
+    inode.fileType = FileType.Contract;
+    inode.lastModified = now;
+    inode.links = 1;
+    writeToInode(dirIno, key, bytes32(ino));
   }
 
   function mkdir(bytes32[] calldata path, uint curdir) external onlyOwner {
-    uint dirInode = pathToInode(path, curdir, true);
+    uint dirIno = pathToInode(path, curdir, true);
     bytes32 key = path[path.length-1];
     require(key != 0, "EEXIST");
-    require(m_inode[dirInode].data[key].index == 0, "EEXIST");
-    uint inode = m_inode.length++;
-    m_inode[inode].owner = tx.origin;
-    m_inode[inode].fileType = FileType.Directory;
-    m_inode[inode].lastModified = now;
-    writeToInode(dirInode, key, bytes32(inode));
-    writeToInode(inode, ".", bytes32(inode));
-    writeToInode(inode, "..", bytes32(dirInode));
+    InodeData storage data = m_inode[dirIno].data[key];
+    require(data.index == 0, "EEXIST");
+    uint ino = m_inode.length++;
+    Inode storage inode = m_inode[ino];
+    inode.owner = tx.origin;
+    inode.fileType = FileType.Directory;
+    writeToInode(dirIno, key, bytes32(ino));
+    writeToInode(ino, ".", bytes32(ino));
+    writeToInode(ino, "..", bytes32(dirIno));
   }
 
   function rmdir(bytes32[] calldata path, uint curdir) external onlyOwner {
-    uint dirInode = pathToInode(path, curdir, true);
+    uint dirIno = pathToInode(path, curdir, true);
     bytes32 key = path[path.length-1];
-    require(m_inode[dirInode].data[key].index > 0, "ENOENT");
-    uint inode = uint(m_inode[dirInode].data[key].value);
-    require(m_inode[inode].fileType == FileType.Directory, "ENOTDIR");
-    require(m_inode[inode].entries == 2, "ENOTEMPTY");
-    removeFromInode(dirInode, key);
-    delete m_inode[inode];
+    InodeData storage data = m_inode[dirIno].data[key];
+    require(data.index > 0, "ENOENT");
+    uint ino = uint(data.value);
+    Inode storage inode = m_inode[ino];
+    require(inode.fileType == FileType.Directory, "ENOTDIR");
+    require(inode.entries == 2, "ENOTEMPTY");
+    removeFromInode(dirIno, key);
+    delete m_inode[ino];
   }
 
-  function list(uint inode) external view onlyOwner returns (bytes32[] memory) {
-    bytes32[] memory keys = new bytes32[](m_inode[inode].entries);
-    if (keys.length > 0) {
+  function list(uint ino) external view onlyOwner returns (bytes32[] memory) {
+    Inode storage inode = m_inode[ino];
+    bytes32[] memory result = new bytes32[](inode.entries);
+    if (result.length > 0) {
+      bytes32[] storage keys = inode.keys;
       uint j = 0;
-      for (uint i = 0; i < m_inode[inode].keys.length; i++) {
-        bytes32 key = m_inode[inode].keys[i];
-        if (m_inode[inode].data[key].index == i+1) {
-          keys[j++] = key;
-          if (j == keys.length) break;
+      for (uint i = 0; i < keys.length; i++) {
+        bytes32 key = keys[i];
+        if (inode.data[key].index == i+1) {
+          result[j++] = key;
+          if (j == result.length) break;
         }
       }
     }
-    return keys;
+    return result;
   }
 
   function readContract(bytes32[] calldata path, uint curdir) external view onlyOwner returns (address) {
-    uint inode = pathToInode(path, curdir, false);
-    require(inode > 0, "ENOENT");
-    require(m_inode[inode].fileType == FileType.Contract, "ENOEXEC");
-    return m_inode[inode].owner;
+    uint ino = pathToInode(path, curdir, false);
+    require(ino > 0, "ENOENT");
+    Inode storage inode = m_inode[ino];
+    require(inode.fileType == FileType.Contract, "ENOEXEC");
+    return inode.owner;
   }
 }
