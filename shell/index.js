@@ -24,8 +24,10 @@ async function main() {
     try {
       if (cmds[cmd]) {
         await cmds[cmd](kernel, cmd, args)
-      } else {
-        await exec(kernel, cmd, args)
+      } else if (cmd === 'exit') {
+        break
+      } else if (cmd !== undefined) {
+        await cmds.exec(kernel, cmd, args)
       }
     } catch (e) {
       console.log(e.message);
