@@ -1,12 +1,9 @@
 const KernelImpl = artifacts.require('KernelImpl')
+const {asciiToHex, hexToAscii} = web3.utils
 
-const enc = x => web3.utils.asciiToHex(x)
-const dec = x => web3.utils.hexToAscii(x).replace(/\0+$/, '')
-
-function pathenc(path) {
-  if (path === '/') path = ''
-  return path.split('/').map(enc)
-}
+const enc = x => asciiToHex(x)
+const dec = x => hexToAscii(x).replace(/\0+$/, '')
+const pathenc = x => x.split('/').map(enc)
 
 async function ls(kernel, path, isData) {
   const keys = await kernel.list(path)
