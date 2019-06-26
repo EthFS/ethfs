@@ -66,11 +66,7 @@ contract FileSystemImpl is FileSystem {
       require(m_inode[inode].fileType == FileType.Directory, "ENOTDIR");
       if (path[i] == 0) continue;
       if (dirOnly && i == path.length-1) break;
-      if (m_inode[inode].data[path[i]].index > 0) {
-        inode = uint(m_inode[inode].data[path[i]].value);
-      } else {
-        inode = 0;
-      }
+      inode = uint(m_inode[inode].data[path[i]].value);
     }
     return inode;
   }
@@ -134,6 +130,11 @@ contract FileSystemImpl is FileSystem {
 
   function write(uint inode, bytes32 key, bytes32 data) external onlyOwner {
     writeToInode(inode, key, data);
+  }
+
+  function clear(uint inode, bytes32 key) external onlyOwner {
+    require(m_inode[inode].data[key].index > 0, "EINVAL");
+    removeFromInode(inode, key);
   }
 
   function link(bytes32[] calldata source, bytes32[] calldata target, uint curdir) external onlyOwner {

@@ -72,6 +72,14 @@ contract KernelImpl is Kernel {
     m_fileSystem.write(inode, key, data);
   }
 
+  function clear(uint fd, bytes32 key) external {
+    require(m_userArea[msg.sender].fildes[fd].inode > 0, "EBADF");
+    uint flags = m_userArea[msg.sender].fildes[fd].flags;
+    require(flags == O_WRONLY || flags == O_RDWR, "EBADF");
+    uint inode = m_userArea[msg.sender].fildes[fd].inode;
+    m_fileSystem.clear(inode, key);
+  }
+
   function close(uint fd) external {
     require(m_userArea[msg.sender].fildes[fd].inode > 0, "EBADF");
     delete m_userArea[msg.sender].fildes[fd];
