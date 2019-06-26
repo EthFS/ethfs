@@ -149,13 +149,15 @@ contract FileSystemImpl is FileSystem {
   function link(bytes32[] calldata source, bytes32[] calldata target, uint curdir) external onlyOwner {
     uint ino = pathToInode(source, curdir, false);
     require(ino > 0, "ENOENT");
+    Inode storage inode = m_inode[ino];
+    require(inode.fileType != FileType.Directory, "EISDIR");
     uint dirIno = pathToInode(target, curdir, true);
     bytes32 key = target[target.length-1];
     if (key == 0) key = source[source.length-1];
     InodeData storage data = m_inode[dirIno].data[key];
     require(data.index == 0, "EEXIST");
     writeToInode(dirIno, key, bytes32(ino));
-    m_inode[ino].links++;
+    inode.links++;
   }
 
   function unlink(bytes32[] calldata path, uint curdir) external onlyOwner {
