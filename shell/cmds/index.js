@@ -1,6 +1,7 @@
 const cat = require('./cat')
 const chdir = require('./chdir')
 const exec = require('./exec')
+const ln = require('./ln')
 const ls = require('./ls')
 const mkdir = require('./mkdir')
 const rm = require('./rm')
@@ -11,6 +12,7 @@ module.exports = {
   cd: chdir,
   chdir,
   exec,
+  ln,
   ls,
   mkdir,
   rm,
