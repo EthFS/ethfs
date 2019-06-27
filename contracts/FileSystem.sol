@@ -205,6 +205,7 @@ contract FileSystemImpl is FileSystem {
   function rmdir(bytes32[] calldata path, uint curdir) external onlyOwner {
     (uint ino, uint dirIno, bytes32 key) = pathToInode(path, curdir, false);
     require(ino > 0, "ENOENT");
+    require(ino != curdir, "EINVAL");
     Inode storage inode = m_inode[ino];
     require(inode.fileType == FileType.Directory, "ENOTDIR");
     require(inode.entries == 2, "ENOTEMPTY");
