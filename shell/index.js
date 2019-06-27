@@ -19,7 +19,7 @@ async function main() {
   Kernel.defaults({from: accounts[0]})
   const kernel = await Kernel.deployed()
   while (true) {
-    const args = (await prompt('> ')).split(/\s+/).filter(x => x.length)
+    const args = (await prompt()).split(/\s+/).filter(x => x.length)
     const cmd = args.shift()
     try {
       if (cmds[cmd]) {

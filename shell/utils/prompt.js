@@ -6,7 +6,7 @@ const rl = readline.createInterface({
 })
 
 function prompt(x) {
-  return new Promise(resolve => rl.question(x, resolve))
+  return new Promise(resolve => rl.question(x || '> ', resolve))
 }
 
 module.exports = prompt

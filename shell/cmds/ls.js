@@ -5,6 +5,7 @@ module.exports = async (kernel, cmd, args) => {
   await args.reduce(async (promise, x) => {
     await promise
     const keys = await kernel.list(pathenc(x))
+    keys.sort()
     keys.map(dec).forEach(x => console.log(x))
   }, Promise.resolve())
 }

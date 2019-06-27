@@ -6,6 +6,7 @@ const ls = require('./ls')
 const mkdir = require('./mkdir')
 const rm = require('./rm')
 const rmdir = require('./rmdir')
+const write = require('./write')
 
 module.exports = {
   cat,
@@ -17,4 +18,5 @@ module.exports = {
   mkdir,
   rm,
   rmdir,
+  write,
 }
