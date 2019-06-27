@@ -1,8 +1,8 @@
 pragma solidity >= 0.5.8;
 
-import "./interface/Kernel.sol";
-import "./interface/FileSystem.sol";
-import "./interface/App.sol";
+import "../interface/Kernel.sol";
+import "../interface/FileSystem.sol";
+import "../interface/App.sol";
 
 contract KernelImpl is Kernel {
   uint constant O_RDONLY  = 0x0000;
@@ -126,10 +126,10 @@ contract KernelImpl is Kernel {
     return m_fileSystem.list(ino);
   }
 
-  function exec(bytes32[] calldata path, bytes32[] calldata args) external returns (uint) {
+  function exec(bytes32[] calldata path, bytes32[] calldata arg1, bytes32[] calldata arg2) external returns (uint) {
     UserArea storage u = m_userArea[msg.sender];
     App app = App(m_fileSystem.readContract(path, u.curdir));
-    uint ret = app.main(this, args);
+    uint ret = app.main(this, arg1, arg2);
     u.result = bytes32(ret);
     return ret;
   }

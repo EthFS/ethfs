@@ -1,6 +1,6 @@
 pragma solidity >= 0.5.8;
 
-import "./interface/FileSystem.sol";
+import "../interface/FileSystem.sol";
 
 contract FileSystemImpl is FileSystem {
   uint constant O_RDONLY  = 0x0000;

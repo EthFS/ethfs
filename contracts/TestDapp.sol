@@ -9,7 +9,7 @@ contract TestDapp is App {
     kernel.linkContract(address(this), path);
   }
 
-  function main(Kernel kernel, bytes32[] calldata) external returns (uint) {
+  function main(Kernel kernel, bytes32[] calldata, bytes32[] calldata) external returns (uint) {
     bytes32[] memory path = new bytes32[](1);
     path[0] = "test_file";
     uint fd = kernel.open(path, 0x0101);
