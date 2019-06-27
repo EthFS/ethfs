@@ -27,8 +27,8 @@ contract FileSystemImpl is FileSystem {
   }
 
   struct InodeData {
-    bytes32 value;
     uint index;
+    bytes32 value;
   }
 
   address m_owner;
@@ -58,7 +58,7 @@ contract FileSystemImpl is FileSystem {
     m_owner = address(0);
   }
 
-  function pathToInode(bytes32[] memory path, uint curdir) private view returns (uint, uint, bytes32) {
+  function pathToInode(bytes32[] memory path, uint curdir, bool allowNonExistDir) private view returns (uint, uint, bytes32) {
     if (curdir == 0) curdir = 1;
     bool fromRoot = path.length > 0 && path[0] == 0;
     uint ino = fromRoot ? 1 : curdir;
@@ -72,6 +72,11 @@ contract FileSystemImpl is FileSystem {
       dirIno = ino;
       key = path[i];
       ino = uint(inode.data[key].value);
+    }
+    if (ino == 0) {
+      require(allowNonExistDir || path[path.length-1] != 0, "ENOENT");
+    } else if (m_inode[ino].fileType != FileType.Directory) {
+      require(path[path.length-1] != 0, "ENOTDIR");
     }
     return (ino, dirIno, key);
   }
@@ -106,12 +111,11 @@ contract FileSystemImpl is FileSystem {
   }
 
   function open(bytes32[] calldata path, uint curdir, uint flags) external onlyOwner returns (uint) {
-    (uint ino, uint dirIno, bytes32 key) = pathToInode(path, curdir);
+    (uint ino, uint dirIno, bytes32 key) = pathToInode(path, curdir, false);
     if (flags & O_CREAT > 0) {
       if (ino > 0) {
         require(flags & O_EXCL == 0, "EEXIST");
       } else {
-        require(path[path.length-1] != 0, "ENOENT");
         ino = m_inode.length++;
         Inode storage inode = m_inode[ino];
         inode.owner = tx.origin;
@@ -126,7 +130,7 @@ contract FileSystemImpl is FileSystem {
   }
 
   function openOnly(bytes32[] calldata path, uint curdir, uint flags) external view onlyOwner returns (uint) {
-    (uint ino,,) = pathToInode(path, curdir);
+    (uint ino,,) = pathToInode(path, curdir, false);
     checkOpen(ino, flags);
     return ino;
   }
@@ -148,16 +152,15 @@ contract FileSystemImpl is FileSystem {
   }
 
   function link(bytes32[] calldata source, bytes32[] calldata target, uint curdir) external onlyOwner {
-    (uint ino,, bytes32 key) = pathToInode(source, curdir);
+    (uint ino,, bytes32 key) = pathToInode(source, curdir, false);
     require(ino > 0, "ENOENT");
     Inode storage inode = m_inode[ino];
     require(inode.fileType != FileType.Directory, "EISDIR");
-    (uint ino2, uint dirIno, bytes32 key2) = pathToInode(target, curdir);
+    (uint ino2, uint dirIno, bytes32 key2) = pathToInode(target, curdir, false);
     if (ino2 > 0) {
       require(m_inode[ino2].fileType == FileType.Directory, "EEXIST");
       dirIno = ino2;
     } else {
-      require(target[target.length-1] != 0, "ENOENT");
       key = key2;
     }
     InodeData storage data = m_inode[dirIno].data[key];
@@ -167,7 +170,7 @@ contract FileSystemImpl is FileSystem {
   }
 
   function unlink(bytes32[] calldata path, uint curdir) external onlyOwner {
-    (uint ino, uint dirIno, bytes32 key) = pathToInode(path, curdir);
+    (uint ino, uint dirIno, bytes32 key) = pathToInode(path, curdir, false);
     require(ino > 0, "ENOENT");
     Inode storage inode = m_inode[ino];
     require(inode.fileType != FileType.Directory, "EISDIR");
@@ -176,9 +179,8 @@ contract FileSystemImpl is FileSystem {
   }
 
   function linkContract(address source, bytes32[] calldata target, uint curdir) external onlyOwner {
-    (uint ino, uint dirIno, bytes32 key) = pathToInode(target, curdir);
+    (uint ino, uint dirIno, bytes32 key) = pathToInode(target, curdir, false);
     require(ino == 0, "EEXIST");
-    require(target[target.length-1] != 0, "ENOENT");
     ino = m_inode.length++;
     Inode storage inode = m_inode[ino];
     inode.owner = source;
@@ -189,7 +191,7 @@ contract FileSystemImpl is FileSystem {
   }
 
   function mkdir(bytes32[] calldata path, uint curdir) external onlyOwner {
-    (uint ino, uint dirIno, bytes32 key) = pathToInode(path, curdir);
+    (uint ino, uint dirIno, bytes32 key) = pathToInode(path, curdir, true);
     require(ino == 0, "EEXIST");
     ino = m_inode.length++;
     Inode storage inode = m_inode[ino];
@@ -201,7 +203,7 @@ contract FileSystemImpl is FileSystem {
   }
 
   function rmdir(bytes32[] calldata path, uint curdir) external onlyOwner {
-    (uint ino, uint dirIno, bytes32 key) = pathToInode(path, curdir);
+    (uint ino, uint dirIno, bytes32 key) = pathToInode(path, curdir, false);
     require(ino > 0, "ENOENT");
     Inode storage inode = m_inode[ino];
     require(inode.fileType == FileType.Directory, "ENOTDIR");
@@ -228,11 +230,10 @@ contract FileSystemImpl is FileSystem {
   }
 
   function readContract(bytes32[] calldata path, uint curdir) external view onlyOwner returns (address) {
-    (uint ino,,) = pathToInode(path, curdir);
+    (uint ino,,) = pathToInode(path, curdir, false);
     require(ino > 0, "ENOENT");
     Inode storage inode = m_inode[ino];
     require(inode.fileType != FileType.Directory, "EISDIR");
-    require(path[path.length-1] != 0, "ENOTDIR");
     require(inode.fileType == FileType.Contract, "ENOEXEC");
     return inode.owner;
   }
