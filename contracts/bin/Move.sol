@@ -4,15 +4,12 @@ import "../interface/App.sol";
 
 contract Move is App {
   constructor(Kernel kernel) public {
-    bytes32[] memory path = new bytes32[](3);
-    path[1] = "bin";
-    path[2] = "mv";
-    kernel.linkContract(address(this), path);
+    kernel.linkContract(address(this), '/bin/mv');
   }
 
-  function main(Kernel kernel, bytes32[] calldata arg1, bytes32[] calldata arg2) external returns (uint) {
-    kernel.link(arg1, arg2);
-    kernel.unlink(arg1);
+  function main(Kernel kernel, bytes calldata args) external returns (uint) {
+    kernel.link(args, args);
+    kernel.unlink(args);
     return 0;
   }
 }

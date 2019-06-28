@@ -58,25 +58,35 @@ contract FileSystemImpl is FileSystem {
     m_owner = address(0);
   }
 
-  function pathToInode(bytes32[] memory path, uint curdir, bool allowNonExistDir) private view returns (uint, uint, bytes32) {
+  function pathToInode(bytes memory path, uint curdir, bool allowNonExistDir) private view returns (uint, uint, bytes32) {
     if (curdir == 0) curdir = 1;
-    bool fromRoot = path.length > 0 && path[0] == 0;
+    bool fromRoot = path.length > 0 && path[0] == '/';
     uint ino = fromRoot ? 1 : curdir;
     uint dirIno;
     bytes32 key;
-    for (uint i = 0; i < path.length; i++) {
-      if (path[i] == 0) continue;
+    uint j;
+    for (uint i = 0; i <= path.length; i++) {
+      while (i < path.length && path[i] != '/') i++;
+      if (i == j) {
+        j++;
+        continue;
+      }
       require(ino > 0, "ENOENT");
       Inode storage inode = m_inode[ino];
       require(inode.fileType == FileType.Directory, "ENOTDIR");
+      require(i-j <= 32, "ENAMETOOLONG");
+      key = 0;
+      for (uint k = 248; j < i; k -= 8) {
+        key |= path[j++] << k;
+      }
+      j++;
       dirIno = ino;
-      key = path[i];
       ino = uint(inode.data[key].value);
     }
     if (ino == 0) {
-      require(allowNonExistDir || path[path.length-1] != 0, "ENOENT");
+      require(allowNonExistDir || path[path.length-1] != '/', "ENOENT");
     } else if (m_inode[ino].fileType != FileType.Directory) {
-      require(path[path.length-1] != 0, "ENOTDIR");
+      require(path[path.length-1] != '/', "ENOTDIR");
     }
     return (ino, dirIno, key);
   }
@@ -110,7 +120,7 @@ contract FileSystemImpl is FileSystem {
     }
   }
 
-  function open(bytes32[] calldata path, uint curdir, uint flags) external onlyOwner returns (uint) {
+  function open(bytes calldata path, uint curdir, uint flags) external onlyOwner returns (uint) {
     (uint ino, uint dirIno, bytes32 key) = pathToInode(path, curdir, false);
     if (flags & O_CREAT > 0) {
       if (ino > 0) {
@@ -129,7 +139,7 @@ contract FileSystemImpl is FileSystem {
     return ino;
   }
 
-  function openOnly(bytes32[] calldata path, uint curdir, uint flags) external view onlyOwner returns (uint) {
+  function openOnly(bytes calldata path, uint curdir, uint flags) external view onlyOwner returns (uint) {
     (uint ino,,) = pathToInode(path, curdir, false);
     checkOpen(ino, flags);
     return ino;
@@ -151,7 +161,7 @@ contract FileSystemImpl is FileSystem {
     removeFromInode(ino, key);
   }
 
-  function link(bytes32[] calldata source, bytes32[] calldata target, uint curdir) external onlyOwner {
+  function link(bytes calldata source, bytes calldata target, uint curdir) external onlyOwner {
     (uint ino,, bytes32 key) = pathToInode(source, curdir, false);
     require(ino > 0, "ENOENT");
     Inode storage inode = m_inode[ino];
@@ -169,7 +179,7 @@ contract FileSystemImpl is FileSystem {
     inode.links++;
   }
 
-  function unlink(bytes32[] calldata path, uint curdir) external onlyOwner {
+  function unlink(bytes calldata path, uint curdir) external onlyOwner {
     (uint ino, uint dirIno, bytes32 key) = pathToInode(path, curdir, false);
     require(ino > 0, "ENOENT");
     Inode storage inode = m_inode[ino];
@@ -178,7 +188,7 @@ contract FileSystemImpl is FileSystem {
     if (--inode.links == 0) delete m_inode[ino];
   }
 
-  function linkContract(address source, bytes32[] calldata target, uint curdir) external onlyOwner {
+  function linkContract(address source, bytes calldata target, uint curdir) external onlyOwner {
     (uint ino, uint dirIno, bytes32 key) = pathToInode(target, curdir, false);
     require(ino == 0, "EEXIST");
     ino = m_inode.length++;
@@ -190,7 +200,7 @@ contract FileSystemImpl is FileSystem {
     writeToInode(dirIno, key, bytes32(ino));
   }
 
-  function mkdir(bytes32[] calldata path, uint curdir) external onlyOwner {
+  function mkdir(bytes calldata path, uint curdir) external onlyOwner {
     (uint ino, uint dirIno, bytes32 key) = pathToInode(path, curdir, true);
     require(ino == 0, "EEXIST");
     ino = m_inode.length++;
@@ -202,7 +212,7 @@ contract FileSystemImpl is FileSystem {
     writeToInode(ino, "..", bytes32(dirIno));
   }
 
-  function rmdir(bytes32[] calldata path, uint curdir) external onlyOwner {
+  function rmdir(bytes calldata path, uint curdir) external onlyOwner {
     (uint ino, uint dirIno, bytes32 key) = pathToInode(path, curdir, false);
     require(ino > 0, "ENOENT");
     require(ino != curdir, "EINVAL");
@@ -230,7 +240,7 @@ contract FileSystemImpl is FileSystem {
     return result;
   }
 
-  function readContract(bytes32[] calldata path, uint curdir) external view onlyOwner returns (address) {
+  function readContract(bytes calldata path, uint curdir) external view onlyOwner returns (address) {
     (uint ino,,) = pathToInode(path, curdir, false);
     require(ino > 0, "ENOENT");
     Inode storage inode = m_inode[ino];

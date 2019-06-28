@@ -4,16 +4,12 @@ import "./interface/App.sol";
 
 contract TestDapp is App {
   constructor(Kernel kernel) public {
-    bytes32[] memory path = new bytes32[](1);
-    path[0] = "TestDapp";
-    kernel.linkContract(address(this), path);
+    kernel.linkContract(address(this), '/bin/TestDapp');
   }
 
-  function main(Kernel kernel, bytes32[] calldata, bytes32[] calldata) external returns (uint) {
-    bytes32[] memory path = new bytes32[](1);
-    path[0] = "test_file";
-    uint fd = kernel.open(path, 0x0101);
-    kernel.write(fd, "foo", "bar");
+  function main(Kernel kernel, bytes calldata) external returns (uint) {
+    uint fd = kernel.open('test_file', 0x0101);
+    kernel.write(fd, 'foo', 'bar');
     kernel.close(fd);
     return 0;
   }
