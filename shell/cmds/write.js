@@ -1,4 +1,4 @@
-const {enc, pathenc} = require('../utils/enc')
+const {enc} = require('../utils/enc')
 const prompt = require('../utils/prompt')
 
 module.exports = async (kernel, cmd, args) => {
@@ -22,7 +22,7 @@ module.exports = async (kernel, cmd, args) => {
   const data = JSON.parse(input)
   await args.reduce(async (promise, x) => {
     await promise
-    const path = pathenc(x)
+    const path = enc(x)
     await kernel.open(path, 0x0101)
     const fd = await kernel.result()
     await Object.keys(data).reduce(async (promise, key) => {

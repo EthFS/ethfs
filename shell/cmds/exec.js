@@ -1,5 +1,8 @@
-const {pathenc} = require('../utils/enc')
+const {enc} = require('../utils/enc')
 
 module.exports = async (kernel, cmd, args) => {
-  await kernel.exec(pathenc(cmd), pathenc(args[0]), pathenc(args[1]))
+  let i = 0
+  const argi = []
+  args.forEach(x => argi.push(i += x.length))
+  await kernel.exec(enc(cmd), argi, enc(args.join('')))
 }

@@ -1,7 +1,7 @@
 pragma solidity >= 0.5.8;
 
-import "./Kernel.sol";
+import './Kernel.sol';
 
 interface App {
-  function main(Kernel kernel, bytes calldata args) external returns (uint);
+  function main(Kernel kernel, uint[] calldata argi, bytes calldata args) external returns (uint);
 }

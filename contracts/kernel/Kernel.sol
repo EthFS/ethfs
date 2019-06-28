@@ -1,8 +1,8 @@
 pragma solidity >= 0.5.8;
 
-import "../interface/Kernel.sol";
-import "../interface/FileSystem.sol";
-import "../interface/App.sol";
+import '../interface/Kernel.sol';
+import '../interface/FileSystem.sol';
+import '../interface/App.sol';
 
 contract KernelImpl is Kernel {
   uint constant O_RDONLY  = 0x0000;
@@ -40,23 +40,22 @@ contract KernelImpl is Kernel {
     return m_userArea[msg.sender].result;
   }
 
-  function open(bytes calldata path, uint flags) external returns (uint) {
+  function open(bytes calldata path, uint flags) external returns (uint fd) {
     UserArea storage u = m_userArea[msg.sender];
     uint ino = m_fileSystem.open(path, u.curdir, flags);
-    uint fd = u.fildes.length;
+    fd = u.fildes.length;
     u.fildes.push(FileDescriptor({
       ino: ino,
       flags: flags & O_ACCMODE
     }));
     u.result = bytes32(fd);
-    return fd;
   }
 
   function read(uint fd, bytes32 key) external view returns (bytes32) {
     UserArea storage u = m_userArea[msg.sender];
     FileDescriptor storage fildes = u.fildes[fd];
-    require(fildes.ino > 0, "EBADF");
-    require(fildes.flags == O_RDONLY || fildes.flags == O_RDWR, "EBADF");
+    require(fildes.ino > 0, 'EBADF');
+    require(fildes.flags == O_RDONLY || fildes.flags == O_RDWR, 'EBADF');
     return m_fileSystem.read(fildes.ino, key);
   }
 
@@ -69,23 +68,23 @@ contract KernelImpl is Kernel {
   function write(uint fd, bytes32 key, bytes32 data) external {
     UserArea storage u = m_userArea[msg.sender];
     FileDescriptor storage fildes = u.fildes[fd];
-    require(fildes.ino > 0, "EBADF");
-    require(fildes.flags == O_WRONLY || fildes.flags == O_RDWR, "EBADF");
+    require(fildes.ino > 0, 'EBADF');
+    require(fildes.flags == O_WRONLY || fildes.flags == O_RDWR, 'EBADF');
     m_fileSystem.write(fildes.ino, key, data);
   }
 
   function clear(uint fd, bytes32 key) external {
     UserArea storage u = m_userArea[msg.sender];
     FileDescriptor storage fildes = u.fildes[fd];
-    require(fildes.ino > 0, "EBADF");
-    require(fildes.flags == O_WRONLY || fildes.flags == O_RDWR, "EBADF");
+    require(fildes.ino > 0, 'EBADF');
+    require(fildes.flags == O_WRONLY || fildes.flags == O_RDWR, 'EBADF');
     m_fileSystem.clear(fildes.ino, key);
   }
 
   function close(uint fd) external {
     UserArea storage u = m_userArea[msg.sender];
     FileDescriptor storage fildes = u.fildes[fd];
-    require(fildes.ino > 0, "EBADF");
+    require(fildes.ino > 0, 'EBADF');
     delete u.fildes[fd];
   }
 
@@ -99,9 +98,9 @@ contract KernelImpl is Kernel {
     m_fileSystem.unlink(path, u.curdir);
   }
 
-  function linkContract(address source, bytes calldata target) external {
+  function install(address source, bytes calldata target) external {
     UserArea storage u = m_userArea[msg.sender];
-    m_fileSystem.linkContract(source, target, u.curdir);
+    m_fileSystem.install(source, target, u.curdir);
   }
 
   function chdir(bytes calldata path) external {
@@ -126,11 +125,11 @@ contract KernelImpl is Kernel {
     return m_fileSystem.list(ino);
   }
 
-  function exec(bytes calldata path, bytes calldata args) external returns (uint) {
+  function exec(bytes calldata path, uint[] calldata argi, bytes calldata args) external returns (uint ret) {
     UserArea storage u = m_userArea[msg.sender];
-    App app = App(m_fileSystem.readContract(path, u.curdir));
-    uint ret = app.main(this, args);
+    address app = m_fileSystem.readContract(path, u.curdir);
+    m_userArea[app].curdir = u.curdir;
+    ret = App(app).main(this, argi, args);
     u.result = bytes32(ret);
-    return ret;
   }
 }

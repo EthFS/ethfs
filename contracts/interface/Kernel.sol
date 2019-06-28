@@ -10,10 +10,10 @@ interface Kernel {
   function close(uint fd) external;
   function link(bytes calldata source, bytes calldata target) external;
   function unlink(bytes calldata path) external;
-  function linkContract(address source, bytes calldata target) external;
+  function install(address source, bytes calldata target) external;
   function chdir(bytes calldata path) external;
   function mkdir(bytes calldata path) external;
   function rmdir(bytes calldata path) external;
   function list(bytes calldata path) external view returns (bytes32[] memory);
-  function exec(bytes calldata path, bytes calldata args) external returns (uint);
+  function exec(bytes calldata path, uint[] calldata argi, bytes calldata args) external returns (uint);
 }
