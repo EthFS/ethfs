@@ -138,6 +138,20 @@ contract KernelImpl is Kernel {
     return m_fileSystem.list(ino);
   }
 
+  function stat(bytes calldata path) external view returns (FileSystem.FileType fileType, uint permissions, uint ino, address device, uint links, address owner, uint entries, uint lastModified) {
+    UserArea storage u = m_userArea[msg.sender];
+    ino = m_fileSystem.openOnly(path, u.curdir, 0);
+    return m_fileSystem.stat(ino);
+  }
+
+  function fstat(uint fd) external view returns (FileSystem.FileType fileType, uint permissions, uint ino, address device, uint links, address owner, uint entries, uint lastModified) {
+    UserArea storage u = m_userArea[msg.sender];
+    FileDescriptor storage fildes = u.fildes[fd];
+    require(fildes.ino > 0, 'EBADF');
+    require(fildes.flags == O_RDONLY || fildes.flags == O_RDWR, 'EBADF');
+    return m_fileSystem.stat(fildes.ino);
+  }
+
   function exec(bytes calldata path, uint[] calldata argi, bytes calldata args) external returns (uint ret) {
     UserArea storage u = m_userArea[msg.sender];
     address app = m_fileSystem.readContract(path, u.curdir);

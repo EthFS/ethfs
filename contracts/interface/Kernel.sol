@@ -1,5 +1,7 @@
 pragma solidity >= 0.5.8;
 
+import './FileSystem.sol';
+
 interface Kernel {
   function result() external view returns (bytes32);
   function open(bytes calldata path, uint flags) external returns (uint);
@@ -17,5 +19,7 @@ interface Kernel {
   function rmdir(bytes calldata path) external;
   function list(uint fd) external view returns (bytes32[] memory);
   function listPath(bytes calldata path) external view returns (bytes32[] memory);
+  function stat(bytes calldata path) external view returns (FileSystem.FileType fileType, uint permissions, uint ino, address device, uint links, address owner, uint entries, uint lastModified);
+  function fstat(uint fd) external view returns (FileSystem.FileType fileType, uint permissions, uint ino, address device, uint links, address owner, uint entries, uint lastModified);
   function exec(bytes calldata path, uint[] calldata argi, bytes calldata args) external returns (uint);
 }

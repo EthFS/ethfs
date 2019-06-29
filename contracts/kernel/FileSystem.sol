@@ -13,8 +13,6 @@ contract FileSystemImpl is FileSystem {
 
   uint constant O_DIRECTORY = 0x00200000;
 
-  enum FileType { None, Contract, Data, Directory }
-
   struct Inode {
     address owner;
     FileType fileType;
@@ -278,6 +276,18 @@ contract FileSystemImpl is FileSystem {
         }
       }
     }
+  }
+
+  function stat(uint ino) external view onlyOwner returns (FileType fileType, uint permissions, uint ino_, address device, uint links, address owner, uint entries, uint lastModified) {
+    Inode storage inode = m_inode[ino];
+    fileType = inode.fileType;
+    permissions = inode.permissions;
+    ino_ = ino;
+    device = address(this);
+    links = inode.links;
+    owner = inode.owner;
+    entries = inode.entries;
+    lastModified = inode.lastModified;
   }
 
   function readContract(bytes calldata path, uint curdir) external view onlyOwner returns (address) {

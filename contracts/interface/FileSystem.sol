@@ -1,6 +1,8 @@
 pragma solidity >= 0.5.8;
 
 interface FileSystem {
+  enum FileType { None, Contract, Data, Directory }
+
   function mount() external;
   function unmount() external;
   function open(bytes calldata path, uint curdir, uint flags) external returns (uint);
@@ -15,5 +17,6 @@ interface FileSystem {
   function mkdir(bytes calldata path, uint curdir) external;
   function rmdir(bytes calldata path, uint curdir) external;
   function list(uint ino) external view returns (bytes32[] memory);
+  function stat(uint ino) external view returns (FileType fileType, uint permissions, uint ino_, address device, uint links, address owner, uint entries, uint lastModified);
   function readContract(bytes calldata path, uint curdir) external view returns (address);
 }
