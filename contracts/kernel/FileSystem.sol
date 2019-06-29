@@ -206,9 +206,11 @@ contract FileSystemImpl is FileSystem {
       require(target[target.length-1] != '/', 'ENOENT');
     }
     if (sourceIsDir) {
-      for (ino2 = dirIno2; ino2 != 1;) {
-        require(ino2 != ino, 'EINVAL');
-        ino2 = uint(m_inode[ino2].data['..'].value);
+      uint ino3 = dirIno2;
+      while (true) {
+        require(ino3 != ino, 'EINVAL');
+        if (ino3 == 1) break;
+        ino3 = uint(m_inode[ino3].data['..'].value);
       }
       writeToInode(ino, '..', bytes32(dirIno2));
     }
