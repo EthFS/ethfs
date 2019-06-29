@@ -88,6 +88,17 @@ contract FileSystemImpl is FileSystem {
     } else if (m_inode[ino].fileType != FileType.Directory) {
       require(path[path.length-1] != '/', 'ENOTDIR');
     }
+    if (key == '.' || key == '..') {
+      dirIno = uint(m_inode[ino].data['..'].value);
+      Inode storage inode = m_inode[dirIno];
+      for (uint i;;) {
+        bytes32 key2 = inode.keys[i++];
+        if (key2 > 0 && uint(inode.data[key2].value) == ino) {
+          key = key2;
+          break;
+        }
+      }
+    }
   }
 
   function writeToInode(uint ino, bytes32 key, bytes32 value) private {
@@ -257,11 +268,10 @@ contract FileSystemImpl is FileSystem {
     Inode storage inode = m_inode[ino];
     result = new bytes32[](inode.entries);
     if (result.length > 0) {
-      bytes32[] storage keys = inode.keys;
-      uint j = 0;
-      for (uint i = 0; i < keys.length; i++) {
-        bytes32 key = keys[i];
-        if (inode.data[key].index == i+1) {
+      uint j;
+      for (uint i; i < inode.keys.length; i++) {
+        bytes32 key = inode.keys[i];
+        if (key > 0) {
           result[j++] = key;
           if (j == result.length) break;
         }
