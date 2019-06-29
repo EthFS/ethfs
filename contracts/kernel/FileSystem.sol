@@ -210,6 +210,7 @@ contract FileSystemImpl is FileSystem {
         dirIno2 = ino2;
         key2 = key;
       } else {
+        require(!sourceIsDir, 'ENOTDIR');
         removeFromInode(dirIno2, key2);
         if (--inode.links == 0) delete m_inode[ino2];
       }
