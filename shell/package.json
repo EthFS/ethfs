@@ -5,6 +5,7 @@
   "author": "Hector Chu",
   "license": "MIT",
   "dependencies": {
+    "moment": "^2.24.0",
     "truffle-contract": "^4.0.21"
   }
 }
