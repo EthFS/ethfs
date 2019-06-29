@@ -186,6 +186,36 @@ contract FileSystemImpl is FileSystem {
     if (--inode.links == 0) delete m_inode[ino];
   }
 
+  function move(bytes calldata source, bytes calldata target, uint curdir) external onlyOwner {
+    (uint ino, uint dirIno, bytes32 key) = pathToInode(source, curdir, false);
+    require(ino > 0, 'ENOENT');
+    bool sourceIsDir = m_inode[ino].fileType == FileType.Directory;
+    (uint ino2, uint dirIno2, bytes32 key2) = pathToInode(target, curdir, true);
+    if (ino == ino2) return;
+    if (ino2 > 0) {
+      Inode storage inode = m_inode[ino2];
+      if (inode.fileType == FileType.Directory) {
+        if (ino2 == dirIno) return;
+        dirIno2 = ino2;
+        key2 = key;
+      } else {
+        removeFromInode(dirIno2, key2);
+        if (--inode.links == 0) delete m_inode[ino2];
+      }
+    } else if (!sourceIsDir) {
+      require(target[target.length-1] != '/', 'ENOENT');
+    }
+    if (sourceIsDir) {
+      for (ino2 = dirIno2; ino2 != 1;) {
+        require(ino2 != ino, 'EINVAL');
+        ino2 = uint(m_inode[ino2].data['..'].value);
+      }
+      writeToInode(ino, '..', bytes32(dirIno2));
+    }
+    removeFromInode(dirIno, key);
+    writeToInode(dirIno2, key2, bytes32(ino));
+  }
+
   function install(address source, bytes calldata target, uint curdir) external onlyOwner {
     (uint ino, uint dirIno, bytes32 key) = pathToInode(target, curdir, false);
     require(ino == 0, 'EEXIST');

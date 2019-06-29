@@ -18,8 +18,7 @@ contract Move is App {
       for (uint j = 0; j < source.length; j++) {
         source[j] = args[argi[i] + j];
       }
-      kernel.link(source, target);
-      kernel.unlink(source);
+      kernel.move(source, target);
     }
   }
 }

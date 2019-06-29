@@ -10,6 +10,7 @@ interface Kernel {
   function close(uint fd) external;
   function link(bytes calldata source, bytes calldata target) external;
   function unlink(bytes calldata path) external;
+  function move(bytes calldata source, bytes calldata target) external;
   function install(address source, bytes calldata target) external;
   function chdir(bytes calldata path) external;
   function mkdir(bytes calldata path) external;

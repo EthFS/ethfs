@@ -10,6 +10,7 @@ interface FileSystem {
   function clear(uint ino, bytes32 key) external;
   function link(bytes calldata source, bytes calldata target, uint curdir) external;
   function unlink(bytes calldata path, uint curdir) external;
+  function move(bytes calldata source, bytes calldata target, uint curdir) external;
   function install(address source, bytes calldata target, uint curdir) external;
   function mkdir(bytes calldata path, uint curdir) external;
   function rmdir(bytes calldata path, uint curdir) external;

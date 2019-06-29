@@ -98,6 +98,11 @@ contract KernelImpl is Kernel {
     m_fileSystem.unlink(path, u.curdir);
   }
 
+  function move(bytes calldata source, bytes calldata target) external {
+    UserArea storage u = m_userArea[msg.sender];
+    m_fileSystem.move(source, target, u.curdir);
+  }
+
   function install(address source, bytes calldata target) external {
     UserArea storage u = m_userArea[msg.sender];
     m_fileSystem.install(source, target, u.curdir);
