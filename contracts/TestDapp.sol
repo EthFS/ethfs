@@ -4,6 +4,10 @@ import './interface/App.sol';
 
 contract TestDapp is App {
   constructor(Kernel kernel) public {
+    install(kernel);
+  }
+
+  function install(Kernel kernel) public {
     kernel.install(address(this), '/bin/TestDapp');
   }
 

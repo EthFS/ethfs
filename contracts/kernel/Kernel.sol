@@ -124,7 +124,15 @@ contract KernelImpl is Kernel {
     return m_fileSystem.rmdir(path, u.curdir);
   }
 
-  function list(bytes calldata path) external view returns (bytes32[] memory) {
+  function list(uint fd) external view returns (bytes32[] memory) {
+    UserArea storage u = m_userArea[msg.sender];
+    FileDescriptor storage fildes = u.fildes[fd];
+    require(fildes.ino > 0, 'EBADF');
+    require(fildes.flags == O_RDONLY || fildes.flags == O_RDWR, 'EBADF');
+    return m_fileSystem.list(fildes.ino);
+  }
+
+  function listPath(bytes calldata path) external view returns (bytes32[] memory) {
     UserArea storage u = m_userArea[msg.sender];
     uint ino = m_fileSystem.openOnly(path, u.curdir, 0);
     return m_fileSystem.list(ino);

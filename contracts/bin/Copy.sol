@@ -2,13 +2,13 @@ pragma solidity >= 0.5.8;
 
 import '../interface/App.sol';
 
-contract Move is App {
+contract Copy is App {
   constructor(Kernel kernel) public {
     install(kernel);
   }
 
   function install(Kernel kernel) public {
-    kernel.install(address(this), '/bin/mv');
+    kernel.install(address(this), '/bin/cp');
   }
 
   function main(Kernel kernel, uint[] calldata argi, bytes calldata args) external returns (uint) {
@@ -22,7 +22,15 @@ contract Move is App {
       for (uint j = 0; j < source.length; j++) {
         source[j] = args[argi[i] + j];
       }
-      kernel.move(source, target);
+      uint fd = kernel.open(source, 0);
+      uint fd2 = kernel.open(target, 0x0101);
+      bytes32[] memory keys = kernel.list(fd);
+      for (uint j; j < keys.length; j++) {
+        bytes32 value = kernel.read(fd, keys[j]);
+        kernel.write(fd2, keys[j], value);
+      }
+      kernel.close(fd);
+      kernel.close(fd2);
     }
   }
 }

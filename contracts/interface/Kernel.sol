@@ -15,6 +15,7 @@ interface Kernel {
   function chdir(bytes calldata path) external;
   function mkdir(bytes calldata path) external;
   function rmdir(bytes calldata path) external;
-  function list(bytes calldata path) external view returns (bytes32[] memory);
+  function list(uint fd) external view returns (bytes32[] memory);
+  function listPath(bytes calldata path) external view returns (bytes32[] memory);
   function exec(bytes calldata path, uint[] calldata argi, bytes calldata args) external returns (uint);
 }
