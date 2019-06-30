@@ -278,7 +278,18 @@ contract FileSystemImpl is FileSystem {
     }
   }
 
-  function stat(uint ino) external view onlyOwner returns (FileType fileType, uint permissions, uint ino_, address device, uint links, address owner, uint entries, uint lastModified) {
+  function stat(bytes calldata path, uint curdir) external view onlyOwner returns (FileType fileType, uint permissions, uint ino_, address device, uint links, address owner, uint entries, uint lastModified) {
+    (uint ino, uint dirIno,) = pathToInode(path, curdir, false);
+    require(ino > 0, 'ENOENT');
+    checkOpen(dirIno, 0);
+    return _fstat(ino);
+  }
+
+  function fstat(uint ino) external view onlyOwner returns (FileType fileType, uint permissions, uint ino_, address device, uint links, address owner, uint entries, uint lastModified) {
+    return _fstat(ino);
+  }
+
+  function _fstat(uint ino) private view returns (FileType fileType, uint permissions, uint ino_, address device, uint links, address owner, uint entries, uint lastModified) {
     Inode storage inode = m_inode[ino];
     fileType = inode.fileType;
     permissions = inode.permissions;

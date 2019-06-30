@@ -17,6 +17,7 @@ interface FileSystem {
   function mkdir(bytes calldata path, uint curdir) external;
   function rmdir(bytes calldata path, uint curdir) external;
   function list(uint ino) external view returns (bytes32[] memory);
-  function stat(uint ino) external view returns (FileType fileType, uint permissions, uint ino_, address device, uint links, address owner, uint entries, uint lastModified);
+  function stat(bytes calldata path, uint curdir) external view returns (FileType fileType, uint permissions, uint ino_, address device, uint links, address owner, uint entries, uint lastModified);
+  function fstat(uint ino) external view returns (FileType fileType, uint permissions, uint ino_, address device, uint links, address owner, uint entries, uint lastModified);
   function readContract(bytes calldata path, uint curdir) external view returns (address);
 }
