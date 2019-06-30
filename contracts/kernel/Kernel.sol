@@ -51,7 +51,21 @@ contract KernelImpl is Kernel {
     u.result = bytes32(fd);
   }
 
-  function read(uint fd, bytes32 key) external view returns (bytes memory) {
+  function readkey(uint fd, uint index) external view returns (bytes memory) {
+    UserArea storage u = m_userArea[msg.sender];
+    FileDescriptor storage fildes = u.fildes[fd];
+    require(fildes.ino > 0, 'EBADF');
+    require(fildes.flags == O_RDONLY || fildes.flags == O_RDWR, 'EBADF');
+    return m_fileSystem.readkey(fildes.ino, index);
+  }
+
+  function readkeyPath(bytes calldata path, uint index) external view returns (bytes memory) {
+    UserArea storage u = m_userArea[msg.sender];
+    uint ino = m_fileSystem.openOnly(path, u.curdir, 0);
+    return m_fileSystem.readkey(ino, index);
+  }
+
+  function read(uint fd, bytes calldata key) external view returns (bytes memory) {
     UserArea storage u = m_userArea[msg.sender];
     FileDescriptor storage fildes = u.fildes[fd];
     require(fildes.ino > 0, 'EBADF');
@@ -59,13 +73,13 @@ contract KernelImpl is Kernel {
     return m_fileSystem.read(fildes.ino, key);
   }
 
-  function readPath(bytes calldata path, bytes32 key) external view returns (bytes memory) {
+  function readPath(bytes calldata path, bytes calldata key) external view returns (bytes memory) {
     UserArea storage u = m_userArea[msg.sender];
     uint ino = m_fileSystem.openOnly(path, u.curdir, 0);
     return m_fileSystem.read(ino, key);
   }
 
-  function write(uint fd, bytes32 key, bytes calldata value) external {
+  function write(uint fd, bytes calldata key, bytes calldata value) external {
     UserArea storage u = m_userArea[msg.sender];
     FileDescriptor storage fildes = u.fildes[fd];
     require(fildes.ino > 0, 'EBADF');
@@ -73,7 +87,7 @@ contract KernelImpl is Kernel {
     m_fileSystem.write(fildes.ino, key, value);
   }
 
-  function clear(uint fd, bytes32 key) external {
+  function clear(uint fd, bytes calldata key) external {
     UserArea storage u = m_userArea[msg.sender];
     FileDescriptor storage fildes = u.fildes[fd];
     require(fildes.ino > 0, 'EBADF');
@@ -122,20 +136,6 @@ contract KernelImpl is Kernel {
   function rmdir(bytes calldata path) external {
     UserArea storage u = m_userArea[msg.sender];
     return m_fileSystem.rmdir(path, u.curdir);
-  }
-
-  function list(uint fd) external view returns (bytes32[] memory) {
-    UserArea storage u = m_userArea[msg.sender];
-    FileDescriptor storage fildes = u.fildes[fd];
-    require(fildes.ino > 0, 'EBADF');
-    require(fildes.flags == O_RDONLY || fildes.flags == O_RDWR, 'EBADF');
-    return m_fileSystem.list(fildes.ino);
-  }
-
-  function listPath(bytes calldata path) external view returns (bytes32[] memory) {
-    UserArea storage u = m_userArea[msg.sender];
-    uint ino = m_fileSystem.openOnly(path, u.curdir, 0);
-    return m_fileSystem.list(ino);
   }
 
   function stat(bytes calldata path) external view returns (FileSystem.FileType fileType, uint permissions, uint ino, address device, uint links, address owner, uint entries, uint lastModified) {

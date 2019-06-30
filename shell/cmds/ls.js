@@ -6,7 +6,11 @@ module.exports = async (web3, kernel, cmd, args) => {
   if (!args.length) args = ['.']
   await args.reduce(async (promise, path) => {
     await promise
-    const keys = await kernel.listPath(enc(path))
+    const {entries} = await kernel.stat(enc(path))
+    const keys = []
+    for (let i = 0; i < entries; i++) {
+      keys.push(await kernel.readkeyPath(enc(path), i))
+    }
     keys.sort()
     const table = new Table({
       chars: {
