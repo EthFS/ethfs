@@ -16,6 +16,7 @@ interface Kernel {
   function unlink(bytes calldata path) external;
   function move(bytes calldata source, bytes calldata target) external;
   function install(address source, bytes calldata target) external;
+  function getcwd() external view returns (bytes memory);
   function chdir(bytes calldata path) external;
   function mkdir(bytes calldata path) external;
   function rmdir(bytes calldata path) external;

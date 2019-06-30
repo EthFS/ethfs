@@ -95,6 +95,33 @@ contract FileSystemImpl is FileSystem {
     }
   }
 
+  function dirInodeToPath(uint ino_) external view onlyOwner returns (bytes memory path) {
+    uint ino = ino_;
+    Inode storage inode = m_inode[ino];
+    require(inode.fileType == FileType.Directory, 'ENOTDIR');
+    while (ino != 1) {
+      uint dirIno = inode.data['..'].value;
+      inode = m_inode[dirIno];
+      require(tx.origin == inode.owner, 'EACCES');
+      for (uint i;;) {
+        bytes storage key = inode.keys[i++];
+        if (inode.data[key].value != ino) continue;
+        bytes memory path2 = new bytes(key.length + path.length + 1);
+        path2[0] = '/';
+        uint k = 1;
+        for (uint j; j < key.length;) path2[k++] = key[j++];
+        for (uint j; j < path.length;) path2[k++] = path[j++];
+        path = path2;
+        break;
+      }
+      ino = dirIno;
+    }
+    if (path.length == 0) {
+      path = new bytes(1);
+      path[0] = '/';
+    }
+  }
+
   function writeToInode(uint ino, bytes memory key, uint value) private {
     Inode storage inode = m_inode[ino];
     InodeData storage data = inode.data[key];

@@ -5,6 +5,7 @@ interface FileSystem {
 
   function mount() external;
   function unmount() external;
+  function dirInodeToPath(uint ino) external view returns (bytes memory);
   function open(bytes calldata path, uint curdir, uint flags) external returns (uint);
   function openOnly(bytes calldata path, uint curdir, uint flags) external view returns (uint);
   function readkey(uint ino, uint index) external view returns (bytes memory);

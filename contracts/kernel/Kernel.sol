@@ -122,6 +122,13 @@ contract KernelImpl is Kernel {
     m_fileSystem.install(source, target, u.curdir);
   }
 
+  function getcwd() external view returns (bytes memory) {
+    UserArea storage u = m_userArea[msg.sender];
+    uint ino = u.curdir;
+    if (ino == 0) ino = 1;
+    return m_fileSystem.dirInodeToPath(ino);
+  }
+
   function chdir(bytes calldata path) external {
     UserArea storage u = m_userArea[msg.sender];
     uint ino = m_fileSystem.openOnly(path, u.curdir, O_DIRECTORY);

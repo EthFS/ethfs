@@ -3,6 +3,7 @@ const Web3 = require('web3')
 const contract = require('truffle-contract')
 const HDWalletProvider = require('truffle-hdwallet-provider')
 const cmds = require('./cmds')
+const {dec} = require('./utils/enc')
 const prompt = require('./utils/prompt')
 
 async function main() {
@@ -19,7 +20,8 @@ async function main() {
   Kernel.defaults({from: accounts[0]})
   const kernel = await Kernel.deployed()
   while (true) {
-    const args = (await prompt()).split(/\s+/).filter(x => x.length)
+    const cwd = dec(await kernel.getcwd())
+    const args = (await prompt(`${cwd}> `)).split(/\s+/).filter(x => x.length)
     const cmd = args.shift()
     try {
       if (cmds[cmd]) {
