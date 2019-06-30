@@ -19,7 +19,6 @@ contract FileSystemImpl is FileSystem {
     uint permissions;
     uint lastModified;
     uint links;
-    uint entries;
     bytes[] keys;
     mapping(bytes => InodeData) data;
   }
@@ -88,7 +87,7 @@ contract FileSystemImpl is FileSystem {
       Inode storage inode = m_inode[dirIno];
       for (uint i;;) {
         bytes storage key2 = inode.keys[i++];
-        if (key2.length > 0 && inode.data[key2].value == ino) {
+        if (inode.data[key2].value == ino) {
           key = key2;
           break;
         }
@@ -100,7 +99,6 @@ contract FileSystemImpl is FileSystem {
     Inode storage inode = m_inode[ino];
     InodeData storage data = inode.data[key];
     if (data.index == 0) {
-      inode.entries++;
       inode.keys.push(key);
       data.index = inode.keys.length;  // index+1
     }
@@ -110,8 +108,14 @@ contract FileSystemImpl is FileSystem {
 
   function removeFromInode(uint ino, bytes memory key) private {
     Inode storage inode = m_inode[ino];
-    inode.entries--;
-    delete inode.keys[inode.data[key].index-1];
+    bytes[] storage keys = inode.keys;
+    uint index = inode.data[key].index-1;
+    if (index < keys.length-1) {
+      bytes storage key2 = keys[keys.length-1];
+      keys[index] = key2;
+      inode.data[key2].index = index+1;
+    }
+    keys.pop();
     delete inode.data[key];
     inode.lastModified = now;
   }
@@ -163,7 +167,6 @@ contract FileSystemImpl is FileSystem {
     Inode storage inode = m_inode[ino];
     InodeData storage data = inode.data[key];
     if (data.index == 0) {
-      inode.entries++;
       inode.keys.push(key);
       data.index = inode.keys.length;  // index+1
     }
@@ -267,7 +270,7 @@ contract FileSystemImpl is FileSystem {
     require(ino != curdir, 'EINVAL');
     Inode storage inode = m_inode[ino];
     require(inode.fileType == FileType.Directory, 'ENOTDIR');
-    require(inode.entries == 2, 'ENOTEMPTY');
+    require(inode.keys.length == 2, 'ENOTEMPTY');
     removeFromInode(dirIno, key);
     delete m_inode[ino];
   }
@@ -291,7 +294,7 @@ contract FileSystemImpl is FileSystem {
     device = address(this);
     links = inode.links;
     owner = inode.owner;
-    entries = inode.entries;
+    entries = inode.keys.length;
     lastModified = inode.lastModified;
   }
 
