@@ -1,4 +1,5 @@
 const moment = require('moment')
+const Table = require('cli-table')
 const {enc, dec} = require('../utils/enc')
 
 module.exports = async (web3, kernel, cmd, args) => {
@@ -7,6 +8,16 @@ module.exports = async (web3, kernel, cmd, args) => {
     await promise
     const keys = await kernel.listPath(enc(path))
     keys.sort()
+    const table = new Table({
+      chars: {
+        'top': '', 'top-mid': '', 'top-left': '', 'top-right': '',
+        'bottom': '', 'bottom-mid': '', 'bottom-left': '', 'bottom-right': '',
+        'left': '', 'left-mid': '', 'mid': '', 'mid-mid': '',
+        'right': '', 'right-mid': '', 'middle': ' ',
+      },
+      colAligns: [, 'right',, 'right'],
+      style: {'padding-left': 0, 'padding-right': 0},
+    })
     await keys.map(dec).reduce(async (promise, key) => {
       await promise
       let {
@@ -33,8 +44,9 @@ module.exports = async (web3, kernel, cmd, args) => {
         lastModified = lastModified.format('DD MMM  YYYY')
       }
       if (fileType === 'd') key += '/'
-      console.log(`${fileType} ${links} ${owner} ${size} ${lastModified} ${key}`)
+      table.push([fileType, ` ${links}`, owner, ` ${size}`, lastModified, key])
     }, Promise.resolve())
+    console.log(table.toString())
   }, Promise.resolve())
 }
 
