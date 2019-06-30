@@ -5,7 +5,7 @@ const enc = x => asciiToHex(x)
 const dec = x => hexToAscii(x).replace(/\0+$/, '')
 
 async function ls(kernel, path, isData) {
-  const keys = await kernel.list(path)
+  const keys = await kernel.listPath(path)
   await Promise.all(keys.map(async key => {
     if (isData) {
       const data = dec(await kernel.readPath(path, key))
@@ -18,7 +18,7 @@ async function ls(kernel, path, isData) {
 
 module.exports = async callback => {
   const kernel = await KernelImpl.deployed()
-  await kernel.exec(enc('/bin/TestDapp'), [])
+  await kernel.exec(enc('/bin/TestDapp'), [], enc(''))
   await ls(kernel, enc('/'))
   await ls(kernel, enc('/test_file'), true)
   await kernel.open(enc('/test_file'), 0x0101)
