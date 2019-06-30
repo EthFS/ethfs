@@ -57,9 +57,9 @@ contract FileSystemImpl is FileSystem {
   }
 
   function pathToInode(bytes memory path, uint curdir, bool allowNonExistDir) private view returns (uint ino, uint dirIno, bytes memory key) {
+    require(path.length > 0, 'ENOENT');
     if (curdir == 0) curdir = 1;
-    bool fromRoot = path.length > 0 && path[0] == '/';
-    ino = fromRoot ? 1 : curdir;
+    ino = path[0] == '/' ? 1 : curdir;
     uint j;
     for (uint i = 0; i <= path.length; i++) {
       while (i < path.length && path[i] != '/') i++;
@@ -70,6 +70,7 @@ contract FileSystemImpl is FileSystem {
       require(ino > 0, 'ENOENT');
       Inode storage inode = m_inode[ino];
       require(inode.fileType == FileType.Directory, 'ENOTDIR');
+      require(tx.origin == inode.owner, 'EACCES');
       key = new bytes(i-j);
       for (uint k; j < i;) key[k++] = path[j++];
       j++;
@@ -192,6 +193,7 @@ contract FileSystemImpl is FileSystem {
 
   function write(uint ino, bytes calldata key, bytes calldata value) external onlyOwner {
     Inode storage inode = m_inode[ino];
+    require(inode.fileType == FileType.Data, 'EPERM');
     InodeData storage data = inode.data[key];
     if (data.index == 0) {
       inode.keys.push(key);
@@ -202,8 +204,9 @@ contract FileSystemImpl is FileSystem {
   }
 
   function clear(uint ino, bytes calldata key) external onlyOwner {
-    InodeData storage data = m_inode[ino].data[key];
-    require(data.index > 0, 'EINVAL');
+    Inode storage inode = m_inode[ino];
+    require(inode.fileType == FileType.Data, 'EPERM');
+    require(inode.data[key].index > 0, 'EINVAL');
     removeFromInode(ino, key);
   }
 
