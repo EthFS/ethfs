@@ -26,7 +26,8 @@ contract FileSystemImpl is FileSystem {
 
   struct InodeData {
     uint index;
-    bytes32 value;
+    uint value;
+    bytes extent;
   }
 
   address m_owner;
@@ -43,8 +44,8 @@ contract FileSystemImpl is FileSystem {
     m_inode.length = ino+1;
     m_inode[ino].owner = tx.origin;
     m_inode[ino].fileType = FileType.Directory;
-    writeToInode(ino, '.', bytes32(ino));
-    writeToInode(ino, '..', bytes32(ino));
+    writeToInode(ino, '.', ino);
+    writeToInode(ino, '..', ino);
   }
 
   function mount() external {
@@ -79,7 +80,7 @@ contract FileSystemImpl is FileSystem {
       }
       j++;
       dirIno = ino;
-      ino = uint(inode.data[key].value);
+      ino = inode.data[key].value;
     }
     if (ino == 0) {
       require(allowNonExistDir || path[path.length-1] != '/', 'ENOENT');
@@ -87,11 +88,11 @@ contract FileSystemImpl is FileSystem {
       require(path[path.length-1] != '/', 'ENOTDIR');
     }
     if (key == '.' || key == '..') {
-      dirIno = uint(m_inode[ino].data['..'].value);
+      dirIno = m_inode[ino].data['..'].value;
       Inode storage inode = m_inode[dirIno];
       for (uint i;;) {
         bytes32 key2 = inode.keys[i++];
-        if (key2 > 0 && uint(inode.data[key2].value) == ino) {
+        if (key2 > 0 && inode.data[key2].value == ino) {
           key = key2;
           break;
         }
@@ -99,7 +100,7 @@ contract FileSystemImpl is FileSystem {
     }
   }
 
-  function writeToInode(uint ino, bytes32 key, bytes32 value) private {
+  function writeToInode(uint ino, bytes32 key, uint value) private {
     Inode storage inode = m_inode[ino];
     InodeData storage data = inode.data[key];
     if (data.index == 0) {
@@ -140,7 +141,7 @@ contract FileSystemImpl is FileSystem {
         inode.fileType = FileType.Data;
         inode.lastModified = now;
         inode.links = 1;
-        writeToInode(dirIno, key, bytes32(ino));
+        writeToInode(dirIno, key, ino);
       }
     }
     checkOpen(ino, flags);
@@ -152,14 +153,22 @@ contract FileSystemImpl is FileSystem {
     checkOpen(ino, flags);
   }
 
-  function read(uint ino, bytes32 key) external view onlyOwner returns (bytes32) {
+  function read(uint ino, bytes32 key) external view onlyOwner returns (bytes memory) {
     InodeData storage data = m_inode[ino].data[key];
     require(data.index > 0, 'EINVAL');
-    return data.value;
+    return data.extent;
   }
 
-  function write(uint ino, bytes32 key, bytes32 data) external onlyOwner {
-    writeToInode(ino, key, data);
+  function write(uint ino, bytes32 key, bytes calldata value) external onlyOwner {
+    Inode storage inode = m_inode[ino];
+    InodeData storage data = inode.data[key];
+    if (data.index == 0) {
+      inode.entries++;
+      inode.keys.push(key);
+      data.index = inode.keys.length;  // index+1
+    }
+    data.extent = value;
+    inode.lastModified = now;
   }
 
   function clear(uint ino, bytes32 key) external onlyOwner {
@@ -182,7 +191,7 @@ contract FileSystemImpl is FileSystem {
     }
     InodeData storage data = m_inode[dirIno].data[key];
     require(data.index == 0, 'EEXIST');
-    writeToInode(dirIno, key, bytes32(ino));
+    writeToInode(dirIno, key, ino);
     inode.links++;
   }
 
@@ -220,12 +229,12 @@ contract FileSystemImpl is FileSystem {
       while (true) {
         require(ino3 != ino, 'EINVAL');
         if (ino3 == 1) break;
-        ino3 = uint(m_inode[ino3].data['..'].value);
+        ino3 = m_inode[ino3].data['..'].value;
       }
-      writeToInode(ino, '..', bytes32(dirIno2));
+      writeToInode(ino, '..', dirIno2);
     }
     removeFromInode(dirIno, key);
-    writeToInode(dirIno2, key2, bytes32(ino));
+    writeToInode(dirIno2, key2, ino);
   }
 
   function install(address source, bytes calldata target, uint curdir) external onlyOwner {
@@ -237,7 +246,7 @@ contract FileSystemImpl is FileSystem {
     inode.fileType = FileType.Contract;
     inode.lastModified = now;
     inode.links = 1;
-    writeToInode(dirIno, key, bytes32(ino));
+    writeToInode(dirIno, key, ino);
   }
 
   function mkdir(bytes calldata path, uint curdir) external onlyOwner {
@@ -247,9 +256,9 @@ contract FileSystemImpl is FileSystem {
     Inode storage inode = m_inode[ino];
     inode.owner = tx.origin;
     inode.fileType = FileType.Directory;
-    writeToInode(dirIno, key, bytes32(ino));
-    writeToInode(ino, '.', bytes32(ino));
-    writeToInode(ino, '..', bytes32(dirIno));
+    writeToInode(dirIno, key, ino);
+    writeToInode(ino, '.', ino);
+    writeToInode(ino, '..', dirIno);
   }
 
   function rmdir(bytes calldata path, uint curdir) external onlyOwner {

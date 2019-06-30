@@ -26,7 +26,7 @@ contract Copy is App {
       uint fd2 = kernel.open(target, 0x0101);
       bytes32[] memory keys = kernel.list(fd);
       for (uint j; j < keys.length; j++) {
-        bytes32 value = kernel.read(fd, keys[j]);
+        bytes memory value = kernel.read(fd, keys[j]);
         kernel.write(fd2, keys[j], value);
       }
       kernel.close(fd);

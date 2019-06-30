@@ -5,9 +5,9 @@ import './FileSystem.sol';
 interface Kernel {
   function result() external view returns (bytes32);
   function open(bytes calldata path, uint flags) external returns (uint);
-  function read(uint fd, bytes32 key) external view returns (bytes32);
-  function readPath(bytes calldata path, bytes32 key) external view returns (bytes32);
-  function write(uint fd, bytes32 key, bytes32 data) external;
+  function read(uint fd, bytes32 key) external view returns (bytes memory);
+  function readPath(bytes calldata path, bytes32 key) external view returns (bytes memory);
+  function write(uint fd, bytes32 key, bytes calldata value) external;
   function clear(uint fd, bytes32 key) external;
   function close(uint fd) external;
   function link(bytes calldata source, bytes calldata target) external;

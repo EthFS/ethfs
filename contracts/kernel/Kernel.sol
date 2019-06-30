@@ -51,7 +51,7 @@ contract KernelImpl is Kernel {
     u.result = bytes32(fd);
   }
 
-  function read(uint fd, bytes32 key) external view returns (bytes32) {
+  function read(uint fd, bytes32 key) external view returns (bytes memory) {
     UserArea storage u = m_userArea[msg.sender];
     FileDescriptor storage fildes = u.fildes[fd];
     require(fildes.ino > 0, 'EBADF');
@@ -59,18 +59,18 @@ contract KernelImpl is Kernel {
     return m_fileSystem.read(fildes.ino, key);
   }
 
-  function readPath(bytes calldata path, bytes32 key) external view returns (bytes32) {
+  function readPath(bytes calldata path, bytes32 key) external view returns (bytes memory) {
     UserArea storage u = m_userArea[msg.sender];
     uint ino = m_fileSystem.openOnly(path, u.curdir, 0);
     return m_fileSystem.read(ino, key);
   }
 
-  function write(uint fd, bytes32 key, bytes32 data) external {
+  function write(uint fd, bytes32 key, bytes calldata value) external {
     UserArea storage u = m_userArea[msg.sender];
     FileDescriptor storage fildes = u.fildes[fd];
     require(fildes.ino > 0, 'EBADF');
     require(fildes.flags == O_WRONLY || fildes.flags == O_RDWR, 'EBADF');
-    m_fileSystem.write(fildes.ino, key, data);
+    m_fileSystem.write(fildes.ino, key, value);
   }
 
   function clear(uint fd, bytes32 key) external {

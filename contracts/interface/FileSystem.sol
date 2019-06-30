@@ -7,8 +7,8 @@ interface FileSystem {
   function unmount() external;
   function open(bytes calldata path, uint curdir, uint flags) external returns (uint);
   function openOnly(bytes calldata path, uint curdir, uint flags) external view returns (uint);
-  function read(uint ino, bytes32 key) external view returns (bytes32);
-  function write(uint ino, bytes32 key, bytes32 data) external;
+  function read(uint ino, bytes32 key) external view returns (bytes memory);
+  function write(uint ino, bytes32 key, bytes calldata value) external;
   function clear(uint ino, bytes32 key) external;
   function link(bytes calldata source, bytes calldata target, uint curdir) external;
   function unlink(bytes calldata path, uint curdir) external;
