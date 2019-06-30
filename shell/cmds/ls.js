@@ -15,7 +15,6 @@ module.exports = async (web3, kernel, cmd, args) => {
         'left': '', 'left-mid': '', 'mid': '', 'mid-mid': '',
         'right': '', 'right-mid': '', 'middle': ' ',
       },
-      colWidths: [,, 11],
       colAligns: [, 'right',, 'right'],
       style: {'padding-left': 0, 'padding-right': 0},
     })
@@ -36,6 +35,7 @@ module.exports = async (web3, kernel, cmd, args) => {
         const code = await web3.eth.getCode(owner)
         size = code.length / 2 - 1
       }
+      owner = owner.slice(0, 12) + '…'
       lastModified = moment(lastModified.toNumber() * 1e3)
       if (lastModified.year() === moment().year()) {
         lastModified = lastModified.format('DD MMM HH:mm')
