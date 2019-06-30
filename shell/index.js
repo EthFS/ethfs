@@ -23,11 +23,11 @@ async function main() {
     const cmd = args.shift()
     try {
       if (cmds[cmd]) {
-        await cmds[cmd](kernel, cmd, args)
+        await cmds[cmd](Kernel.web3, kernel, cmd, args)
       } else if (cmd === 'exit') {
         break
       } else if (cmd !== undefined) {
-        await cmds.exec(kernel, cmd, args)
+        await cmds.exec(Kernel.web3, kernel, cmd, args)
       }
     } catch (e) {
       console.log(e.message);

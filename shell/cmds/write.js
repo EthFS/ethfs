@@ -1,7 +1,7 @@
 const {enc} = require('../utils/enc')
 const prompt = require('../utils/prompt')
 
-module.exports = async (kernel, cmd, args) => {
+module.exports = async (web3, kernel, cmd, args) => {
   if (!args.length) {
     return console.log('Need a filename(s).');
   }

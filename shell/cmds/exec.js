@@ -1,6 +1,6 @@
 const {enc} = require('../utils/enc')
 
-module.exports = async (kernel, cmd, args) => {
+module.exports = async (web3, kernel, cmd, args) => {
   let i = 0
   const argi = []
   args.forEach(x => {

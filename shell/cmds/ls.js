@@ -1,7 +1,7 @@
 const moment = require('moment')
 const {enc, dec} = require('../utils/enc')
 
-module.exports = async (kernel, cmd, args) => {
+module.exports = async (web3, kernel, cmd, args) => {
   if (!args.length) args = ['.']
   await args.reduce(async (promise, path) => {
     await promise
@@ -18,6 +18,12 @@ module.exports = async (kernel, cmd, args) => {
         lastModified,
       } = await kernel.stat(enc(`${path}/${key}`))
       fileType = fileTypeToChar(fileType)
+      if (fileType === 'd') links = entries
+      let size = entries
+      if (fileType === 'c') {
+        const code = await web3.eth.getCode(owner)
+        size = code.length / 2 - 1
+      }
       owner = owner.toLowerCase()
       owner = `${owner.slice(2, 6)}..${owner.slice(-4)}`
       lastModified = moment(lastModified.toNumber() * 1e3)
@@ -27,7 +33,7 @@ module.exports = async (kernel, cmd, args) => {
         lastModified = lastModified.format('DD MMM  YYYY')
       }
       if (fileType === 'd') key += '/'
-      console.log(`${fileType} ${links} ${owner} ${entries} ${lastModified} ${key}`)
+      console.log(`${fileType} ${links} ${owner} ${size} ${lastModified} ${key}`)
     }, Promise.resolve())
   }, Promise.resolve())
 }
