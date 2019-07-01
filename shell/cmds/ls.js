@@ -4,7 +4,7 @@ const {enc, dec} = require('../utils/enc')
 
 module.exports = async (web3, kernel, cmd, args) => {
   if (!args.length) args = ['.']
-  await args.reduce(async (promise, path) => {
+  await args.reduce(async (promise, path, argIndex) => {
     await promise
     const {entries} = await kernel.stat(enc(path))
     const keys = []
@@ -49,6 +49,8 @@ module.exports = async (web3, kernel, cmd, args) => {
       if (fileType === 'd') key += '/'
       table.push([fileType, ` ${links}`, owner, ` ${size}`, lastModified, key])
     }, Promise.resolve())
+    if (argIndex > 0) console.log()
+    if (args.length > 1) console.log(`${path}:`)
     console.log(table.toString())
   }, Promise.resolve())
 }
