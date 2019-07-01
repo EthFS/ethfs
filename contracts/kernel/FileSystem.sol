@@ -299,8 +299,10 @@ contract FileSystemImpl is FileSystem {
         ino2 = m_inode[ino2].data['..'].value;
       }
     }
-    if (newIno == 0) newIno = m_inode.length++;
-    writeToInode(dirIno2, key2, newIno);
+    if (newIno == 0) {
+      newIno = m_inode.length++;
+      writeToInode(dirIno2, key2, newIno);
+    }
     copyInode(inode, newIno, dirIno2);
   }
 
