@@ -1,6 +1,9 @@
 const {enc} = require('../utils/enc')
 
 module.exports = async (web3, kernel, cmd, args) => {
+  if (cmd[0] != '/') {
+    cmd = '/bin/' + cmd
+  }
   let i = 0
   const argi = []
   args.forEach(x => {
