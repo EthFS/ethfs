@@ -310,12 +310,13 @@ contract FileSystemImpl is FileSystem {
     inode2.owner = inode.owner;
     inode2.fileType = inode.fileType;
     inode2.permissions = inode.permissions;
-    inode2.links = sourceIsDir ? 0 : 1;
     uint i;
     if (sourceIsDir) {
       i = 2;
       writeToInode(ino, '.', ino);
       writeToInode(ino, '..', dirIno);
+    } else {
+      inode2.links = 1;
     }
     inode2.lastModified = inode.lastModified;
     inode2.keys.length = inode.keys.length;
