@@ -258,16 +258,80 @@ contract FileSystemImpl is FileSystem {
       require(target[target.length-1] != '/', 'ENOENT');
     }
     if (sourceIsDir) {
-      uint ino3 = dirIno2;
+      ino2 = dirIno2;
       while (true) {
-        require(ino3 != ino, 'EINVAL');
-        if (ino3 == 1) break;
-        ino3 = m_inode[ino3].data['..'].value;
+        require(ino2 != ino, 'EINVAL');
+        if (ino2 == 1) break;
+        ino2 = m_inode[ino2].data['..'].value;
       }
       writeToInode(ino, '..', dirIno2);
     }
     removeFromInode(dirIno, key);
     writeToInode(dirIno2, key2, ino);
+  }
+
+  function copy(bytes calldata source, bytes calldata target, uint curdir) external onlyOwner {
+    (uint ino, uint dirIno, bytes memory key) = pathToInode(source, curdir, false);
+    require(ino > 0, 'ENOENT');
+    Inode storage inode = m_inode[ino];
+    bool sourceIsDir = inode.fileType == FileType.Directory;
+    (uint ino2, uint dirIno2, bytes memory key2) = pathToInode(target, curdir, true);
+    if (ino == ino2) return;
+    uint newIno;
+    if (ino2 > 0) {
+      Inode storage inode2 = m_inode[ino2];
+      if (inode2.fileType == FileType.Directory) {
+        if (ino2 == dirIno) return;
+        dirIno2 = ino2;
+        key2 = key;
+      } else {
+        require(!sourceIsDir, 'ENOTDIR');
+        if (--inode2.links == 0) newIno = ino2;
+      }
+    } else if (!sourceIsDir) {
+      require(target[target.length-1] != '/', 'ENOENT');
+    }
+    if (sourceIsDir) {
+      ino2 = dirIno2;
+      while (true) {
+        require(ino2 != ino, 'EINVAL');
+        if (ino2 == 1) break;
+        ino2 = m_inode[ino2].data['..'].value;
+      }
+    }
+    if (newIno == 0) newIno = m_inode.length++;
+    writeToInode(dirIno2, key2, newIno);
+    copyInode(inode, newIno, dirIno2);
+  }
+
+  function copyInode(Inode storage inode, uint ino, uint dirIno) private {
+    bool sourceIsDir = inode.fileType == FileType.Directory;
+    Inode storage inode2 = m_inode[ino];
+    inode2.owner = inode.owner;
+    inode2.fileType = inode.fileType;
+    inode2.permissions = inode.permissions;
+    inode2.links = sourceIsDir ? 0 : 1;
+    uint i;
+    if (sourceIsDir) {
+      i = 2;
+      writeToInode(ino, '.', ino);
+      writeToInode(ino, '..', dirIno);
+    }
+    inode2.lastModified = inode.lastModified;
+    inode2.keys.length = inode.keys.length;
+    for (; i < inode.keys.length; i++) {
+      bytes storage key = inode.keys[i];
+      inode2.keys[i] = key;
+      InodeData storage data = inode.data[key];
+      InodeData storage data2 = inode2.data[key];
+      data2.index = data.index;
+      if (sourceIsDir) {
+        data2.value = m_inode.length++;
+        copyInode(m_inode[data.value], data2.value, ino);
+      } else {
+        data2.extent = data.extent;
+      }
+    }
   }
 
   function install(address source, bytes calldata target, uint curdir) external onlyOwner {
