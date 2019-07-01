@@ -72,7 +72,6 @@ module.exports = {
     rinkeby: {
       provider: () => new HDWalletProvider(mnemonic, `https://rinkeby.infura.io/v3/59389cd0fe54420785906cf571a7d7c0`),
       network_id: 4,       // Rinkeby's id
-      gas: 5500000,        // Ropsten has a lower block limit than mainnet
       skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
     },
 
