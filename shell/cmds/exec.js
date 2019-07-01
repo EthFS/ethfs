@@ -1,7 +1,7 @@
 const {enc} = require('../utils/enc')
 
 module.exports = async (web3, kernel, cmd, args) => {
-  if (cmd[0] != '/') {
+  if (!cmd.includes('/')) {
     cmd = '/bin/' + cmd
   }
   let i = 0
