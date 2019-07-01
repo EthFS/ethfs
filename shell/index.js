@@ -4,7 +4,8 @@ const contract = require('truffle-contract')
 const HDWalletProvider = require('truffle-hdwallet-provider')
 const cmds = require('./cmds')
 const {dec} = require('./utils/enc')
-const prompt = require('./utils/prompt')
+const Prompt = require('./utils/prompt')
+const completer = require('./utils/completer')
 
 async function main() {
   const Kernel = contract(require('../build/contracts/KernelImpl'))
@@ -19,6 +20,7 @@ async function main() {
   const accounts = await Kernel.web3.eth.getAccounts()
   Kernel.defaults({from: accounts[0]})
   const kernel = await Kernel.deployed()
+  const prompt = Prompt(completer.bind(null, kernel))
   while (true) {
     const cwd = dec(await kernel.getcwd())
     const args = (await prompt(`${cwd}> `)).split(/\s+/).filter(x => x.length)
