@@ -319,6 +319,10 @@ contract FileSystemImpl is FileSystem {
       writeToInode(ino, '..', dirIno);
     } else {
       inode2.links = 1;
+      while (i < inode2.keys.length) {
+        delete inode2.data[inode2.keys[i++]];
+      }
+      i = 0;
     }
     inode2.lastModified = inode.lastModified;
     inode2.keys.length = inode.keys.length;
