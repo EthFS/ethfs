@@ -1,5 +1,5 @@
 const {enc} = require('../utils/enc')
-const prompt = require('../utils/prompt')
+const {prompt} = require('../utils/prompt')
 
 module.exports = async (web3, kernel, cmd, args) => {
   if (!args.length) {
