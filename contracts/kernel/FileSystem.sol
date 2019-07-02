@@ -379,6 +379,7 @@ contract FileSystemImpl is FileSystem {
   function stat(bytes calldata path, uint curdir) external view onlyOwner returns (FileType fileType, uint permissions, uint ino_, address device, uint links, address owner, uint entries, uint lastModified) {
     (uint ino, uint dirIno,) = pathToInode(path, curdir, false);
     require(ino > 0, 'ENOENT');
+    if (dirIno == 0) dirIno = ino;
     checkOpen(dirIno, 0);
     return _fstat(ino);
   }
