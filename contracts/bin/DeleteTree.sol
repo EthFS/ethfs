@@ -24,14 +24,13 @@ contract DeleteTree is App {
   }
 
   function deltree(Kernel kernel, bytes memory path) private {
-    uint fd = kernel.open(path, 0);
-    (FileSystem.FileType fileType,,,,,, uint entries,) = kernel.fstat(fd);
+    (FileSystem.FileType fileType,,,,,, uint entries,) = kernel.stat(path);
     if (fileType != FileSystem.FileType.Directory) {
-      kernel.close(fd);
       kernel.unlink(path);
       return;
     }
-    for (uint i = 2; i < entries; i++) {
+    uint fd = kernel.open(path, 0);
+    for (uint i = entries-1; i > 1; i--) {
       bytes memory key = kernel.readkey(fd, i);
       bytes memory path2 = new bytes(path.length + key.length + 1);
       uint k;
