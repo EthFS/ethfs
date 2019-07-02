@@ -27,7 +27,11 @@ module.exports = async (web3, kernel, cmd, args) => {
     const fd = await kernel.result()
     await Object.keys(data).reduce(async (promise, key) => {
       await promise
-      await kernel.write(fd, enc(key), enc(data[key]))
+      let value = data[key]
+      if (typeof value !== 'string') {
+        value = JSON.stringify(value)
+      }
+      await kernel.write(fd, enc(key), enc(value))
     }, Promise.resolve())
     await kernel.close(fd)
   }, Promise.resolve())

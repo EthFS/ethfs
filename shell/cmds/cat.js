@@ -8,8 +8,11 @@ module.exports = async (web3, kernel, cmd, args) => {
     const {entries} = await kernel.stat(path)
     for (let i = 0; i < entries; i++) {
       const key = await kernel.readkeyPath(path, i)
-      const value = await kernel.readPath(path, key)
-      data[dec(key)] = dec(value)
+      let value = dec(await kernel.readPath(path, key))
+      try {
+        value = JSON.parse(value)
+      } catch(e) {}
+      data[dec(key)] = value
     }
     console.log(JSON.stringify(data, null, 2))
   }, Promise.resolve())
