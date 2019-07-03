@@ -19,8 +19,9 @@ contract FileSystemImpl is FileSystem {
     uint permissions;
     uint lastModified;
     uint links;
+    uint refCnt;
     bytes[] keys;
-    mapping(bytes => InodeData) data;
+    mapping(bytes => uint) data;
   }
 
   struct InodeData {
@@ -31,6 +32,9 @@ contract FileSystemImpl is FileSystem {
 
   address m_owner;
   Inode[] m_inode;
+  InodeData[] m_inodeData;
+  uint[] m_freeIno;
+  uint[] m_freeInoData;
 
   modifier onlyOwner {
     require(msg.sender == m_owner, 'EPERM');
@@ -41,6 +45,7 @@ contract FileSystemImpl is FileSystem {
     // Set up root inode
     uint ino = 1;
     m_inode.length = ino+1;
+    m_inodeData.length = 1;
     m_inode[ino].owner = tx.origin;
     m_inode[ino].fileType = FileType.Directory;
     writeToInode(ino, '.', ino);
@@ -75,7 +80,7 @@ contract FileSystemImpl is FileSystem {
       for (uint k; j < i;) key[k++] = path[j++];
       j++;
       dirIno = ino;
-      ino = inode.data[key].value;
+      ino = m_inodeData[inode.data[key]].value;
     }
     if (ino == 0) {
       require(allowNonExistDir || path[path.length-1] != '/', 'ENOENT');
@@ -84,11 +89,11 @@ contract FileSystemImpl is FileSystem {
     }
     if (key.length == 1 && key[0] == '.' ||
         key.length == 2 && key[0] == '.' && key[1] == '.') {
-      dirIno = m_inode[ino].data['..'].value;
+      dirIno = m_inodeData[m_inode[ino].data['..']].value;
       Inode storage inode = m_inode[dirIno];
       for (uint i;;) {
         bytes storage key2 = inode.keys[i++];
-        if (inode.data[key2].value == ino) {
+        if (m_inodeData[inode.data[key2]].value == ino) {
           key = key2;
           break;
         }
@@ -101,12 +106,12 @@ contract FileSystemImpl is FileSystem {
     Inode storage inode = m_inode[ino];
     require(inode.fileType == FileType.Directory, 'ENOTDIR');
     while (ino != 1) {
-      uint dirIno = inode.data['..'].value;
+      uint dirIno = m_inodeData[inode.data['..']].value;
       inode = m_inode[dirIno];
       require(tx.origin == inode.owner, 'EACCES');
       for (uint i;;) {
         bytes storage key = inode.keys[i++];
-        if (inode.data[key].value != ino) continue;
+        if (m_inodeData[inode.data[key]].value != ino) continue;
         bytes memory path2 = new bytes(key.length + path.length + 1);
         path2[0] = '/';
         uint k = 1;
@@ -123,27 +128,60 @@ contract FileSystemImpl is FileSystem {
     }
   }
 
+  function allocInode() private returns(uint ino) {
+    if (m_freeIno.length > 0) {
+      ino = m_freeIno[m_freeIno.length-1];
+      m_freeIno.pop();
+    } else {
+      ino = m_inode.length++;
+    }
+  }
+
+  function freeInode(uint ino) private {
+    Inode storage inode = m_inode[ino];
+    for (uint i; i < inode.keys.length;) {
+      bytes storage key = inode.keys[i++];
+      m_freeInoData.push(inode.data[key]);
+      delete inode.data[key];
+    }
+    m_freeIno.push(ino);
+  }
+
+  function allocInodeData() private returns(uint inoData) {
+    if (m_freeInoData.length > 0) {
+      inoData = m_freeInoData[m_freeInoData.length-1];
+      m_freeInoData.pop();
+    } else {
+      inoData = m_inodeData.length++;
+    }
+  }
+
   function writeToInode(uint ino, bytes memory key, uint value) private {
     Inode storage inode = m_inode[ino];
-    InodeData storage data = inode.data[key];
-    if (data.index == 0) {
+    if (inode.data[key] == 0) {
+      inode.data[key] = allocInodeData();
+      InodeData storage data = m_inodeData[inode.data[key]];
       inode.keys.push(key);
       data.index = inode.keys.length;  // index+1
+      data.value = value;
+    } else {
+      m_inodeData[inode.data[key]].value = value;
     }
-    data.value = value;
     inode.lastModified = now;
   }
 
   function removeFromInode(uint ino, bytes memory key) private {
     Inode storage inode = m_inode[ino];
     bytes[] storage keys = inode.keys;
-    uint index = inode.data[key].index-1;
+    uint inoData = inode.data[key];
+    uint index = m_inodeData[inoData].index-1;
     if (index < keys.length-1) {
       bytes storage key2 = keys[keys.length-1];
       keys[index] = key2;
-      inode.data[key2].index = index+1;
+      m_inodeData[inode.data[key2]].index = index+1;
     }
     keys.pop();
+    m_freeInoData.push(inoData);
     delete inode.data[key];
     inode.lastModified = now;
   }
@@ -163,7 +201,7 @@ contract FileSystemImpl is FileSystem {
       if (ino > 0) {
         require(flags & O_EXCL == 0, 'EEXIST');
       } else {
-        ino = m_inode.length++;
+        ino = allocInode();
         Inode storage inode = m_inode[ino];
         inode.owner = tx.origin;
         inode.fileType = FileType.Data;
@@ -186,27 +224,30 @@ contract FileSystemImpl is FileSystem {
   }
 
   function read(uint ino, bytes calldata key) external view onlyOwner returns (bytes memory) {
-    InodeData storage data = m_inode[ino].data[key];
-    require(data.index > 0, 'EINVAL');
-    return data.extent;
+    uint inoData = m_inode[ino].data[key];
+    require(inoData > 0, 'EINVAL');
+    return m_inodeData[inoData].extent;
   }
 
   function write(uint ino, bytes calldata key, bytes calldata value) external onlyOwner {
     Inode storage inode = m_inode[ino];
     require(inode.fileType == FileType.Data, 'EPERM');
-    InodeData storage data = inode.data[key];
-    if (data.index == 0) {
+    if (inode.data[key] == 0) {
+      inode.data[key] = allocInodeData();
+      InodeData storage data = m_inodeData[inode.data[key]];
       inode.keys.push(key);
       data.index = inode.keys.length;  // index+1
+      data.extent = value;
+    } else {
+      m_inodeData[inode.data[key]].extent = value;
     }
-    data.extent = value;
     inode.lastModified = now;
   }
 
   function clear(uint ino, bytes calldata key) external onlyOwner {
     Inode storage inode = m_inode[ino];
     require(inode.fileType == FileType.Data, 'EPERM');
-    require(inode.data[key].index > 0, 'EINVAL');
+    require(inode.data[key] > 0, 'EINVAL');
     removeFromInode(ino, key);
   }
 
@@ -222,8 +263,7 @@ contract FileSystemImpl is FileSystem {
     } else {
       key = key2;
     }
-    InodeData storage data = m_inode[dirIno].data[key];
-    require(data.index == 0, 'EEXIST');
+    require(m_inode[dirIno].data[key] == 0, 'EEXIST');
     writeToInode(dirIno, key, ino);
     inode.links++;
   }
@@ -234,7 +274,7 @@ contract FileSystemImpl is FileSystem {
     Inode storage inode = m_inode[ino];
     require(inode.fileType != FileType.Directory, 'EISDIR');
     removeFromInode(dirIno, key);
-    if (--inode.links == 0) delete m_inode[ino];
+    if (--inode.links == 0) freeInode(ino);
   }
 
   function move(bytes calldata source, bytes calldata target, uint curdir) external onlyOwner {
@@ -252,7 +292,7 @@ contract FileSystemImpl is FileSystem {
       } else {
         require(!sourceIsDir, 'ENOTDIR');
         removeFromInode(dirIno2, key2);
-        if (--inode.links == 0) delete m_inode[ino2];
+        if (--inode.links == 0) freeInode(ino2);
       }
     } else if (!sourceIsDir) {
       require(target[target.length-1] != '/', 'ENOENT');
@@ -262,7 +302,7 @@ contract FileSystemImpl is FileSystem {
       while (true) {
         require(ino2 != ino, 'EINVAL');
         if (ino2 == 1) break;
-        ino2 = m_inode[ino2].data['..'].value;
+        ino2 = m_inodeData[m_inode[ino2].data['..']].value;
       }
       writeToInode(ino, '..', dirIno2);
     }
@@ -296,11 +336,11 @@ contract FileSystemImpl is FileSystem {
       while (true) {
         require(ino2 != ino, 'EINVAL');
         if (ino2 == 1) break;
-        ino2 = m_inode[ino2].data['..'].value;
+        ino2 = m_inodeData[m_inode[ino2].data['..']].value;
       }
     }
     if (newIno == 0) {
-      newIno = m_inode.length++;
+      newIno = allocInode();
       writeToInode(dirIno2, key2, newIno);
     }
     copyInode(inode, newIno, dirIno2);
@@ -320,7 +360,9 @@ contract FileSystemImpl is FileSystem {
     } else {
       inode2.links = 1;
       while (i < inode2.keys.length) {
-        delete inode2.data[inode2.keys[i++]];
+        bytes storage key = inode2.keys[i++];
+        m_freeInoData.push(inode2.data[key]);
+        delete inode2.data[key];
       }
       i = 0;
     }
@@ -329,11 +371,12 @@ contract FileSystemImpl is FileSystem {
     for (; i < inode.keys.length; i++) {
       bytes storage key = inode.keys[i];
       inode2.keys[i] = key;
-      InodeData storage data = inode.data[key];
-      InodeData storage data2 = inode2.data[key];
+      inode2.data[key] = allocInodeData();
+      InodeData storage data = m_inodeData[inode.data[key]];
+      InodeData storage data2 = m_inodeData[inode2.data[key]];
       data2.index = data.index;
       if (sourceIsDir) {
-        data2.value = m_inode.length++;
+        data2.value = allocInode();
         copyInode(m_inode[data.value], data2.value, ino);
       } else {
         data2.extent = data.extent;
@@ -344,7 +387,7 @@ contract FileSystemImpl is FileSystem {
   function install(address source, bytes calldata target, uint curdir) external onlyOwner {
     (uint ino, uint dirIno, bytes memory key) = pathToInode(target, curdir, false);
     require(ino == 0, 'EEXIST');
-    ino = m_inode.length++;
+    ino = allocInode();
     Inode storage inode = m_inode[ino];
     inode.owner = source;
     inode.fileType = FileType.Contract;
@@ -356,7 +399,7 @@ contract FileSystemImpl is FileSystem {
   function mkdir(bytes calldata path, uint curdir) external onlyOwner {
     (uint ino, uint dirIno, bytes memory key) = pathToInode(path, curdir, true);
     require(ino == 0, 'EEXIST');
-    ino = m_inode.length++;
+    ino = allocInode();
     Inode storage inode = m_inode[ino];
     inode.owner = tx.origin;
     inode.fileType = FileType.Directory;
@@ -373,7 +416,7 @@ contract FileSystemImpl is FileSystem {
     require(inode.fileType == FileType.Directory, 'ENOTDIR');
     require(inode.keys.length == 2, 'ENOTEMPTY');
     removeFromInode(dirIno, key);
-    delete m_inode[ino];
+    freeInode(ino);
   }
 
   function stat(bytes calldata path, uint curdir) external view onlyOwner returns (FileType fileType, uint permissions, uint ino_, address device, uint links, address owner, uint entries, uint lastModified) {
