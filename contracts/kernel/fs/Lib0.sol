@@ -1,6 +1,6 @@
 pragma solidity >= 0.5.8;
 
-import '../interface/FileSystem.sol';
+import '../../interface/FileSystem.sol';
 
 library FileSystemLib {
   uint constant O_RDONLY  = 0x0000;
@@ -69,10 +69,9 @@ library FileSystemLib {
     self.owner = address(0);
   }
 
-  function pathToInode(Disk storage self, bytes memory path, uint curdir, bool allowNonExistDir) private view returns (uint ino, uint dirIno, bytes memory key) {
+  function pathToInode(Disk storage self, bytes memory path, uint curdir, bool allowNonExistDir) public view returns (uint ino, uint dirIno, bytes memory key) {
     require(path.length > 0, 'ENOENT');
-    if (curdir == 0) curdir = 1;
-    ino = path[0] == '/' ? 1 : curdir;
+    ino = path[0] == '/' ? 1 : curdir == 0 ? 1 : curdir;
     uint j;
     for (uint i = 0; i <= path.length; i++) {
       while (i < path.length && path[i] != '/') i++;
@@ -109,7 +108,7 @@ library FileSystemLib {
     }
   }
 
-  function pathToInode2(Disk storage self, bytes memory path, uint curdir, bool allowNonExistDir) private view returns (ResolvedPath memory) {
+  function pathToInode2(Disk storage self, bytes memory path, uint curdir, bool allowNonExistDir) internal view returns (ResolvedPath memory) {
     (uint ino, uint dirIno, bytes memory key) = pathToInode(self, path, curdir, allowNonExistDir);
     return ResolvedPath(ino, dirIno, key);
   }
@@ -141,7 +140,7 @@ library FileSystemLib {
     }
   }
 
-  function allocInode(Disk storage self) private returns(uint ino) {
+  function allocInode(Disk storage self) public returns(uint ino) {
     if (self.freeIno.length > 0) {
       ino = self.freeIno[self.freeIno.length-1];
       self.freeIno.pop();
@@ -150,7 +149,7 @@ library FileSystemLib {
     }
   }
 
-  function freeInode(Disk storage self, uint ino) private {
+  function freeInode(Disk storage self, uint ino) public {
     Inode storage inode = self.inode[ino];
     for (uint i; i < inode.keys.length;) {
       bytes storage key = inode.keys[i++];
@@ -160,7 +159,7 @@ library FileSystemLib {
     self.freeIno.push(ino);
   }
 
-  function allocInodeData(Disk storage self) private returns(uint inoData) {
+  function allocInodeData(Disk storage self) public returns(uint inoData) {
     if (self.freeInoData.length > 0) {
       inoData = self.freeInoData[self.freeInoData.length-1];
       self.freeInoData.pop();
@@ -169,7 +168,7 @@ library FileSystemLib {
     }
   }
 
-  function writeToInode(Disk storage self, uint ino, bytes memory key, uint value) private {
+  function writeToInode(Disk storage self, uint ino, bytes memory key, uint value) public {
     Inode storage inode = self.inode[ino];
     if (inode.data[key] == 0) {
       inode.data[key] = allocInodeData(self);
@@ -183,7 +182,7 @@ library FileSystemLib {
     inode.lastModified = now;
   }
 
-  function removeFromInode(Disk storage self, uint ino, bytes memory key) private {
+  function removeFromInode(Disk storage self, uint ino, bytes memory key) public {
     Inode storage inode = self.inode[ino];
     bytes[] storage keys = inode.keys;
     uint inoData = inode.data[key];
@@ -264,174 +263,6 @@ library FileSystemLib {
     removeFromInode(self, ino, key);
   }
 
-  function link(Disk storage self, bytes calldata source, bytes calldata target, uint curdir) external onlyOwner(self) {
-    (uint ino,, bytes memory key) = pathToInode(self, source, curdir, false);
-    require(ino > 0, 'ENOENT');
-    Inode storage inode = self.inode[ino];
-    require(inode.fileType != FileSystem.FileType.Directory, 'EISDIR');
-    (uint ino2, uint dirIno, bytes memory key2) = pathToInode(self, target, curdir, false);
-    if (ino2 > 0) {
-      require(self.inode[ino2].fileType == FileSystem.FileType.Directory, 'EEXIST');
-      dirIno = ino2;
-    } else {
-      key = key2;
-    }
-    require(self.inode[dirIno].data[key] == 0, 'EEXIST');
-    writeToInode(self, dirIno, key, ino);
-    inode.links++;
-  }
-
-  function unlink(Disk storage self, bytes calldata path, uint curdir) external onlyOwner(self) {
-    (uint ino, uint dirIno, bytes memory key) = pathToInode(self, path, curdir, false);
-    require(ino > 0, 'ENOENT');
-    Inode storage inode = self.inode[ino];
-    require(inode.fileType != FileSystem.FileType.Directory, 'EISDIR');
-    removeFromInode(self, dirIno, key);
-    if (--inode.links == 0) freeInode(self, ino);
-  }
-
-  function move(Disk storage self, bytes calldata source, bytes calldata target, uint curdir) external onlyOwner(self) {
-    (uint ino, uint dirIno, bytes memory key) = pathToInode(self, source, curdir, false);
-    require(ino > 0, 'ENOENT');
-    bool sourceIsDir = self.inode[ino].fileType == FileSystem.FileType.Directory;
-    (uint ino2, uint dirIno2, bytes memory key2) = pathToInode(self, target, curdir, true);
-    if (ino == ino2) return;
-    if (ino2 > 0) {
-      Inode storage inode = self.inode[ino2];
-      if (inode.fileType == FileSystem.FileType.Directory) {
-        if (ino2 == dirIno) return;
-        dirIno2 = ino2;
-        key2 = key;
-      } else {
-        require(!sourceIsDir, 'ENOTDIR');
-        removeFromInode(self, dirIno2, key2);
-        if (--inode.links == 0) freeInode(self, ino2);
-      }
-    } else if (!sourceIsDir) {
-      require(target[target.length-1] != '/', 'ENOENT');
-    }
-    if (sourceIsDir) {
-      ino2 = dirIno2;
-      while (true) {
-        require(ino2 != ino, 'EINVAL');
-        if (ino2 == 1) break;
-        ino2 = self.inodeData[self.inode[ino2].data['..']].value;
-      }
-      writeToInode(self, ino, '..', dirIno2);
-    }
-    removeFromInode(self, dirIno, key);
-    writeToInode(self, dirIno2, key2, ino);
-  }
-
-  function copy(Disk storage self, bytes calldata sourcePath, bytes calldata targetPath, uint curdir) external onlyOwner(self) {
-    ResolvedPath memory source = pathToInode2(self, sourcePath, curdir, false);
-    require(source.ino > 0, 'ENOENT');
-    Inode storage inode = self.inode[source.ino];
-    bool sourceIsDir = inode.fileType == FileSystem.FileType.Directory;
-    ResolvedPath memory target = pathToInode2(self, targetPath, curdir, true);
-    if (source.ino == target.ino) return;
-    uint newIno;
-    if (target.ino > 0) {
-      Inode storage inode2 = self.inode[target.ino];
-      if (inode2.fileType == FileSystem.FileType.Directory) {
-        if (target.ino == source.dirIno) return;
-        target.dirIno = target.ino;
-        target.key = source.key;
-      } else {
-        require(!sourceIsDir, 'ENOTDIR');
-        if (--inode2.links == 0) newIno = target.ino;
-      }
-    } else if (!sourceIsDir) {
-      require(targetPath[targetPath.length-1] != '/', 'ENOENT');
-    }
-    if (sourceIsDir) {
-      uint ino = target.dirIno;
-      while (true) {
-        require(ino != source.ino, 'EINVAL');
-        if (ino == 1) break;
-        ino = self.inodeData[self.inode[ino].data['..']].value;
-      }
-    }
-    if (newIno == 0) {
-      newIno = allocInode(self);
-      writeToInode(self, target.dirIno, target.key, newIno);
-    }
-    copyInode(self, inode, newIno, target.dirIno);
-  }
-
-  function copyInode(Disk storage self, Inode storage inode, uint ino, uint dirIno) private {
-    bool sourceIsDir = inode.fileType == FileSystem.FileType.Directory;
-    Inode storage inode2 = self.inode[ino];
-    inode2.owner = inode.owner;
-    inode2.fileType = inode.fileType;
-    inode2.permissions = inode.permissions;
-    uint i;
-    if (sourceIsDir) {
-      i = 2;
-      writeToInode(self, ino, '.', ino);
-      writeToInode(self, ino, '..', dirIno);
-    } else {
-      inode2.links = 1;
-      while (i < inode2.keys.length) {
-        bytes storage key = inode2.keys[i++];
-        self.freeInoData.push(inode2.data[key]);
-        delete inode2.data[key];
-      }
-      i = 0;
-    }
-    inode2.lastModified = inode.lastModified;
-    inode2.keys.length = inode.keys.length;
-    for (; i < inode.keys.length; i++) {
-      bytes storage key = inode.keys[i];
-      inode2.keys[i] = key;
-      inode2.data[key] = allocInodeData(self);
-      InodeData storage data = self.inodeData[inode.data[key]];
-      InodeData storage data2 = self.inodeData[inode2.data[key]];
-      data2.index = data.index;
-      if (sourceIsDir) {
-        data2.value = allocInode(self);
-        copyInode(self, self.inode[data.value], data2.value, ino);
-      } else {
-        data2.extent = data.extent;
-      }
-    }
-  }
-
-  function install(Disk storage self, address source, bytes calldata target, uint curdir) external onlyOwner(self) {
-    (uint ino, uint dirIno, bytes memory key) = pathToInode(self, target, curdir, false);
-    require(ino == 0, 'EEXIST');
-    ino = allocInode(self);
-    Inode storage inode = self.inode[ino];
-    inode.owner = source;
-    inode.fileType = FileSystem.FileType.Contract;
-    inode.lastModified = now;
-    inode.links = 1;
-    writeToInode(self, dirIno, key, ino);
-  }
-
-  function mkdir(Disk storage self, bytes calldata path, uint curdir) external onlyOwner(self) {
-    (uint ino, uint dirIno, bytes memory key) = pathToInode(self, path, curdir, true);
-    require(ino == 0, 'EEXIST');
-    ino = allocInode(self);
-    Inode storage inode = self.inode[ino];
-    inode.owner = tx.origin;
-    inode.fileType = FileSystem.FileType.Directory;
-    writeToInode(self, dirIno, key, ino);
-    writeToInode(self, ino, '.', ino);
-    writeToInode(self, ino, '..', dirIno);
-  }
-
-  function rmdir(Disk storage self, bytes calldata path, uint curdir) external onlyOwner(self) {
-    (uint ino, uint dirIno, bytes memory key) = pathToInode(self, path, curdir, false);
-    require(ino > 0, 'ENOENT');
-    require(ino != curdir, 'EINVAL');
-    Inode storage inode = self.inode[ino];
-    require(inode.fileType == FileSystem.FileType.Directory, 'ENOTDIR');
-    require(inode.keys.length == 2, 'ENOTEMPTY');
-    removeFromInode(self, dirIno, key);
-    freeInode(self, ino);
-  }
-
   function stat(Disk storage self, bytes calldata path, uint curdir) external view onlyOwner(self) returns (FileSystem.FileType fileType, uint permissions, uint ino_, address device, uint links, address owner, uint entries, uint lastModified) {
     (uint ino, uint dirIno,) = pathToInode(self, path, curdir, false);
     require(ino > 0, 'ENOENT');
@@ -454,14 +285,5 @@ library FileSystemLib {
     owner = inode.owner;
     entries = inode.keys.length;
     lastModified = inode.lastModified;
-  }
-
-  function readContract(Disk storage self, bytes calldata path, uint curdir) external view onlyOwner(self) returns (address) {
-    (uint ino,,) = pathToInode(self, path, curdir, false);
-    require(ino > 0, 'ENOENT');
-    Inode storage inode = self.inode[ino];
-    require(inode.fileType != FileSystem.FileType.Directory, 'EISDIR');
-    require(inode.fileType == FileSystem.FileType.Contract, 'ENOEXEC');
-    return inode.owner;
   }
 }
