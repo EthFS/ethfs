@@ -3,7 +3,7 @@ const listPath = require('./listPath')
 
 module.exports = async (kernel, line, callback) => {
   let path
-  const emptyOrOneWord = line.match(/^\s*(\S+)?$/)
+  const emptyOrOneWord = line.match(/^\s*([^\s/]+)?$/)
   if (emptyOrOneWord) {
     path = emptyOrOneWord[1] || ''
   } else {
