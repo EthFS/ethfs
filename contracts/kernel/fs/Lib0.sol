@@ -156,6 +156,7 @@ library FileSystemLib {
       self.freeInoData.push(inode.data[key]);
       delete inode.data[key];
     }
+    inode.keys.length = 0;
     self.freeIno.push(ino);
   }
 
