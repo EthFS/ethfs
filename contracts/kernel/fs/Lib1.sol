@@ -64,6 +64,7 @@ library FileSystemLib1 {
     FileSystemLib.Inode storage inode = self.inode[ino];
     inode.owner = tx.origin;
     inode.fileType = FileSystem.FileType.Directory;
+    inode.refCnt = 1;
     self.writeToInode(dirIno, key, ino);
     self.writeToInode(ino, '.', ino);
     self.writeToInode(ino, '..', dirIno);
@@ -72,11 +73,11 @@ library FileSystemLib1 {
   function rmdir(FileSystemLib.Disk storage self, bytes calldata path, uint curdir) external onlyOwner(self) {
     (uint ino, uint dirIno, bytes memory key) = self.pathToInode(path, curdir, false);
     require(ino > 0, 'ENOENT');
-    require(ino != curdir, 'EINVAL');
+    require(ino != 1 && ino != curdir, 'EBUSY');
     FileSystemLib.Inode storage inode = self.inode[ino];
     require(inode.fileType == FileSystem.FileType.Directory, 'ENOTDIR');
     require(inode.keys.length == 2, 'ENOTEMPTY');
     self.removeFromInode(dirIno, key);
-    self.freeInode(ino);
+    if (--inode.refCnt == 0) self.freeInode(ino);
   }
 }

@@ -158,6 +158,7 @@ library FileSystemLib {
 
   function freeInode(Disk storage self, uint ino) public {
     Inode storage inode = self.inode[ino];
+    if (inode.links + inode.refCnt > 0) return;
     bool isDir = inode.fileType == FileSystem.FileType.Directory;
     for (uint i; i < inode.keys.length;) {
       bytes storage key = inode.keys[i++];
@@ -245,12 +246,17 @@ library FileSystemLib {
       }
     }
     checkOpen(self, ino, flags);
+    self.inode[ino].refCnt++;
     return ino;
   }
 
   function openOnly(Disk storage self, bytes calldata path, uint curdir, uint flags) external view onlyOwner(self) returns (uint ino) {
     (ino,,) = pathToInode(self, path, curdir, false);
     checkOpen(self, ino, flags);
+  }
+
+  function close(Disk storage self, uint ino) external onlyOwner(self) {
+    if (--self.inode[ino].refCnt == 0) freeInode(self, ino);
   }
 
   function readkey(Disk storage self, uint ino, uint index) external view onlyOwner(self) returns (bytes memory) {

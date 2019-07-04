@@ -8,6 +8,7 @@ interface FileSystem {
   function dirInodeToPath(uint ino) external view returns (bytes memory);
   function open(bytes calldata path, uint curdir, uint flags) external returns (uint);
   function openOnly(bytes calldata path, uint curdir, uint flags) external view returns (uint);
+  function close(uint ino) external;
   function readkey(uint ino, uint index) external view returns (bytes memory);
   function read(uint ino, bytes calldata key) external view returns (bytes memory);
   function write(uint ino, bytes calldata key, bytes calldata value) external;

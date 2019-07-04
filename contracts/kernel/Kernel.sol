@@ -136,7 +136,8 @@ contract KernelImpl is Kernel {
 
   function chdir(bytes calldata path) external {
     UserArea storage u = m_userArea[msg.sender];
-    uint ino = m_fileSystem.openOnly(path, u.curdir, O_DIRECTORY);
+    uint ino = m_fileSystem.open(path, u.curdir, O_DIRECTORY);
+    if (u.curdir > 0) m_fileSystem.close(u.curdir);
     u.curdir = ino;
   }
 

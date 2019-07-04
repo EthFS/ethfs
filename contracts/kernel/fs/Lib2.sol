@@ -59,7 +59,9 @@ library FileSystemLib2 {
         target.key = source.key;
       } else {
         require(!sourceIsDir, 'ENOTDIR');
-        if (--inode2.links == 0) newIno = target.ino;
+        if (--inode2.links == 0 && inode2.refCnt == 0) {
+          newIno = target.ino;
+        }
       }
     } else if (!sourceIsDir) {
       require(targetPath[targetPath.length-1] != '/', 'ENOENT');
@@ -88,6 +90,7 @@ library FileSystemLib2 {
     uint i;
     if (sourceIsDir) {
       i = 2;
+      inode2.refCnt = 1;
       self.writeToInode(ino, '.', ino);
       self.writeToInode(ino, '..', dirIno);
     } else {

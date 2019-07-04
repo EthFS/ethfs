@@ -34,6 +34,10 @@ contract FileSystemDisk is FileSystem {
     return m_disk.openOnly(path, curdir, flags);
   }
 
+  function close(uint ino) external {
+    m_disk.close(ino);
+  }
+
   function readkey(uint ino, uint index) external view returns (bytes memory) {
     return m_disk.readkey(ino, index);
   }
