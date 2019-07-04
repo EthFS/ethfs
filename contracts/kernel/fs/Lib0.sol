@@ -16,9 +16,11 @@ library FileSystemLib {
   struct Disk {
     address owner;
     Inode[] inode;
-    InodeData[] inodeData;
+    InodeValue[] inodeValue;
+    InodeExtent[] inodeExtent;
     uint[] freeIno;
-    uint[] freeInoData;
+    uint[] freeInoValue;
+    uint[] freeInoExtent;
   }
 
   struct Inode {
@@ -32,9 +34,13 @@ library FileSystemLib {
     mapping(bytes => uint) data;
   }
 
-  struct InodeData {
+  struct InodeValue {
     uint index;
     uint value;
+  }
+
+  struct InodeExtent {
+    uint index;
     bytes extent;
   }
 
@@ -53,7 +59,8 @@ library FileSystemLib {
     // Set up root inode
     uint ino = 1;
     self.inode.length = ino+1;
-    self.inodeData.length = 1;
+    self.inodeValue.length = 1;
+    self.inodeExtent.length = 1;
     self.inode[ino].owner = tx.origin;
     self.inode[ino].fileType = FileSystem.FileType.Directory;
     writeToInode(self, ino, '.', ino);
@@ -87,7 +94,7 @@ library FileSystemLib {
       for (uint k; j < i;) key[k++] = path[j++];
       j++;
       dirIno = ino;
-      ino = self.inodeData[inode.data[key]].value;
+      ino = self.inodeValue[inode.data[key]].value;
     }
     if (ino == 0) {
       require(allowNonExistDir || path[path.length-1] != '/', 'ENOENT');
@@ -96,11 +103,11 @@ library FileSystemLib {
     }
     if (key.length == 1 && key[0] == '.' ||
         key.length == 2 && key[0] == '.' && key[1] == '.') {
-      dirIno = self.inodeData[self.inode[ino].data['..']].value;
+      dirIno = self.inodeValue[self.inode[ino].data['..']].value;
       Inode storage inode = self.inode[dirIno];
       for (uint i;;) {
         bytes storage key2 = inode.keys[i++];
-        if (self.inodeData[inode.data[key2]].value == ino) {
+        if (self.inodeValue[inode.data[key2]].value == ino) {
           key = key2;
           break;
         }
@@ -118,12 +125,12 @@ library FileSystemLib {
     Inode storage inode = self.inode[ino];
     require(inode.fileType == FileSystem.FileType.Directory, 'ENOTDIR');
     while (ino != 1) {
-      uint dirIno = self.inodeData[inode.data['..']].value;
+      uint dirIno = self.inodeValue[inode.data['..']].value;
       inode = self.inode[dirIno];
       require(tx.origin == inode.owner, 'EACCES');
       for (uint i;;) {
         bytes storage key = inode.keys[i++];
-        if (self.inodeData[inode.data[key]].value != ino) continue;
+        if (self.inodeValue[inode.data[key]].value != ino) continue;
         bytes memory path2 = new bytes(key.length + path.length + 1);
         path2[0] = '/';
         uint k = 1;
@@ -151,34 +158,48 @@ library FileSystemLib {
 
   function freeInode(Disk storage self, uint ino) public {
     Inode storage inode = self.inode[ino];
+    bool isDir = inode.fileType == FileSystem.FileType.Directory;
     for (uint i; i < inode.keys.length;) {
       bytes storage key = inode.keys[i++];
-      self.freeInoData.push(inode.data[key]);
+      if (isDir) {
+        self.freeInoValue.push(inode.data[key]);
+      } else {
+        self.freeInoExtent.push(inode.data[key]);
+      }
       delete inode.data[key];
     }
     inode.keys.length = 0;
     self.freeIno.push(ino);
   }
 
-  function allocInodeData(Disk storage self) public returns(uint inoData) {
-    if (self.freeInoData.length > 0) {
-      inoData = self.freeInoData[self.freeInoData.length-1];
-      self.freeInoData.pop();
+  function allocInodeValue(Disk storage self) public returns(uint index) {
+    if (self.freeInoValue.length > 0) {
+      index = self.freeInoValue[self.freeInoValue.length-1];
+      self.freeInoValue.pop();
     } else {
-      inoData = self.inodeData.length++;
+      index = self.inodeValue.length++;
+    }
+  }
+
+  function allocInodeExtent(Disk storage self) public returns(uint index) {
+    if (self.freeInoExtent.length > 0) {
+      index = self.freeInoExtent[self.freeInoExtent.length-1];
+      self.freeInoExtent.pop();
+    } else {
+      index = self.inodeExtent.length++;
     }
   }
 
   function writeToInode(Disk storage self, uint ino, bytes memory key, uint value) public {
     Inode storage inode = self.inode[ino];
     if (inode.data[key] == 0) {
-      inode.data[key] = allocInodeData(self);
-      InodeData storage data = self.inodeData[inode.data[key]];
+      inode.data[key] = allocInodeValue(self);
+      InodeValue storage data = self.inodeValue[inode.data[key]];
       inode.keys.push(key);
       data.index = inode.keys.length;  // index+1
       data.value = value;
     } else {
-      self.inodeData[inode.data[key]].value = value;
+      self.inodeValue[inode.data[key]].value = value;
     }
     inode.lastModified = now;
   }
@@ -186,15 +207,15 @@ library FileSystemLib {
   function removeFromInode(Disk storage self, uint ino, bytes memory key) public {
     Inode storage inode = self.inode[ino];
     bytes[] storage keys = inode.keys;
-    uint inoData = inode.data[key];
-    uint index = self.inodeData[inoData].index-1;
+    uint inoValue = inode.data[key];
+    uint index = self.inodeValue[inoValue].index-1;
     if (index < keys.length-1) {
       bytes storage key2 = keys[keys.length-1];
       keys[index] = key2;
-      self.inodeData[inode.data[key2]].index = index+1;
+      self.inodeValue[inode.data[key2]].index = index+1;
     }
     keys.pop();
-    self.freeInoData.push(inoData);
+    self.freeInoValue.push(inoValue);
     delete inode.data[key];
     inode.lastModified = now;
   }
@@ -237,22 +258,22 @@ library FileSystemLib {
   }
 
   function read(Disk storage self, uint ino, bytes calldata key) external view onlyOwner(self) returns (bytes memory) {
-    uint inoData = self.inode[ino].data[key];
-    require(inoData > 0, 'EINVAL');
-    return self.inodeData[inoData].extent;
+    uint index = self.inode[ino].data[key];
+    require(index > 0, 'EINVAL');
+    return self.inodeExtent[index].extent;
   }
 
   function write(Disk storage self, uint ino, bytes calldata key, bytes calldata value) external onlyOwner(self) {
     Inode storage inode = self.inode[ino];
     require(inode.fileType == FileSystem.FileType.Data, 'EPERM');
     if (inode.data[key] == 0) {
-      inode.data[key] = allocInodeData(self);
-      InodeData storage data = self.inodeData[inode.data[key]];
+      inode.data[key] = allocInodeExtent(self);
+      InodeExtent storage data = self.inodeExtent[inode.data[key]];
       inode.keys.push(key);
       data.index = inode.keys.length;  // index+1
       data.extent = value;
     } else {
-      self.inodeData[inode.data[key]].extent = value;
+      self.inodeExtent[inode.data[key]].extent = value;
     }
     inode.lastModified = now;
   }
@@ -260,8 +281,19 @@ library FileSystemLib {
   function clear(Disk storage self, uint ino, bytes calldata key) external onlyOwner(self) {
     Inode storage inode = self.inode[ino];
     require(inode.fileType == FileSystem.FileType.Data, 'EPERM');
-    require(inode.data[key] > 0, 'EINVAL');
-    removeFromInode(self, ino, key);
+    uint inoExtent = inode.data[key];
+    require(inoExtent > 0, 'EINVAL');
+    bytes[] storage keys = inode.keys;
+    uint index = self.inodeExtent[inoExtent].index-1;
+    if (index < keys.length-1) {
+      bytes storage key2 = keys[keys.length-1];
+      keys[index] = key2;
+      self.inodeExtent[inode.data[key2]].index = index+1;
+    }
+    keys.pop();
+    self.freeInoExtent.push(inoExtent);
+    delete inode.data[key];
+    inode.lastModified = now;
   }
 
   function stat(Disk storage self, bytes calldata path, uint curdir) external view onlyOwner(self) returns (FileSystem.FileType fileType, uint permissions, uint ino_, address device, uint links, address owner, uint entries, uint lastModified) {

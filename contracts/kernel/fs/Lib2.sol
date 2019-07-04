@@ -35,7 +35,7 @@ library FileSystemLib2 {
       while (true) {
         require(ino2 != ino, 'EINVAL');
         if (ino2 == 1) break;
-        ino2 = self.inodeData[self.inode[ino2].data['..']].value;
+        ino2 = self.inodeValue[self.inode[ino2].data['..']].value;
       }
       self.writeToInode(ino, '..', dirIno2);
     }
@@ -69,7 +69,7 @@ library FileSystemLib2 {
       while (true) {
         require(ino != source.ino, 'EINVAL');
         if (ino == 1) break;
-        ino = self.inodeData[self.inode[ino].data['..']].value;
+        ino = self.inodeValue[self.inode[ino].data['..']].value;
       }
     }
     if (newIno == 0) {
@@ -94,7 +94,7 @@ library FileSystemLib2 {
       inode2.links = 1;
       while (i < inode2.keys.length) {
         bytes storage key = inode2.keys[i++];
-        self.freeInoData.push(inode2.data[key]);
+        self.freeInoExtent.push(inode2.data[key]);
         delete inode2.data[key];
       }
       i = 0;
@@ -104,15 +104,16 @@ library FileSystemLib2 {
     for (; i < inode.keys.length; i++) {
       bytes storage key = inode.keys[i];
       inode2.keys[i] = key;
-      inode2.data[key] = self.allocInodeData();
-      FileSystemLib.InodeData storage data = self.inodeData[inode.data[key]];
-      FileSystemLib.InodeData storage data2 = self.inodeData[inode2.data[key]];
-      data2.index = data.index;
       if (sourceIsDir) {
+        inode2.data[key] = self.allocInodeValue();
+        FileSystemLib.InodeValue storage data = self.inodeValue[inode.data[key]];
+        FileSystemLib.InodeValue storage data2 = self.inodeValue[inode2.data[key]];
+        data2.index = data.index;
         data2.value = self.allocInode();
         copyInode(self, self.inode[data.value], data2.value, ino);
       } else {
-        data2.extent = data.extent;
+        inode2.data[key] = self.allocInodeExtent();
+        self.inodeExtent[inode2.data[key]] = self.inodeExtent[inode.data[key]];
       }
     }
   }
