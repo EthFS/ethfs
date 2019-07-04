@@ -8,6 +8,7 @@ function create(completer) {
     output: process.stdout,
     completer,
   })
+  rl.on('close', process.exit)
 }
 
 function prompt(x) {
