@@ -63,6 +63,7 @@ library FileSystemLib {
     self.inodeExtent.length = 1;
     self.inode[ino].owner = tx.origin;
     self.inode[ino].fileType = FileSystem.FileType.Directory;
+    self.inode[ino].refCnt = 1;
     writeToInode(self, ino, '.', ino);
     writeToInode(self, ino, '..', ino);
   }
