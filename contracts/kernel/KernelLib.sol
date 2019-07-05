@@ -1,6 +1,7 @@
 pragma solidity >= 0.5.8;
 
 import '../interface/FileSystem.sol';
+import '../interface/App.sol';
 
 library KernelLib {
   uint constant O_RDONLY  = 0x0000;
@@ -166,11 +167,9 @@ library KernelLib {
 
   function exec(KernelArea storage self, bytes calldata path, uint[] calldata argi, bytes calldata args) external returns (uint ret) {
     UserArea storage u = self.userArea[msg.sender];
-    address bin = self.fileSystem.readContract(path, u.curdir);
-    bytes memory payload = abi.encodeWithSelector(0x385c9670, this, argi, args);
-    (bool success, bytes memory returnData) = bin.delegatecall(payload);
-    require(success);
-    (ret) = abi.decode(returnData, (uint));
+    address app = self.fileSystem.readContract(path, u.curdir);
+    self.userArea[app].curdir = u.curdir;
+    ret = App(app).main(Kernel(address(this)), argi, args);
     u.result = ret;
   }
 }

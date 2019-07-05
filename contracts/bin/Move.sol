@@ -1,8 +1,8 @@
 pragma solidity >= 0.5.8;
 
-import '../interface/Kernel.sol';
+import '../interface/App.sol';
 
-library Move {
+contract Move is App {
   function main(Kernel kernel, uint[] calldata argi, bytes calldata args) external returns (uint) {
     require(argi.length >= 2, 'EINVAL');
     uint index = argi[argi.length-2];

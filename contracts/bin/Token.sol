@@ -1,9 +1,9 @@
 pragma solidity >= 0.5.8;
 
 import 'openzeppelin-solidity/contracts/token/ERC20/IERC20.sol';
-import '../interface/Kernel.sol';
+import '../interface/App.sol';
 
-library Token {
+contract Token is App {
   function main(Kernel kernel, uint[] calldata argi, bytes calldata args) external returns (uint) {
     require(argi.length >= 1, 'Usage: token send <path to token> <target>');
     bytes memory arg = new bytes(argi[0]);
