@@ -3,7 +3,7 @@ pragma solidity >= 0.5.8;
 import './FileSystem.sol';
 
 interface Kernel {
-  function result() external view returns (bytes32);
+  function result() external view returns (uint);
   function open(bytes calldata path, uint flags) external returns (uint);
   function readkey(uint fd, uint index) external view returns (bytes memory);
   function readkeyPath(bytes calldata path, uint index) external view returns (bytes memory);

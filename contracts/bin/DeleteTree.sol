@@ -1,16 +1,8 @@
 pragma solidity >= 0.5.8;
 
-import '../interface/App.sol';
+import '../interface/Kernel.sol';
 
-contract DeleteTree is App {
-  constructor(Kernel kernel) public {
-    install(kernel);
-  }
-
-  function install(Kernel kernel) public {
-    kernel.install(address(this), '/bin/deltree');
-  }
-
+library DeleteTree {
   function main(Kernel kernel, uint[] calldata argi, bytes calldata args) external returns (uint) {
     require(argi.length > 0, 'EINVAL');
     for (uint i; i < argi.length; i++) {

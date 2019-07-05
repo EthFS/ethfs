@@ -1,16 +1,8 @@
 pragma solidity >= 0.5.8;
 
-import '../interface/App.sol';
+import '../interface/Kernel.sol';
 
-contract Copy is App {
-  constructor(Kernel kernel) public {
-    install(kernel);
-  }
-
-  function install(Kernel kernel) public {
-    kernel.install(address(this), '/bin/cp');
-  }
-
+library Copy {
   function main(Kernel kernel, uint[] calldata argi, bytes calldata args) external returns (uint) {
     require(argi.length >= 2, 'EINVAL');
     uint index = argi[argi.length-2];
