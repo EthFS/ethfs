@@ -19,12 +19,23 @@ library FileSystemLib2 {
     if (target.ino > 0) {
       FileSystemLib.Inode storage inode = self.inode[target.ino];
       if (inode.fileType == FileSystem.FileType.Directory) {
-        if (target.ino == source.dirIno) return;
         target.dirIno = target.ino;
         target.key = source.key;
+        if (target.dirIno == source.dirIno) return;
+        if (inode.data[target.key] > 0) {
+          uint ino = self.inodeValue[inode.data[target.key]].value;
+          inode = self.inode[ino];
+          if (sourceIsDir) {
+            require(inode.fileType == FileSystem.FileType.Directory, 'ENOTDIR');
+            require(inode.keys.length == 2, 'ENOTEMPTY');
+            if (--inode.refCnt == 0) self.freeInode(ino);
+          } else {
+            require(inode.fileType != FileSystem.FileType.Directory, 'EISDIR');
+            if (--inode.links == 0) self.freeInode(ino);
+          }
+        }
       } else {
         require(!sourceIsDir, 'ENOTDIR');
-        self.removeFromInode(target.dirIno, target.key);
         if (--inode.links == 0) self.freeInode(target.ino);
       }
     } else if (!sourceIsDir) {
