@@ -38,11 +38,11 @@ library KernelLib {
   }
 
   function result(KernelArea storage self) external view returns (uint) {
-    return self.userArea[msg.sender].result;
+    return self.userArea[tx.origin].result;
   }
 
   function open(KernelArea storage self, bytes calldata path, uint flags) external returns (uint fd) {
-    UserArea storage u = self.userArea[msg.sender];
+    UserArea storage u = self.userArea[tx.origin];
     uint ino = self.fileSystem.open(path, u.curdir, flags);
     fd = u.fildes.length;
     u.fildes.push(FileDescriptor({
@@ -53,7 +53,7 @@ library KernelLib {
   }
 
   function readkey(KernelArea storage self, uint fd, uint index) external view returns (bytes memory) {
-    UserArea storage u = self.userArea[msg.sender];
+    UserArea storage u = self.userArea[tx.origin];
     FileDescriptor storage fildes = u.fildes[fd];
     require(fildes.ino > 0, 'EBADF');
     require(fildes.flags == O_RDONLY || fildes.flags == O_RDWR, 'EBADF');
@@ -61,13 +61,13 @@ library KernelLib {
   }
 
   function readkeyPath(KernelArea storage self, bytes calldata path, uint index) external view returns (bytes memory) {
-    UserArea storage u = self.userArea[msg.sender];
+    UserArea storage u = self.userArea[tx.origin];
     uint ino = self.fileSystem.openOnly(path, u.curdir, 0);
     return self.fileSystem.readkey(ino, index);
   }
 
   function read(KernelArea storage self, uint fd, bytes calldata key) external view returns (bytes memory) {
-    UserArea storage u = self.userArea[msg.sender];
+    UserArea storage u = self.userArea[tx.origin];
     FileDescriptor storage fildes = u.fildes[fd];
     require(fildes.ino > 0, 'EBADF');
     require(fildes.flags == O_RDONLY || fildes.flags == O_RDWR, 'EBADF');
@@ -75,13 +75,13 @@ library KernelLib {
   }
 
   function readPath(KernelArea storage self, bytes calldata path, bytes calldata key) external view returns (bytes memory) {
-    UserArea storage u = self.userArea[msg.sender];
+    UserArea storage u = self.userArea[tx.origin];
     uint ino = self.fileSystem.openOnly(path, u.curdir, 0);
     return self.fileSystem.read(ino, key);
   }
 
   function write(KernelArea storage self, uint fd, bytes calldata key, bytes calldata value) external {
-    UserArea storage u = self.userArea[msg.sender];
+    UserArea storage u = self.userArea[tx.origin];
     FileDescriptor storage fildes = u.fildes[fd];
     require(fildes.ino > 0, 'EBADF');
     require(fildes.flags == O_WRONLY || fildes.flags == O_RDWR, 'EBADF');
@@ -89,7 +89,7 @@ library KernelLib {
   }
 
   function clear(KernelArea storage self, uint fd, bytes calldata key) external {
-    UserArea storage u = self.userArea[msg.sender];
+    UserArea storage u = self.userArea[tx.origin];
     FileDescriptor storage fildes = u.fildes[fd];
     require(fildes.ino > 0, 'EBADF');
     require(fildes.flags == O_WRONLY || fildes.flags == O_RDWR, 'EBADF');
@@ -97,68 +97,68 @@ library KernelLib {
   }
 
   function close(KernelArea storage self, uint fd) external {
-    UserArea storage u = self.userArea[msg.sender];
+    UserArea storage u = self.userArea[tx.origin];
     FileDescriptor storage fildes = u.fildes[fd];
     require(fildes.ino > 0, 'EBADF');
     delete u.fildes[fd];
   }
 
   function link(KernelArea storage self, bytes calldata source, bytes calldata target) external {
-    UserArea storage u = self.userArea[msg.sender];
+    UserArea storage u = self.userArea[tx.origin];
     self.fileSystem.link(source, target, u.curdir);
   }
 
   function unlink(KernelArea storage self, bytes calldata path) external {
-    UserArea storage u = self.userArea[msg.sender];
+    UserArea storage u = self.userArea[tx.origin];
     self.fileSystem.unlink(path, u.curdir);
   }
 
   function move(KernelArea storage self, bytes calldata source, bytes calldata target) external {
-    UserArea storage u = self.userArea[msg.sender];
+    UserArea storage u = self.userArea[tx.origin];
     self.fileSystem.move(source, target, u.curdir);
   }
 
   function copy(KernelArea storage self, bytes calldata source, bytes calldata target) external {
-    UserArea storage u = self.userArea[msg.sender];
+    UserArea storage u = self.userArea[tx.origin];
     self.fileSystem.copy(source, target, u.curdir);
   }
 
   function install(KernelArea storage self, address source, bytes calldata target) external {
-    UserArea storage u = self.userArea[msg.sender];
+    UserArea storage u = self.userArea[tx.origin];
     self.fileSystem.install(source, target, u.curdir);
   }
 
   function getcwd(KernelArea storage self) external view returns (bytes memory) {
-    UserArea storage u = self.userArea[msg.sender];
+    UserArea storage u = self.userArea[tx.origin];
     uint ino = u.curdir;
     if (ino == 0) ino = 1;
     return self.fileSystem.dirInodeToPath(ino);
   }
 
   function chdir(KernelArea storage self, bytes calldata path) external {
-    UserArea storage u = self.userArea[msg.sender];
+    UserArea storage u = self.userArea[tx.origin];
     uint ino = self.fileSystem.open(path, u.curdir, O_DIRECTORY);
     if (u.curdir > 0) self.fileSystem.close(u.curdir);
     u.curdir = ino;
   }
 
   function mkdir(KernelArea storage self, bytes calldata path) external {
-    UserArea storage u = self.userArea[msg.sender];
+    UserArea storage u = self.userArea[tx.origin];
     return self.fileSystem.mkdir(path, u.curdir);
   }
 
   function rmdir(KernelArea storage self, bytes calldata path) external {
-    UserArea storage u = self.userArea[msg.sender];
+    UserArea storage u = self.userArea[tx.origin];
     return self.fileSystem.rmdir(path, u.curdir);
   }
 
   function stat(KernelArea storage self, bytes calldata path) external view returns (FileSystem.FileType fileType, uint permissions, uint ino, address device, uint links, address owner, uint entries, uint lastModified) {
-    UserArea storage u = self.userArea[msg.sender];
+    UserArea storage u = self.userArea[tx.origin];
     return self.fileSystem.stat(path, u.curdir);
   }
 
   function fstat(KernelArea storage self, uint fd) external view returns (FileSystem.FileType fileType, uint permissions, uint ino, address device, uint links, address owner, uint entries, uint lastModified) {
-    UserArea storage u = self.userArea[msg.sender];
+    UserArea storage u = self.userArea[tx.origin];
     FileDescriptor storage fildes = u.fildes[fd];
     require(fildes.ino > 0, 'EBADF');
     require(fildes.flags == O_RDONLY || fildes.flags == O_RDWR, 'EBADF');
@@ -166,9 +166,8 @@ library KernelLib {
   }
 
   function exec(KernelArea storage self, bytes calldata path, uint[] calldata argi, bytes calldata args) external returns (uint ret) {
-    UserArea storage u = self.userArea[msg.sender];
+    UserArea storage u = self.userArea[tx.origin];
     address app = self.fileSystem.readContract(path, u.curdir);
-    self.userArea[app].curdir = u.curdir;
     ret = App(app).main(Kernel(address(this)), argi, args);
     u.result = ret;
   }
