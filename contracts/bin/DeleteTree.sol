@@ -6,11 +6,10 @@ contract DeleteTree is App {
   function main(Kernel kernel, uint[] calldata argi, bytes calldata args) external returns (uint) {
     require(argi.length > 0, 'EINVAL');
     for (uint i; i < argi.length; i++) {
-      uint index = i > 0 ? argi[i-1] : 0;
-      bytes memory path = new bytes(argi[i] - index);
-      for (uint j; j < path.length; j++) {
-        path[j] = args[index + j];
-      }
+      bytes memory p = args;
+      uint index = argi[i];
+      assembly { p := add(p, index) }
+      (bytes memory path) = abi.decode(p, (bytes));
       deltree(kernel, path);
     }
   }
