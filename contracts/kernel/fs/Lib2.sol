@@ -168,8 +168,7 @@ library FileSystemLib2 {
       } else {
         // sourceIsDir == true
         FileSystemLib.InodeValue storage data = self.inodeValue[inode.data[key]];
-        FileSystemLib.InodeValue storage data2 = self.inodeValue[inode2.data[key]];
-        _copy(self, FileSystemLib.ResolvedPath({ino: data.value, dirIno: ino, key: key}), FileSystemLib.ResolvedPath({ino: data2.value, dirIno: ino2, key: key}));
+        _copy(self, FileSystemLib.ResolvedPath({ino: data.value, dirIno: ino, key: key}), FileSystemLib.ResolvedPath({ino: ino2, dirIno: ino2, key: key}));
       }
     }
   }
