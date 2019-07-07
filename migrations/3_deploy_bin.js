@@ -12,7 +12,9 @@ module.exports = async deployer => {
   await deployer.deploy(DeleteTree)
   await deployer.deploy(HelloWorld)
   const kernel = await Kernel.deployed()
-  await kernel.mkdir(asciiToHex('/bin'))
+  try {
+    await kernel.mkdir(asciiToHex('/bin'))
+  } catch (e) {}
   await kernel.install(Copy.address, asciiToHex('/bin/cp'))
   await kernel.install(Move.address, asciiToHex('/bin/mv'))
   await kernel.install(DeleteTree.address, asciiToHex('/bin/deltree'))

@@ -10,7 +10,9 @@ module.exports = async deployer => {
   const simpleToken = await SimpleToken.deployed()
   await simpleToken.approve(Token.address, 21e6)
   const kernel = await Kernel.deployed()
-  await kernel.mkdir(asciiToHex('/token'))
+  try {
+    await kernel.mkdir(asciiToHex('/token'))
+  } catch (e) {}
   await kernel.install(Token.address, asciiToHex('/bin/token'))
   await kernel.install(SimpleToken.address, asciiToHex('/token/simple'))
 }
