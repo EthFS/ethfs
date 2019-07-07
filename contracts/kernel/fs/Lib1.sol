@@ -38,7 +38,11 @@ library FileSystemLib1 {
 
   function install(FileSystemLib.Disk storage self, address source, bytes calldata target, uint curdir) external onlyOwner(self) {
     (uint ino, uint dirIno, bytes memory key) = self.pathToInode(target, curdir, false);
-    require(ino == 0, 'EEXIST');
+    if (ino > 0) {
+      FileSystemLib.Inode storage inode = self.inode[ino];
+      require(inode.fileType != FileSystem.FileType.Directory, 'EISDIR');
+      if (--inode.links == 0) self.freeInode(ino);
+    }
     ino = self.allocInode();
     FileSystemLib.Inode storage inode = self.inode[ino];
     inode.owner = source;
