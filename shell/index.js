@@ -8,14 +8,18 @@ const completer = require('./utils/completer')
 
 async function main() {
   const Kernel = contract(require('../build/contracts/KernelImpl'))
+  const Constants = contract(require('../build/contracts/Constants'))
   let url = 'http://localhost:8545'
   if (process.argv[2]) {
     url = `https://${process.argv[2]}.infura.io/v3/59389cd0fe54420785906cf571a7d7c0`
   }
-  Kernel.setProvider(new HDWalletProvider(fs.readFileSync('.secret').toString().trim(), url))
+  const provider = new HDWalletProvider(fs.readFileSync('.secret').toString().trim(), url)
+  Kernel.setProvider(provider)
+  Constants.setProvider(provider)
   const accounts = await Kernel.web3.eth.getAccounts()
   Kernel.defaults({from: accounts[0]})
   const kernel = await Kernel.deployed()
+  const constants = await Constants.deployed()
   createPrompt(completer.bind(null, kernel))
   while (true) {
     const cwd = dec(await kernel.getcwd())
@@ -23,11 +27,11 @@ async function main() {
     const cmd = args.shift()
     try {
       if (cmds[cmd]) {
-        await cmds[cmd](Kernel.web3, kernel, cmd, args)
+        await cmds[cmd]({web3: Kernel.web3, kernel, constants, cmd, args})
       } else if (cmd === 'exit') {
         break
       } else if (cmd !== undefined) {
-        await cmds.exec(Kernel.web3, kernel, cmd, args)
+        await cmds.exec({web3: Kernel.web3, kernel, constants, cmd, args})
       }
     } catch (e) {
       console.log(e.message);

@@ -1,3 +1,4 @@
+const Constants = artifacts.require('Constants')
 const FileSystemLib = artifacts.require('FileSystemLib')
 const FileSystemLib1 = artifacts.require('FileSystemLib1')
 const FileSystemLib2 = artifacts.require('FileSystemLib2')
@@ -6,6 +7,7 @@ const KernelLib = artifacts.require('KernelLib')
 const Kernel = artifacts.require('KernelImpl')
 
 module.exports = async deployer => {
+  await deployer.deploy(Constants)
   await deployer.deploy(FileSystemLib)
   await deployer.link(FileSystemLib, [FileSystemLib1, FileSystemLib2, FileSystemDisk])
   await deployer.deploy(FileSystemLib1)

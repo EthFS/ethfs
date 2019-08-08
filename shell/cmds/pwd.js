@@ -1,5 +1,5 @@
 const {dec} = require('../utils/enc')
 
-module.exports = async (web3, kernel, cmd, args) => {
+module.exports = async ({kernel}) => {
   console.log(dec(await kernel.getcwd()))
 }

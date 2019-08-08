@@ -1,6 +1,7 @@
 pragma solidity >= 0.5.8;
 
 import '../interface/App.sol';
+import '../interface/Constants.sol';
 
 contract DeleteTree is App {
   function main(Kernel kernel, uint[] calldata argi, bytes calldata args) external returns (uint) {
@@ -20,7 +21,7 @@ contract DeleteTree is App {
       kernel.unlink(path);
       return;
     }
-    uint fd = kernel.open(path, 0);
+    uint fd = kernel.open(path, Constants.O_RDONLY());
     for (uint i = entries-1; i > 1; i--) {
       bytes memory key = kernel.readkey(fd, i);
       bytes memory path2 = new bytes(path.length + key.length + 1);

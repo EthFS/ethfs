@@ -1,7 +1,7 @@
 const {enc} = require('../utils/enc')
 const {prompt} = require('../utils/prompt')
 
-module.exports = async (web3, kernel, cmd, args) => {
+module.exports = async ({kernel, constants, args}) => {
   if (!args.length) {
     return console.log('Need a filename(s).');
   }
@@ -23,7 +23,7 @@ module.exports = async (web3, kernel, cmd, args) => {
   await args.reduce(async (promise, x) => {
     await promise
     const path = enc(x)
-    await kernel.open(path, 0x0101)
+    await kernel.open(path, Number(await constants._O_WRONLY()) | Number(await constants._O_CREAT()))
     const fd = await kernel.result()
     await Object.keys(data).reduce(async (promise, key) => {
       await promise

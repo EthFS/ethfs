@@ -1,19 +1,10 @@
 pragma solidity >= 0.5.8;
 
+import '../interface/Constants.sol';
 import '../interface/FileSystem.sol';
 import '../interface/App.sol';
 
 library KernelLib {
-  uint constant O_RDONLY  = 0x0000;
-  uint constant O_WRONLY  = 0x0001;
-  uint constant O_RDWR    = 0x0002;
-  uint constant O_ACCMODE = 0x0003;
-
-  uint constant O_CREAT = 0x0100;
-  uint constant O_EXCL  = 0x0200;
-
-  uint constant O_DIRECTORY = 0x00200000;
-
   struct KernelArea {
     address rootUser;
     FileSystem fileSystem;
@@ -47,7 +38,7 @@ library KernelLib {
     fd = u.fildes.length;
     u.fildes.push(FileDescriptor({
       ino: ino,
-      flags: flags & O_ACCMODE
+      flags: flags & Constants.O_ACCMODE()
     }));
     u.result = fd;
   }
@@ -56,7 +47,7 @@ library KernelLib {
     UserArea storage u = self.userArea[tx.origin];
     FileDescriptor storage fildes = u.fildes[fd];
     require(fildes.ino > 0, 'EBADF');
-    require(fildes.flags == O_RDONLY || fildes.flags == O_RDWR, 'EBADF');
+    require(fildes.flags == Constants.O_RDONLY() || fildes.flags == Constants.O_RDWR(), 'EBADF');
     return self.fileSystem.readkey(fildes.ino, index);
   }
 
@@ -70,7 +61,7 @@ library KernelLib {
     UserArea storage u = self.userArea[tx.origin];
     FileDescriptor storage fildes = u.fildes[fd];
     require(fildes.ino > 0, 'EBADF');
-    require(fildes.flags == O_RDONLY || fildes.flags == O_RDWR, 'EBADF');
+    require(fildes.flags == Constants.O_RDONLY() || fildes.flags == Constants.O_RDWR(), 'EBADF');
     return self.fileSystem.read(fildes.ino, key);
   }
 
@@ -84,7 +75,7 @@ library KernelLib {
     UserArea storage u = self.userArea[tx.origin];
     FileDescriptor storage fildes = u.fildes[fd];
     require(fildes.ino > 0, 'EBADF');
-    require(fildes.flags == O_WRONLY || fildes.flags == O_RDWR, 'EBADF');
+    require(fildes.flags == Constants.O_WRONLY() || fildes.flags == Constants.O_RDWR(), 'EBADF');
     self.fileSystem.write(fildes.ino, key, value);
   }
 
@@ -92,7 +83,7 @@ library KernelLib {
     UserArea storage u = self.userArea[tx.origin];
     FileDescriptor storage fildes = u.fildes[fd];
     require(fildes.ino > 0, 'EBADF');
-    require(fildes.flags == O_WRONLY || fildes.flags == O_RDWR, 'EBADF');
+    require(fildes.flags == Constants.O_WRONLY() || fildes.flags == Constants.O_RDWR(), 'EBADF');
     self.fileSystem.clear(fildes.ino, key);
   }
 
@@ -137,7 +128,7 @@ library KernelLib {
 
   function chdir(KernelArea storage self, bytes calldata path) external {
     UserArea storage u = self.userArea[tx.origin];
-    uint ino = self.fileSystem.open(path, u.curdir, O_DIRECTORY);
+    uint ino = self.fileSystem.open(path, u.curdir, Constants.O_DIRECTORY());
     if (u.curdir > 0) self.fileSystem.close(u.curdir);
     u.curdir = ino;
   }
@@ -161,7 +152,7 @@ library KernelLib {
     UserArea storage u = self.userArea[tx.origin];
     FileDescriptor storage fildes = u.fildes[fd];
     require(fildes.ino > 0, 'EBADF');
-    require(fildes.flags == O_RDONLY || fildes.flags == O_RDWR, 'EBADF');
+    require(fildes.flags == Constants.O_RDONLY() || fildes.flags == Constants.O_RDWR(), 'EBADF');
     return self.fileSystem.fstat(fildes.ino);
   }
 

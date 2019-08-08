@@ -1,18 +1,9 @@
 pragma solidity >= 0.5.8;
 
+import '../../interface/Constants.sol';
 import '../../interface/FileSystem.sol';
 
 library FileSystemLib {
-  uint constant O_RDONLY  = 0x0000;
-  uint constant O_WRONLY  = 0x0001;
-  uint constant O_RDWR    = 0x0002;
-  uint constant O_ACCMODE = 0x0003;
-
-  uint constant O_CREAT = 0x0100;
-  uint constant O_EXCL  = 0x0200;
-
-  uint constant O_DIRECTORY = 0x00200000;
-
   struct Disk {
     address owner;
     Inode[] inode;
@@ -226,16 +217,16 @@ library FileSystemLib {
     require(ino > 0, 'ENOENT');
     Inode storage inode = self.inode[ino];
     require(tx.origin == inode.owner, 'EACCES');
-    if (flags & O_DIRECTORY > 0) {
+    if (flags & Constants.O_DIRECTORY() > 0) {
       require(inode.fileType == FileSystem.FileType.Directory, 'ENOTDIR');
     }
   }
 
   function open(Disk storage self, bytes calldata path, uint curdir, uint flags) external onlyOwner(self) returns (uint) {
     (uint ino, uint dirIno, bytes memory key) = pathToInode(self, path, curdir, false);
-    if (flags & O_CREAT > 0) {
+    if (flags & Constants.O_CREAT() > 0) {
       if (ino > 0) {
-        require(flags & O_EXCL == 0, 'EEXIST');
+        require(flags & Constants.O_EXCL() == 0, 'EEXIST');
       } else {
         ino = allocInode(self);
         Inode storage inode = self.inode[ino];

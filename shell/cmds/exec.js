@@ -3,7 +3,7 @@ const {enc} = require('../utils/enc')
 
 const encode = (type, x) => Buffer.from(ABICoder.encodeParameter(type, x).slice(2), 'hex')
 
-module.exports = async (web3, kernel, cmd, args) => {
+module.exports = async ({kernel, cmd, args}) => {
   if (!cmd.includes('/')) {
     cmd = '/bin/' + cmd
   }

@@ -1,7 +1,7 @@
 const exec = require('./exec')
 const {enc} = require('../utils/enc')
 
-module.exports = async (web3, kernel, cmd, args) => {
+module.exports = async ({web3, kernel, args}) => {
   if (!args.length) {
     return console.log('Need an argument.')
   }

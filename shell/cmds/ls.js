@@ -2,7 +2,7 @@ const moment = require('moment')
 const Table = require('cli-table')
 const {enc, dec} = require('../utils/enc')
 
-module.exports = async (web3, kernel, cmd, args) => {
+module.exports = async ({web3, kernel, args}) => {
   if (!args.length) args = ['.']
   await args.reduce(async (promise, path, argIndex) => {
     await promise

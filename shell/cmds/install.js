@@ -1,6 +1,6 @@
 const {enc} = require('../utils/enc')
 
-module.exports = async (web3, kernel, cmd, args) => {
+module.exports = async ({kernel, args}) => {
   if (args.length !== 2) {
     return console.log('install <address> target_file')
   }

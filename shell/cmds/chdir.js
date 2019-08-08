@@ -1,6 +1,6 @@
 const {enc} = require('../utils/enc')
 
-module.exports = async (web3, kernel, cmd, args) => {
+module.exports = async ({kernel, args}) => {
   if (args.length > 1) {
     throw new Error('Too many arguments.')
   }
