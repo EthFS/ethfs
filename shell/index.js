@@ -25,16 +25,14 @@ async function main() {
     const cwd = dec(await kernel.getcwd())
     const args = (await prompt(`${cwd}> `)).split(/\s+/).filter(x => x.length)
     const cmd = args.shift()
+    if (cmd === undefined) continue
+    if (cmd === 'exit') break
+    let f = cmds[cmd]
+    if (!f) f = cmds.exec
     try {
-      if (cmds[cmd]) {
-        await cmds[cmd]({web3: Kernel.web3, kernel, constants, cmd, args})
-      } else if (cmd === 'exit') {
-        break
-      } else if (cmd !== undefined) {
-        await cmds.exec({web3: Kernel.web3, kernel, constants, cmd, args})
-      }
+      await f({web3: Kernel.web3, kernel, constants, cmd, args})
     } catch (e) {
-      console.log(e.message);
+      console.log(e.message)
     }
   }
 }
