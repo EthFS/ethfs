@@ -24,13 +24,17 @@ async function main() {
 
   fuse.mount(mountPath, {
     readdir: async (path, cb) => {
-      path = asciiToHex(path)
-      const {entries} = await kernel.stat(path)
-      const keys = []
-      for (let i = 0; i < entries; i++) {
-        keys.push(await kernel.readkeyPath(path, i))
+      try {
+        path = asciiToHex(path)
+        const {entries} = await kernel.stat(path)
+        const keys = []
+        for (let i = 0; i < entries; i++) {
+          keys.push(await kernel.readkeyPath(path, i))
+        }
+        cb(0, keys.map(hexToAscii))
+      } catch (e) {
+        cb(fuse.ENOENT)
       }
-      cb(0, keys.map(hexToAscii))
     },
     getattr: async (path, cb) => {
       try {
@@ -47,7 +51,7 @@ async function main() {
         const Contract = 1
         const Data = 2
         const Directory = 3
-        switch (fileType.toNumber()) {
+        switch (Number(fileType)) {
           case Contract:
             const code = await web3.eth.getCode(owner)
             size = code.length / 2 - 1
@@ -61,7 +65,7 @@ async function main() {
             mode = 0040755
             break
         }
-        lastModified = new Date(lastModified.toNumber() * 1e3)
+        lastModified = new Date(Number(lastModified) * 1e3)
         return cb(0, {
           mtime: lastModified,
           atime: lastModified,
@@ -72,6 +76,73 @@ async function main() {
           uid: process.getuid ? process.getuid() : 0,
           gid: process.getgid ? process.getgid() : 0,
         })
+      } catch (e) {
+        cb(fuse.ENOENT)
+      }
+    },
+    open: async (path, flags, cb) => {
+      try {
+        await kernel.open(asciiToHex(path), flags)
+        cb(0, Number(await kernel.result()))
+      } catch (e) {
+        cb(fuse.ENOENT)
+      }
+    },
+    create: async (path, mode, cb) => {
+      try {
+        await kernel.open(asciiToHex(path), Number(await constants._O_WRONLY()) | Number(await constants._O_CREAT()))
+        cb(0, Number(await kernel.result()))
+      } catch (e) {
+        cb(fuse.ENOENT)
+      }
+    },
+    read: async (path, fd, buf, len, pos, cb) => {
+      try {
+        let data = hexToAscii(await kernel.read(fd, asciiToHex('')))
+        data = data.slice(pos, pos + len)
+        if (!data) return cb(0)
+        buf.write(data)
+        cb(data.length)
+      } catch (e) {
+        cb(0)
+      }
+    },
+    release: async (path, fd, cb) => {
+      try {
+        await kernel.close(fd)
+        cb(0)
+      } catch (e) {
+        cb(fuse.ENOENT)
+      }
+    },
+    link: async (src, dest, cb) => {
+      try {
+        await kernel.link(asciiToHex(src), asciiToHex(dest))
+        cb(0)
+      } catch (e) {
+        cb(fuse.ENOENT)
+      }
+    },
+    unlink: async (path, cb) => {
+      try {
+        await kernel.unlink(asciiToHex(path))
+        cb(0)
+      } catch (e) {
+        cb(fuse.ENOENT)
+      }
+    },
+    mkdir: async (path, mode, cb) => {
+      try {
+        await kernel.mkdir(asciiToHex(path))
+        cb(0)
+      } catch (e) {
+        cb(fuse.ENOENT)
+      }
+    },
+    rmdir: async (path, cb) => {
+      try {
+        await kernel.rmdir(asciiToHex(path))
+        cb(0)
       } catch (e) {
         cb(fuse.ENOENT)
       }
