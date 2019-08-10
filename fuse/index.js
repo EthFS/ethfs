@@ -160,6 +160,14 @@ async function main() {
         cb(fuse.ENOENT)
       }
     },
+    rename: async (src, dest, cb) => {
+      try {
+        await kernel.move(asciiToHex(src), asciiToHex(dest))
+        cb(0)
+      } catch (e) {
+        cb(fuse.ENOENT)
+      }
+    },
     mkdir: async (path, mode, cb) => {
       try {
         await kernel.mkdir(asciiToHex(path))
