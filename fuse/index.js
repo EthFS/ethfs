@@ -38,6 +38,7 @@ async function main() {
     },
     getattr: async (path, cb) => {
       try {
+        path = asciiToHex(path)
         let {
           fileType,
           permissions,
@@ -45,9 +46,8 @@ async function main() {
           owner,
           entries,
           lastModified,
-        } = await kernel.stat(asciiToHex(path))
-        let size = entries
-        let mode
+        } = await kernel.stat(path)
+        let size, mode
         const Contract = 1
         const Data = 2
         const Directory = 3
@@ -58,10 +58,12 @@ async function main() {
             mode = 0100755
             break
           case Data:
+            const data = hexToAscii(await kernel.readPath(path, asciiToHex('')))
+            size = data.length
             mode = 0100644
             break
           case Directory:
-            links = entries
+            size = links = entries
             mode = 0040755
             break
         }
