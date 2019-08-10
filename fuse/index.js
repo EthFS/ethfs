@@ -25,11 +25,11 @@ async function main() {
   fuse.mount(mountPath, {
     readdir: async (path, cb) => {
       try {
-        path = asciiToHex(path)
-        const {entries} = await kernel.stat(path)
+        const path2 = asciiToHex(path)
+        const {entries} = await kernel.stat(path2)
         const keys = []
         for (let i = 0; i < entries; i++) {
-          keys.push(await kernel.readkeyPath(path, i))
+          keys.push(await kernel.readkeyPath(path2, i))
         }
         cb(0, keys.map(hexToAscii))
       } catch (e) {
@@ -38,7 +38,7 @@ async function main() {
     },
     getattr: async (path, cb) => {
       try {
-        path = asciiToHex(path)
+        const path2 = asciiToHex(path)
         let {
           fileType,
           permissions,
@@ -46,7 +46,7 @@ async function main() {
           owner,
           entries,
           lastModified,
-        } = await kernel.stat(path)
+        } = await kernel.stat(path2)
         let size, mode
         const Contract = 1
         const Data = 2
@@ -58,8 +58,12 @@ async function main() {
             mode = 0100755
             break
           case Data:
-            const data = hexToAscii(await kernel.readPath(path, asciiToHex('')))
-            size = data.length
+            try {
+              const data = hexToAscii(await kernel.readPath(path2, '0x00'))
+              size = data.length
+            } catch (e) {
+              size = 0
+            }
             mode = 0100644
             break
           case Directory:
@@ -100,11 +104,34 @@ async function main() {
     },
     read: async (path, fd, buf, len, pos, cb) => {
       try {
-        let data = hexToAscii(await kernel.read(fd, asciiToHex('')))
+        let data = hexToAscii(await kernel.read(fd, '0x00'))
         data = data.slice(pos, pos + len)
         if (!data) return cb(0)
         buf.write(data)
         cb(data.length)
+      } catch (e) {
+        cb(0)
+      }
+    },
+    write: async (path, fd, buf, len, pos, cb) => {
+      try {
+        const data = '0x' + buf.slice(0, len).toString('hex')
+        await kernel.write(fd, '0x00', data)
+        cb(len)
+      } catch (e) {
+        cb(0)
+      }
+    },
+    ftruncate: async (path, fd, size, cb) => {
+      try {
+        if (size) {
+          let data = hexToAscii(await kernel.read(fd, '0x00'))
+          data = data.slice(0, size)
+          await kernel.write(fd, '0x00', asciiToHex(data))
+        } else {
+          await kernel.clear(fd, '0x00')
+        }
+        cb(0)
       } catch (e) {
         cb(0)
       }
