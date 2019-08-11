@@ -2,12 +2,10 @@ pragma solidity >= 0.5.8;
 
 import './Lib0.sol';
 import './Lib1.sol';
-import './Lib2.sol';
 
 contract FileSystemDisk is FileSystem {
   using FileSystemLib for FileSystemLib.Disk;
   using FileSystemLib1 for FileSystemLib.Disk;
-  using FileSystemLib2 for FileSystemLib.Disk;
   FileSystemLib.Disk m_disk;
 
   constructor() public {
