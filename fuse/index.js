@@ -21,7 +21,6 @@ async function main() {
   Kernel.defaults({from: accounts[0]})
   const kernel = await Kernel.deployed()
   const constants = await Constants.deployed()
-  const getConst = async x => Number(await constants[`_${x}`]())
   const {web3} = Kernel
 
   fuse.mount(mountPath, {
@@ -51,24 +50,21 @@ async function main() {
           lastModified,
         } = await kernel.stat(path2)
         let mode
-        const Contract = 1
-        const Data = 2
-        const Directory = 3
         switch (Number(fileType)) {
-          case Contract:
+          case 1:  // Contract
             const code = await web3.eth.getCode(owner)
             size = code.length / 2 - 1
             mode = 0100755
             break
-          case Data:
+          case 2:  // Data
             mode = 0100644
             break
-          case Directory:
+          case 3:  // Directory
             size = links = entries
             mode = 0040755
             break
         }
-        lastModified = new Date(Number(lastModified) * 1e3)
+        lastModified = new Date(lastModified * 1e3)
         return cb(0, {
           mtime: lastModified,
           atime: lastModified,
@@ -94,7 +90,7 @@ async function main() {
     },
     create: async (path, mode, cb) => {
       try {
-        await kernel.open(asciiToHex(path), await getConst('O_WRONLY') | await getConst('O_CREAT'))
+        await kernel.open(asciiToHex(path), await constants._O_WRONLY() | await constants._O_CREAT())
         cb(0, Number(await kernel.result()))
       } catch (e) {
         cb(fuse.ENOENT)
