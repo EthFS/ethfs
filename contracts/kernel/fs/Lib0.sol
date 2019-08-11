@@ -303,19 +303,19 @@ library FileSystemLib {
     inode.lastModified = now;
   }
 
-  function stat(Disk storage self, bytes calldata path, uint curdir) external view onlyOwner(self) returns (FileSystem.FileType fileType, uint permissions, uint ino_, address device, uint links, address owner, uint entries, uint lastModified) {
-    (uint ino, uint dirIno,) = pathToInode(self, path, curdir, false);
-    require(ino > 0, 'ENOENT');
-    if (dirIno == 0) dirIno = ino;
-    checkOpen(self, dirIno, 0);
+  function stat(Disk storage self, bytes calldata path, uint curdir) external view onlyOwner(self) returns (FileSystem.FileType fileType, uint permissions, uint ino_, address device, uint links, address owner, uint entries, uint size, uint lastModified) {
+    FileSystemLib.ResolvedPath memory res = pathToInode2(self, path, curdir, false);
+    require(res.ino > 0, 'ENOENT');
+    if (res.dirIno == 0) res.dirIno = res.ino;
+    checkOpen(self, res.dirIno, 0);
+    return _fstat(self, res.ino);
+  }
+
+  function fstat(Disk storage self, uint ino) external view onlyOwner(self) returns (FileSystem.FileType fileType, uint permissions, uint ino_, address device, uint links, address owner, uint entries, uint size, uint lastModified) {
     return _fstat(self, ino);
   }
 
-  function fstat(Disk storage self, uint ino) external view onlyOwner(self) returns (FileSystem.FileType fileType, uint permissions, uint ino_, address device, uint links, address owner, uint entries, uint lastModified) {
-    return _fstat(self, ino);
-  }
-
-  function _fstat(Disk storage self, uint ino) private view returns (FileSystem.FileType fileType, uint permissions, uint ino_, address device, uint links, address owner, uint entries, uint lastModified) {
+  function _fstat(Disk storage self, uint ino) private view returns (FileSystem.FileType fileType, uint permissions, uint ino_, address device, uint links, address owner, uint entries, uint size, uint lastModified) {
     Inode storage inode = self.inode[ino];
     fileType = inode.fileType;
     permissions = inode.permissions;
@@ -324,6 +324,12 @@ library FileSystemLib {
     links = inode.links;
     owner = inode.owner;
     entries = inode.keys.length;
+    if (fileType == FileSystem.FileType.Data) {
+      uint inoExtent = inode.data['\u0000'];
+      if (inoExtent > 0) {
+        size = self.inodeExtent[inoExtent].extent.length;
+      }
+    }
     lastModified = inode.lastModified;
   }
 }

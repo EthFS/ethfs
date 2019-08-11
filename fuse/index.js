@@ -47,9 +47,10 @@ async function main() {
           links,
           owner,
           entries,
+          size,
           lastModified,
         } = await kernel.stat(path2)
-        let size, mode
+        let mode
         const Contract = 1
         const Data = 2
         const Directory = 3
@@ -60,12 +61,6 @@ async function main() {
             mode = 0100755
             break
           case Data:
-            try {
-              const data = hexToAscii(await kernel.readPath(path2, '0x00'))
-              size = data.length
-            } catch (e) {
-              size = 0
-            }
             mode = 0100644
             break
           case Directory:
@@ -124,6 +119,8 @@ async function main() {
     write: async (path, fd, buf, len, pos, cb) => {
       let i = 0
       try {
+        const {size} = await kernel.fstat(fd)
+        if (pos < size) await kernel.truncate(fd, '0x00', pos)
         while (i < len) {
           const j = Math.min(len, i+12288)
           const data = '0x' + buf.slice(i, j).toString('hex')

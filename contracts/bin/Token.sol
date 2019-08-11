@@ -25,7 +25,7 @@ contract Token is App {
       index = argi[3];
       assembly { p := add(p, index) }
       (uint amount) = abi.decode(p, (uint));
-      (FileSystem.FileType fileType,,,,, address token,,) = kernel.stat(tokenPath);
+      (FileSystem.FileType fileType,,,,, address token,,,) = kernel.stat(tokenPath);
       require(fileType == FileSystem.FileType.Contract, 'File is not a contract');
       require(IERC20(token).transferFrom(tx.origin, recipient, amount), 'Transfer failed');
     } else {

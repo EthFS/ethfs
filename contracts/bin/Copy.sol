@@ -10,7 +10,7 @@ contract Copy is App {
     assembly { p := add(p, index) }
     (bytes memory target) = abi.decode(p, (bytes));
     if (argi.length > 2) {
-      (FileSystem.FileType fileType,,,,,,,) = kernel.stat(target);
+      (FileSystem.FileType fileType,,,,,,,,) = kernel.stat(target);
       require(fileType == FileSystem.FileType.Directory, 'ENOTDIR');
     }
     for (uint i; i < argi.length-1; i++) {

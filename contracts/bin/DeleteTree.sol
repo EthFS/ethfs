@@ -16,7 +16,7 @@ contract DeleteTree is App {
   }
 
   function deltree(Kernel kernel, bytes memory path) private {
-    (FileSystem.FileType fileType,,,,,, uint entries,) = kernel.stat(path);
+    (FileSystem.FileType fileType,,,,,, uint entries,,) = kernel.stat(path);
     if (fileType != FileSystem.FileType.Directory) {
       kernel.unlink(path);
       return;

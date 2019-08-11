@@ -86,11 +86,11 @@ contract FileSystemDisk is FileSystem {
     m_disk.rmdir(path, curdir);
   }
 
-  function stat(bytes calldata path, uint curdir) external view returns (FileType fileType, uint permissions, uint ino_, address device, uint links, address owner, uint entries, uint lastModified) {
+  function stat(bytes calldata path, uint curdir) external view returns (FileType fileType, uint permissions, uint ino_, address device, uint links, address owner, uint entries, uint size, uint lastModified) {
     return m_disk.stat(path, curdir);
   }
 
-  function fstat(uint ino) external view returns (FileType fileType, uint permissions, uint ino_, address device, uint links, address owner, uint entries, uint lastModified) {
+  function fstat(uint ino) external view returns (FileType fileType, uint permissions, uint ino_, address device, uint links, address owner, uint entries, uint size, uint lastModified) {
     return m_disk.fstat(ino);
   }
 

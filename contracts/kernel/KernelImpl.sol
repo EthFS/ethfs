@@ -87,11 +87,11 @@ contract KernelImpl is Kernel {
     m_kernelArea.rmdir(path);
   }
 
-  function stat(bytes calldata path) external view returns (FileSystem.FileType fileType, uint permissions, uint ino, address device, uint links, address owner, uint entries, uint lastModified) {
+  function stat(bytes calldata path) external view returns (FileSystem.FileType fileType, uint permissions, uint ino, address device, uint links, address owner, uint entries, uint size, uint lastModified) {
     return m_kernelArea.stat(path);
   }
 
-  function fstat(uint fd) external view returns (FileSystem.FileType fileType, uint permissions, uint ino, address device, uint links, address owner, uint entries, uint lastModified) {
+  function fstat(uint fd) external view returns (FileSystem.FileType fileType, uint permissions, uint ino, address device, uint links, address owner, uint entries, uint size, uint lastModified) {
     return m_kernelArea.fstat(fd);
   }
 

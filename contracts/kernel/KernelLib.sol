@@ -151,12 +151,12 @@ library KernelLib {
     return self.fileSystem.rmdir(path, u.curdir);
   }
 
-  function stat(KernelArea storage self, bytes calldata path) external view returns (FileSystem.FileType fileType, uint permissions, uint ino, address device, uint links, address owner, uint entries, uint lastModified) {
+  function stat(KernelArea storage self, bytes calldata path) external view returns (FileSystem.FileType fileType, uint permissions, uint ino, address device, uint links, address owner, uint entries, uint size, uint lastModified) {
     UserArea storage u = self.userArea[tx.origin];
     return self.fileSystem.stat(path, u.curdir);
   }
 
-  function fstat(KernelArea storage self, uint fd) external view returns (FileSystem.FileType fileType, uint permissions, uint ino, address device, uint links, address owner, uint entries, uint lastModified) {
+  function fstat(KernelArea storage self, uint fd) external view returns (FileSystem.FileType fileType, uint permissions, uint ino, address device, uint links, address owner, uint entries, uint size, uint lastModified) {
     UserArea storage u = self.userArea[tx.origin];
     FileDescriptor storage fildes = u.fildes[fd];
     require(fildes.ino > 0, 'EBADF');
