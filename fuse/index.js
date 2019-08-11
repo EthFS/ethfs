@@ -20,6 +20,7 @@ async function main() {
   Kernel.defaults({from: accounts[0]})
   const kernel = await Kernel.deployed()
   const constants = await Constants.deployed()
+  const getConst = async x => Number(await constants[`_${x}`]())
   const {web3} = Kernel
 
   fuse.mount(mountPath, {
@@ -88,6 +89,7 @@ async function main() {
     },
     open: async (path, flags, cb) => {
       try {
+        if ((flags & 3) == 0) return cb(0, 0xffffffff)
         await kernel.open(asciiToHex(path), flags)
         cb(0, Number(await kernel.result()))
       } catch (e) {
@@ -96,7 +98,7 @@ async function main() {
     },
     create: async (path, mode, cb) => {
       try {
-        await kernel.open(asciiToHex(path), Number(await constants._O_WRONLY()) | Number(await constants._O_CREAT()))
+        await kernel.open(asciiToHex(path), await getConst('O_WRONLY') | await getConst('O_CREAT'))
         cb(0, Number(await kernel.result()))
       } catch (e) {
         cb(fuse.ENOENT)
@@ -104,8 +106,13 @@ async function main() {
     },
     read: async (path, fd, buf, len, pos, cb) => {
       try {
-        let data = hexToAscii(await kernel.read(fd, '0x00'))
-        data = data.slice(pos, pos + len)
+        let data
+        if (fd == 0xffffffff) {
+          data = await kernel.readPath(asciiToHex(path), '0x00')
+        } else {
+          data = await kernel.read(fd, '0x00')
+        }
+        data = hexToAscii(data).slice(pos, pos + len)
         if (!data) return cb(0)
         buf.write(data)
         cb(data.length)
@@ -132,7 +139,7 @@ async function main() {
     },
     release: async (path, fd, cb) => {
       try {
-        await kernel.close(fd)
+        if (fd != 0xffffffff) await kernel.close(fd)
         cb(0)
       } catch (e) {
         cb(fuse.ENOENT)
