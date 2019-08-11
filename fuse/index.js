@@ -5,6 +5,7 @@ const {asciiToHex, hexToAscii} = require('web3-utils')
 const fuse = require('fuse-bindings')
 
 const mountPath = process.argv[2]
+if (!mountPath) return console.log('Please specify mount path')
 
 async function main() {
   const Kernel = contract(require('../build/contracts/KernelImpl'))
@@ -121,13 +122,16 @@ async function main() {
       }
     },
     write: async (path, fd, buf, len, pos, cb) => {
+      let i = 0
       try {
-        const data = '0x' + buf.slice(0, len).toString('hex')
-        await kernel.write(fd, '0x00', data)
-        cb(len)
-      } catch (e) {
-        cb(0)
-      }
+        while (i < len) {
+          const j = Math.min(len, i+12288)
+          const data = '0x' + buf.slice(i, j).toString('hex')
+          await kernel.write(fd, '0x00', data)
+          i = j
+        }
+      } catch (e) {}
+      cb(i)
     },
     ftruncate: async (path, fd, size, cb) => {
       try {
@@ -144,6 +148,9 @@ async function main() {
       } catch (e) {
         cb(fuse.ENOENT)
       }
+    },
+    chmod: async (path, mode, cb) => {
+      cb(0)
     },
     link: async (src, dest, cb) => {
       try {
@@ -187,16 +194,16 @@ async function main() {
     },
   }, err => {
     if (err) throw err
-    console.log('filesystem mounted on ' + mountPath)
+    console.log('Filesystem mounted on ' + mountPath)
   })
 }
 
 process.on('SIGINT', () => {
   fuse.unmount(mountPath, err => {
     if (err) {
-      console.log('filesystem at ' + mountPath + ' not unmounted', err)
+      console.log('Filesystem at ' + mountPath + ' not unmounted', err)
     } else {
-      console.log('filesystem at ' + mountPath + ' unmounted')
+      console.log('Filesystem at ' + mountPath + ' unmounted')
       process.exit()
     }
   })

@@ -1,5 +1,6 @@
 pragma solidity >= 0.5.8;
 
+import 'solidity-bytes-utils/contracts/BytesLib.sol';
 import '../../interface/Constants.sol';
 import '../../interface/FileSystem.sol';
 
@@ -264,15 +265,14 @@ library FileSystemLib {
   function write(Disk storage self, uint ino, bytes calldata key, bytes calldata value) external onlyOwner(self) {
     Inode storage inode = self.inode[ino];
     require(inode.fileType == FileSystem.FileType.Data, 'EPERM');
-    if (inode.data[key] == 0) {
-      inode.data[key] = allocInodeExtent(self);
-      InodeExtent storage data = self.inodeExtent[inode.data[key]];
+    uint inoExtent = inode.data[key];
+    if (inoExtent == 0) {
+      inoExtent = allocInodeExtent(self);
+      inode.data[key] = inoExtent;
       inode.keys.push(key);
-      data.index = inode.keys.length;  // index+1
-      data.extent = value;
-    } else {
-      self.inodeExtent[inode.data[key]].extent = value;
+      self.inodeExtent[inoExtent].index = inode.keys.length;  // index+1
     }
+    BytesLib.concatStorage(self.inodeExtent[inoExtent].extent, value);
     inode.lastModified = now;
   }
 
