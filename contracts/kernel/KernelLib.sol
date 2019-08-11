@@ -160,7 +160,6 @@ library KernelLib {
     UserArea storage u = self.userArea[tx.origin];
     FileDescriptor storage fildes = u.fildes[fd];
     require(fildes.ino > 0, 'EBADF');
-    require(fildes.flags == Constants.O_RDONLY() || fildes.flags == Constants.O_RDWR(), 'EBADF');
     return self.fileSystem.fstat(fildes.ino);
   }
 
