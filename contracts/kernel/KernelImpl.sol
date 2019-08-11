@@ -67,10 +67,6 @@ contract KernelImpl is Kernel {
     m_kernelArea.copy(source, target);
   }
 
-  function install(address source, bytes calldata target) external {
-    m_kernelArea.install(source, target);
-  }
-
   function getcwd() external view returns (bytes memory) {
     return m_kernelArea.getcwd();
   }
@@ -93,9 +89,5 @@ contract KernelImpl is Kernel {
 
   function fstat(uint fd) external view returns (FileSystem.FileType fileType, uint permissions, uint ino, address device, uint links, address owner, uint entries, uint size, uint lastModified) {
     return m_kernelArea.fstat(fd);
-  }
-
-  function exec(bytes calldata path, uint[] calldata argi, bytes calldata args) external returns (uint) {
-    return m_kernelArea.exec(path, argi, args);
   }
 }

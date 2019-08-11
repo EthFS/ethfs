@@ -21,7 +21,6 @@ async function main() {
   Kernel.defaults({from: accounts[0]})
   const kernel = await Kernel.deployed()
   const constants = await Constants.deployed()
-  const {web3} = Kernel
 
   fuse.mount(mountPath, {
     readdir: async (path, cb) => {
@@ -51,15 +50,10 @@ async function main() {
         } = await kernel.stat(path2)
         let mode
         switch (Number(fileType)) {
-          case 1:  // Contract
-            const code = await web3.eth.getCode(owner)
-            size = code.length / 2 - 1
-            mode = 0100755
-            break
-          case 2:  // Data
+          case 1:  // Regular
             mode = 0100644
             break
-          case 3:  // Directory
+          case 2:  // Directory
             size = links = entries
             mode = 0040755
             break

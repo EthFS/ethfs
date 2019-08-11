@@ -36,31 +36,6 @@ library FileSystemLib1 {
     if (--inode.links == 0) self.freeInode(ino);
   }
 
-  function install(FileSystemLib.Disk storage self, address source, bytes calldata target, uint curdir) external onlyOwner(self) {
-    (uint ino, uint dirIno, bytes memory key) = self.pathToInode(target, curdir, false);
-    if (ino > 0) {
-      FileSystemLib.Inode storage inode = self.inode[ino];
-      require(inode.fileType != FileSystem.FileType.Directory, 'EISDIR');
-      if (--inode.links == 0) self.freeInode(ino);
-    }
-    ino = self.allocInode();
-    FileSystemLib.Inode storage inode = self.inode[ino];
-    inode.owner = source;
-    inode.fileType = FileSystem.FileType.Contract;
-    inode.lastModified = now;
-    inode.links = 1;
-    self.writeToInode(dirIno, key, ino);
-  }
-
-  function readContract(FileSystemLib.Disk storage self, bytes calldata path, uint curdir) external view onlyOwner(self) returns (address) {
-    (uint ino,,) = self.pathToInode(path, curdir, false);
-    require(ino > 0, 'ENOENT');
-    FileSystemLib.Inode storage inode = self.inode[ino];
-    require(inode.fileType != FileSystem.FileType.Directory, 'EISDIR');
-    require(inode.fileType == FileSystem.FileType.Contract, 'ENOEXEC');
-    return inode.owner;
-  }
-
   function mkdir(FileSystemLib.Disk storage self, bytes calldata path, uint curdir) external onlyOwner(self) {
     (uint ino, uint dirIno, bytes memory key) = self.pathToInode(path, curdir, true);
     require(ino == 0, 'EEXIST');

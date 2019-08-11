@@ -17,12 +17,10 @@ interface Kernel {
   function unlink(bytes calldata path) external;
   function move(bytes calldata source, bytes calldata target) external;
   function copy(bytes calldata source, bytes calldata target) external;
-  function install(address source, bytes calldata target) external;
   function getcwd() external view returns (bytes memory);
   function chdir(bytes calldata path) external;
   function mkdir(bytes calldata path) external;
   function rmdir(bytes calldata path) external;
   function stat(bytes calldata path) external view returns (FileSystem.FileType fileType, uint permissions, uint ino, address device, uint links, address owner, uint entries, uint size, uint lastModified);
   function fstat(uint fd) external view returns (FileSystem.FileType fileType, uint permissions, uint ino, address device, uint links, address owner, uint entries, uint size, uint lastModified);
-  function exec(bytes calldata path, uint[] calldata argi, bytes calldata args) external returns (uint);
 }

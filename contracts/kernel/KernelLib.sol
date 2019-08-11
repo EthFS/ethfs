@@ -2,7 +2,6 @@ pragma solidity >= 0.5.8;
 
 import '../interface/Constants.sol';
 import '../interface/FileSystem.sol';
-import '../interface/App.sol';
 
 library KernelLib {
   struct KernelArea {
@@ -122,11 +121,6 @@ library KernelLib {
     self.fileSystem.copy(source, target, u.curdir);
   }
 
-  function install(KernelArea storage self, address source, bytes calldata target) external {
-    UserArea storage u = self.userArea[tx.origin];
-    self.fileSystem.install(source, target, u.curdir);
-  }
-
   function getcwd(KernelArea storage self) external view returns (bytes memory) {
     UserArea storage u = self.userArea[tx.origin];
     uint ino = u.curdir;
@@ -161,12 +155,5 @@ library KernelLib {
     FileDescriptor storage fildes = u.fildes[fd];
     require(fildes.ino > 0, 'EBADF');
     return self.fileSystem.fstat(fildes.ino);
-  }
-
-  function exec(KernelArea storage self, bytes calldata path, uint[] calldata argi, bytes calldata args) external returns (uint ret) {
-    UserArea storage u = self.userArea[tx.origin];
-    address app = self.fileSystem.readContract(path, u.curdir);
-    ret = App(app).main(Kernel(address(this)), argi, args);
-    u.result = ret;
   }
 }

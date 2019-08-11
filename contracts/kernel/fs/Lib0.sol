@@ -232,7 +232,7 @@ library FileSystemLib {
         ino = allocInode(self);
         Inode storage inode = self.inode[ino];
         inode.owner = tx.origin;
-        inode.fileType = FileSystem.FileType.Data;
+        inode.fileType = FileSystem.FileType.Regular;
         inode.lastModified = now;
         inode.links = 1;
         writeToInode(self, dirIno, key, ino);
@@ -264,7 +264,7 @@ library FileSystemLib {
 
   function write(Disk storage self, uint ino, bytes calldata key, bytes calldata value) external onlyOwner(self) {
     Inode storage inode = self.inode[ino];
-    require(inode.fileType == FileSystem.FileType.Data, 'EPERM');
+    require(inode.fileType == FileSystem.FileType.Regular, 'EPERM');
     uint inoExtent = inode.data[key];
     if (inoExtent == 0) {
       inoExtent = allocInodeExtent(self);
@@ -278,7 +278,7 @@ library FileSystemLib {
 
   function truncate(Disk storage self, uint ino, bytes calldata key, uint len) external onlyOwner(self) {
     Inode storage inode = self.inode[ino];
-    require(inode.fileType == FileSystem.FileType.Data, 'EPERM');
+    require(inode.fileType == FileSystem.FileType.Regular, 'EPERM');
     uint inoExtent = inode.data[key];
     require(inoExtent > 0, 'EINVAL');
     self.inodeExtent[inoExtent].extent.length = len;
@@ -287,7 +287,7 @@ library FileSystemLib {
 
   function clear(Disk storage self, uint ino, bytes calldata key) external onlyOwner(self) {
     Inode storage inode = self.inode[ino];
-    require(inode.fileType == FileSystem.FileType.Data, 'EPERM');
+    require(inode.fileType == FileSystem.FileType.Regular, 'EPERM');
     uint inoExtent = inode.data[key];
     require(inoExtent > 0, 'EINVAL');
     bytes[] storage keys = inode.keys;
@@ -324,7 +324,7 @@ library FileSystemLib {
     links = inode.links;
     owner = inode.owner;
     entries = inode.keys.length;
-    if (fileType == FileSystem.FileType.Data) {
+    if (fileType == FileSystem.FileType.Regular) {
       uint inoExtent = inode.data['\u0000'];
       if (inoExtent > 0) {
         size = self.inodeExtent[inoExtent].extent.length;

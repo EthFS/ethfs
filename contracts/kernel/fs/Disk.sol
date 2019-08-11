@@ -74,10 +74,6 @@ contract FileSystemDisk is FileSystem {
     m_disk.copy(source, target, curdir);
   }
 
-  function install(address source, bytes calldata target, uint curdir) external {
-    m_disk.install(source, target, curdir);
-  }
-
   function mkdir(bytes calldata path, uint curdir) external {
     m_disk.mkdir(path, curdir);
   }
@@ -92,9 +88,5 @@ contract FileSystemDisk is FileSystem {
 
   function fstat(uint ino) external view returns (FileType fileType, uint permissions, uint ino_, address device, uint links, address owner, uint entries, uint size, uint lastModified) {
     return m_disk.fstat(ino);
-  }
-
-  function readContract(bytes calldata path, uint curdir) external view returns (address) {
-    return m_disk.readContract(path, curdir);
   }
 }
