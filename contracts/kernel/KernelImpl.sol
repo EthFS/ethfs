@@ -39,6 +39,10 @@ contract KernelImpl is Kernel {
     m_kernelArea.write(fd, key, value);
   }
 
+  function truncate(uint fd, bytes calldata key, uint len) external {
+    m_kernelArea.truncate(fd, key, len);
+  }
+
   function clear(uint fd, bytes calldata key) external {
     m_kernelArea.clear(fd, key);
   }

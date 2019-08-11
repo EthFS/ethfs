@@ -276,6 +276,15 @@ library FileSystemLib {
     inode.lastModified = now;
   }
 
+  function truncate(Disk storage self, uint ino, bytes calldata key, uint len) external onlyOwner(self) {
+    Inode storage inode = self.inode[ino];
+    require(inode.fileType == FileSystem.FileType.Data, 'EPERM');
+    uint inoExtent = inode.data[key];
+    require(inoExtent > 0, 'EINVAL');
+    self.inodeExtent[inoExtent].extent.length = len;
+    inode.lastModified = now;
+  }
+
   function clear(Disk storage self, uint ino, bytes calldata key) external onlyOwner(self) {
     Inode storage inode = self.inode[ino];
     require(inode.fileType == FileSystem.FileType.Data, 'EPERM');

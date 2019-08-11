@@ -12,6 +12,7 @@ interface FileSystem {
   function readkey(uint ino, uint index) external view returns (bytes memory);
   function read(uint ino, bytes calldata key) external view returns (bytes memory);
   function write(uint ino, bytes calldata key, bytes calldata value) external;
+  function truncate(uint ino, bytes calldata key, uint len) external;
   function clear(uint ino, bytes calldata key) external;
   function link(bytes calldata source, bytes calldata target, uint curdir) external;
   function unlink(bytes calldata path, uint curdir) external;

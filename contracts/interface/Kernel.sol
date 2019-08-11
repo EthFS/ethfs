@@ -10,6 +10,7 @@ interface Kernel {
   function read(uint fd, bytes calldata key) external view returns (bytes memory);
   function readPath(bytes calldata path, bytes calldata key) external view returns (bytes memory);
   function write(uint fd, bytes calldata key, bytes calldata value) external;
+  function truncate(uint fd, bytes calldata key, uint len) external;
   function clear(uint fd, bytes calldata key) external;
   function close(uint fd) external;
   function link(bytes calldata source, bytes calldata target) external;

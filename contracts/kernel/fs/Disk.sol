@@ -50,6 +50,10 @@ contract FileSystemDisk is FileSystem {
     m_disk.write(ino, key, value);
   }
 
+  function truncate(uint ino, bytes calldata key, uint len) external {
+    m_disk.truncate(ino, key, len);
+  }
+
   function clear(uint ino, bytes calldata key) external {
     m_disk.clear(ino, key);
   }

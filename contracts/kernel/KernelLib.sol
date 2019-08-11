@@ -79,6 +79,14 @@ library KernelLib {
     self.fileSystem.write(fildes.ino, key, value);
   }
 
+  function truncate(KernelArea storage self, uint fd, bytes calldata key, uint len) external {
+    UserArea storage u = self.userArea[tx.origin];
+    FileDescriptor storage fildes = u.fildes[fd];
+    require(fildes.ino > 0, 'EBADF');
+    require(fildes.flags == Constants.O_WRONLY() || fildes.flags == Constants.O_RDWR(), 'EBADF');
+    self.fileSystem.truncate(fildes.ino, key, len);
+  }
+
   function clear(KernelArea storage self, uint fd, bytes calldata key) external {
     UserArea storage u = self.userArea[tx.origin];
     FileDescriptor storage fildes = u.fildes[fd];

@@ -124,13 +124,7 @@ async function main() {
     },
     ftruncate: async (path, fd, size, cb) => {
       try {
-        if (size) {
-          let data = hexToAscii(await kernel.read(fd, '0x00'))
-          data = data.slice(0, size)
-          await kernel.write(fd, '0x00', asciiToHex(data))
-        } else {
-          await kernel.clear(fd, '0x00')
-        }
+        await kernel.truncate(fd, '0x00', size)
         cb(0)
       } catch (e) {
         cb(0)
