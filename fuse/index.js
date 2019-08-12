@@ -1,7 +1,7 @@
 const fs = require('fs')
 const contract = require('truffle-contract')
 const HDWalletProvider = require('truffle-hdwallet-provider')
-const {asciiToHex, hexToAscii} = require('web3-utils')
+const {utf8ToHex, hexToUtf8} = require('web3-utils')
 const fuse = require('fuse-bindings')
 
 const mountPath = process.argv[2]
@@ -37,20 +37,20 @@ async function main() {
   fuse.mount(mountPath, {
     readdir: async (path, cb) => {
       try {
-        const path2 = asciiToHex(path)
+        const path2 = utf8ToHex(path)
         const {entries} = await kernel.stat(path2)
         const keys = []
         for (let i = 0; i < entries; i++) {
           keys.push(await kernel.readkeyPath(path2, i))
         }
-        cb(0, keys.map(hexToAscii))
+        cb(0, keys.map(hexToUtf8))
       } catch (e) {
         cb(fuse.ENOENT)
       }
     },
     getattr: async (path, cb) => {
       try {
-        const path2 = asciiToHex(path)
+        const path2 = utf8ToHex(path)
         let {
           fileType,
           permissions,
@@ -88,7 +88,7 @@ async function main() {
     open: async (path, flags, cb) => {
       try {
         if ((flags & 3) == 0) return cb(0, 0xffffffff)
-        await kernel.open(asciiToHex(path), flags)
+        await kernel.open(utf8ToHex(path), flags)
         cb(0, Number(await kernel.result()))
       } catch (e) {
         cb(fuse.ENOENT)
@@ -96,7 +96,7 @@ async function main() {
     },
     create: async (path, mode, cb) => {
       try {
-        await kernel.open(asciiToHex(path), await constants._O_WRONLY() | await constants._O_CREAT())
+        await kernel.open(utf8ToHex(path), await constants._O_WRONLY() | await constants._O_CREAT())
         cb(0, Number(await kernel.result()))
       } catch (e) {
         cb(fuse.ENOENT)
@@ -106,7 +106,7 @@ async function main() {
       try {
         let data
         if (fd == 0xffffffff) {
-          data = await kernel.readPath(asciiToHex(path), '0x')
+          data = await kernel.readPath(utf8ToHex(path), '0x')
         } else {
           data = await kernel.read(fd, '0x')
         }
@@ -145,10 +145,10 @@ async function main() {
     },
     setxattr: async (path, name, buf, len, offset, flags, cb) => {
       try {
-        await kernel.open(asciiToHex(path), await constants._O_WRONLY())
+        await kernel.open(utf8ToHex(path), await constants._O_WRONLY())
         const fd = Number(await kernel.result())
-        await kernel.truncate(fd, asciiToHex(name), 0)
-        await write(fd, asciiToHex(name), buf, len)
+        await kernel.truncate(fd, utf8ToHex(name), 0)
+        await write(fd, utf8ToHex(name), buf, len)
         await kernel.close(fd)
         cb(0)
       } catch (e) {
@@ -166,7 +166,7 @@ async function main() {
     },
     link: async (src, dest, cb) => {
       try {
-        await kernel.link(asciiToHex(src), asciiToHex(dest))
+        await kernel.link(utf8ToHex(src), utf8ToHex(dest))
         cb(0)
       } catch (e) {
         cb(fuse.ENOENT)
@@ -174,7 +174,7 @@ async function main() {
     },
     unlink: async (path, cb) => {
       try {
-        await kernel.unlink(asciiToHex(path))
+        await kernel.unlink(utf8ToHex(path))
         cb(0)
       } catch (e) {
         cb(fuse.ENOENT)
@@ -182,7 +182,7 @@ async function main() {
     },
     rename: async (src, dest, cb) => {
       try {
-        await kernel.move(asciiToHex(src), asciiToHex(dest))
+        await kernel.move(utf8ToHex(src), utf8ToHex(dest))
         cb(0)
       } catch (e) {
         cb(fuse.ENOENT)
@@ -190,7 +190,7 @@ async function main() {
     },
     mkdir: async (path, mode, cb) => {
       try {
-        await kernel.mkdir(asciiToHex(path))
+        await kernel.mkdir(utf8ToHex(path))
         cb(0)
       } catch (e) {
         cb(fuse.ENOENT)
@@ -198,7 +198,7 @@ async function main() {
     },
     rmdir: async (path, cb) => {
       try {
-        await kernel.rmdir(asciiToHex(path))
+        await kernel.rmdir(utf8ToHex(path))
         cb(0)
       } catch (e) {
         cb(fuse.ENOENT)
