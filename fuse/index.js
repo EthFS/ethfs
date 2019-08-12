@@ -22,6 +22,18 @@ async function main() {
   const kernel = await Kernel.deployed()
   const constants = await Constants.deployed()
 
+  async function write(fd, key, buf, len) {
+    let i = 0
+    try {
+      while (i < len) {
+        const j = Math.min(len, i+8192)
+        await kernel.write(fd, key, buf.slice(i, j))
+        i = j
+      }
+    } catch (e) {}
+    return i
+  }
+
   fuse.mount(mountPath, {
     readdir: async (path, cb) => {
       try {
@@ -94,35 +106,27 @@ async function main() {
       try {
         let data
         if (fd == 0xffffffff) {
-          data = await kernel.readPath(asciiToHex(path), '0x00')
+          data = await kernel.readPath(asciiToHex(path), '0x')
         } else {
-          data = await kernel.read(fd, '0x00')
+          data = await kernel.read(fd, '0x')
         }
-        data = hexToAscii(data).slice(pos, pos + len)
-        if (!data) return cb(0)
-        buf.write(data)
-        cb(data.length)
+        cb(Buffer.from(data.slice(2), 'hex').copy(buf, 0, pos, pos + len))
       } catch (e) {
         cb(0)
       }
     },
     write: async (path, fd, buf, len, pos, cb) => {
-      let i = 0
       try {
         const {size} = await kernel.fstat(fd)
-        if (pos < size) await kernel.truncate(fd, '0x00', pos)
-        while (i < len) {
-          const j = Math.min(len, i+12288)
-          const data = '0x' + buf.slice(i, j).toString('hex')
-          await kernel.write(fd, '0x00', data)
-          i = j
-        }
-      } catch (e) {}
-      cb(i)
+        if (pos < size) await kernel.truncate(fd, '0x', pos)
+        cb(await write(fd, '0x', buf, len))
+      } catch (e) {
+        cb(0)
+      }
     },
     ftruncate: async (path, fd, size, cb) => {
       try {
-        await kernel.truncate(fd, '0x00', size)
+        await kernel.truncate(fd, '0x', size)
         cb(0)
       } catch (e) {
         cb(0)
@@ -137,6 +141,27 @@ async function main() {
       }
     },
     chmod: async (path, mode, cb) => {
+      cb(0)
+    },
+    setxattr: async (path, name, buf, len, offset, flags, cb) => {
+      try {
+        await kernel.open(asciiToHex(path), await constants._O_WRONLY())
+        const fd = Number(await kernel.result())
+        await kernel.truncate(fd, asciiToHex(name), 0)
+        await write(fd, asciiToHex(name), buf, len)
+        await kernel.close(fd)
+        cb(0)
+      } catch (e) {
+        cb(fuse.ENOENT)
+      }
+    },
+    getxattr: async (path, name, buf, len, offset, cb) => {
+      cb(0)
+    },
+    listxattr: async (path, buf, len, cb) => {
+      cb(0)
+    },
+    removexattr: async (path, name, cb) => {
       cb(0)
     },
     link: async (src, dest, cb) => {

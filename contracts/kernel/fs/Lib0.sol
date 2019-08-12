@@ -280,7 +280,10 @@ library FileSystemLib {
     Inode storage inode = self.inode[ino];
     require(inode.fileType == FileSystem.FileType.Regular, 'EPERM');
     uint inoExtent = inode.data[key];
-    require(inoExtent > 0, 'EINVAL');
+    if (inoExtent == 0) {
+      require(len == 0, 'EINVAL');
+      return;
+    }
     self.inodeExtent[inoExtent].extent.length = len;
     inode.lastModified = now;
   }
@@ -325,7 +328,7 @@ library FileSystemLib {
     owner = inode.owner;
     entries = inode.keys.length;
     if (fileType == FileSystem.FileType.Regular) {
-      uint inoExtent = inode.data['\u0000'];
+      uint inoExtent = inode.data[''];
       if (inoExtent > 0) {
         size = self.inodeExtent[inoExtent].extent.length;
       }
