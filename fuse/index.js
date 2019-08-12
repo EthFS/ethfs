@@ -35,15 +35,16 @@ async function main() {
   }
 
   fuse.mount(mountPath, {
+    displayFolder: true,
     readdir: async (path, cb) => {
       try {
         const path2 = utf8ToHex(path)
         const {entries} = await kernel.stat(path2)
         const keys = []
         for (let i = 0; i < entries; i++) {
-          keys.push(await kernel.readkeyPath(path2, i))
+          keys.push(hexToUtf8(await kernel.readkeyPath(path2, i)))
         }
-        cb(0, keys.map(hexToUtf8))
+        cb(0, keys)
       } catch (e) {
         cb(fuse.ENOENT)
       }
@@ -159,7 +160,24 @@ async function main() {
       cb(0)
     },
     listxattr: async (path, buf, len, cb) => {
-      cb(0)
+      try {
+        const path2 = utf8ToHex(path)
+        const {entries} = await kernel.stat(path2)
+        let i = 0
+        for (let j = 0; j < entries; j++) {
+          const data = await kernel.readkeyPath(path2, j)
+          if (len > 0) {
+            i += buf.write(data.slice(2), i, 'hex')
+            if (i == len) return cb(fuse.ERANGE)
+            buf.write('00', i++, 'hex')
+          } else {
+            i += data.length/2
+          }
+        }
+        cb(i)
+      } catch (e) {
+        cb(fuse.ENOENT)
+      }
     },
     removexattr: async (path, name, cb) => {
       cb(0)
