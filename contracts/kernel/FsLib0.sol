@@ -342,4 +342,28 @@ library FileSystemLib {
     }
     lastModified = inode.lastModified;
   }
+
+  function mkdir(FileSystemLib.Disk storage self, bytes calldata path, uint curdir) external onlyOwner(self) {
+    (uint ino, uint dirIno, bytes memory key) = pathToInode(self, path, curdir, true, false);
+    require(ino == 0, 'EEXIST');
+    ino = allocInode(self);
+    FileSystemLib.Inode storage inode = self.inode[ino];
+    inode.owner = tx.origin;
+    inode.fileType = FileSystem.FileType.Directory;
+    inode.refCnt = 1;
+    writeToInode(self, dirIno, key, ino);
+    writeToInode(self, ino, '.', ino);
+    writeToInode(self, ino, '..', dirIno);
+  }
+
+  function rmdir(FileSystemLib.Disk storage self, bytes calldata path, uint curdir) external onlyOwner(self) {
+    (uint ino, uint dirIno, bytes memory key) = pathToInode(self, path, curdir, false, false);
+    require(ino > 0, 'ENOENT');
+    require(ino != 1 && ino != curdir, 'EBUSY');
+    FileSystemLib.Inode storage inode = self.inode[ino];
+    require(inode.fileType == FileSystem.FileType.Directory, 'ENOTDIR');
+    require(inode.keys.length == 2, 'ENOTEMPTY');
+    removeFromInode(self, dirIno, key);
+    if (--inode.refCnt == 0) freeInode(self, ino);
+  }
 }
