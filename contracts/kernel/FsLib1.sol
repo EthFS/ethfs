@@ -11,11 +11,11 @@ library FileSystemLib1 {
   }
 
   function link(FileSystemLib.Disk storage self, bytes calldata source, bytes calldata target, uint curdir) external onlyOwner(self) {
-    (uint ino,, bytes memory key) = self.pathToInode(source, curdir, false);
+    (uint ino,, bytes memory key) = self.pathToInode(source, curdir, false, true);
     require(ino > 0, 'ENOENT');
     FileSystemLib.Inode storage inode = self.inode[ino];
     require(inode.fileType != FileSystem.FileType.Directory, 'EISDIR');
-    (uint ino2, uint dirIno, bytes memory key2) = self.pathToInode(target, curdir, false);
+    (uint ino2, uint dirIno, bytes memory key2) = self.pathToInode(target, curdir, false, true);
     if (ino2 > 0) {
       require(self.inode[ino2].fileType == FileSystem.FileType.Directory, 'EEXIST');
       dirIno = ino2;
@@ -28,7 +28,7 @@ library FileSystemLib1 {
   }
 
   function unlink(FileSystemLib.Disk storage self, bytes calldata path, uint curdir) external onlyOwner(self) {
-    (uint ino, uint dirIno, bytes memory key) = self.pathToInode(path, curdir, false);
+    (uint ino, uint dirIno, bytes memory key) = self.pathToInode(path, curdir, false, false);
     require(ino > 0, 'ENOENT');
     FileSystemLib.Inode storage inode = self.inode[ino];
     require(inode.fileType != FileSystem.FileType.Directory, 'EISDIR');
@@ -37,7 +37,7 @@ library FileSystemLib1 {
   }
 
   function symlink(FileSystemLib.Disk storage self, bytes calldata source, bytes calldata target, uint curdir) external onlyOwner(self) {
-    (uint ino, uint dirIno, bytes memory key) = self.pathToInode(target, curdir, false);
+    (uint ino, uint dirIno, bytes memory key) = self.pathToInode(target, curdir, false, true);
     require(ino == 0, 'EEXIST');
     ino = self.allocInode();
     FileSystemLib.Inode storage inode = self.inode[ino];
@@ -55,7 +55,7 @@ library FileSystemLib1 {
   }
 
   function readlink(FileSystemLib.Disk storage self, bytes calldata path, uint curdir) external view onlyOwner(self) returns (bytes memory) {
-    (uint ino,,) = self.pathToInode(path, curdir, false);
+    (uint ino,,) = self.pathToInode(path, curdir, false, false);
     require(ino > 0, 'ENOENT');
     FileSystemLib.Inode storage inode = self.inode[ino];
     require(inode.fileType == FileSystem.FileType.Symlink, 'EINVAL');
@@ -63,7 +63,7 @@ library FileSystemLib1 {
   }
 
   function mkdir(FileSystemLib.Disk storage self, bytes calldata path, uint curdir) external onlyOwner(self) {
-    (uint ino, uint dirIno, bytes memory key) = self.pathToInode(path, curdir, true);
+    (uint ino, uint dirIno, bytes memory key) = self.pathToInode(path, curdir, true, false);
     require(ino == 0, 'EEXIST');
     ino = self.allocInode();
     FileSystemLib.Inode storage inode = self.inode[ino];
@@ -76,7 +76,7 @@ library FileSystemLib1 {
   }
 
   function rmdir(FileSystemLib.Disk storage self, bytes calldata path, uint curdir) external onlyOwner(self) {
-    (uint ino, uint dirIno, bytes memory key) = self.pathToInode(path, curdir, false);
+    (uint ino, uint dirIno, bytes memory key) = self.pathToInode(path, curdir, false, false);
     require(ino > 0, 'ENOENT');
     require(ino != 1 && ino != curdir, 'EBUSY');
     FileSystemLib.Inode storage inode = self.inode[ino];
@@ -87,10 +87,10 @@ library FileSystemLib1 {
   }
 
   function move(FileSystemLib.Disk storage self, bytes calldata sourcePath, bytes calldata targetPath, uint curdir) external onlyOwner(self) {
-    FileSystemLib.ResolvedPath memory source = self.pathToInode2(sourcePath, curdir, false);
+    FileSystemLib.ResolvedPath memory source = self.pathToInode2(sourcePath, curdir, false, false);
     require(source.ino > 0, 'ENOENT');
     bool sourceIsDir = self.inode[source.ino].fileType == FileSystem.FileType.Directory;
-    FileSystemLib.ResolvedPath memory target = self.pathToInode2(targetPath, curdir, true);
+    FileSystemLib.ResolvedPath memory target = self.pathToInode2(targetPath, curdir, true, true);
     if (source.ino == target.ino) return;
     if (target.ino > 0) {
       FileSystemLib.Inode storage inode = self.inode[target.ino];
@@ -131,11 +131,11 @@ library FileSystemLib1 {
   }
 
   function copy(FileSystemLib.Disk storage self, bytes calldata sourcePath, bytes calldata targetPath, uint curdir) external onlyOwner(self) {
-    FileSystemLib.ResolvedPath memory source = self.pathToInode2(sourcePath, curdir, false);
+    FileSystemLib.ResolvedPath memory source = self.pathToInode2(sourcePath, curdir, false, true);
     require(source.ino > 0, 'ENOENT');
     FileSystemLib.Inode storage inode = self.inode[source.ino];
     bool sourceIsDir = inode.fileType == FileSystem.FileType.Directory;
-    FileSystemLib.ResolvedPath memory target = self.pathToInode2(targetPath, curdir, true);
+    FileSystemLib.ResolvedPath memory target = self.pathToInode2(targetPath, curdir, true, true);
     if (source.ino == target.ino) return;
     if (sourceIsDir) {
       uint ino = target.dirIno;

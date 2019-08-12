@@ -69,7 +69,7 @@ library FileSystemLib {
     self.owner = address(0);
   }
 
-  function pathToInode(Disk storage self, bytes memory path, uint curdir, bool allowNonExistDir) public view returns (uint ino, uint dirIno, bytes memory key) {
+  function pathToInode(Disk storage self, bytes memory path, uint curdir, bool allowNonExistDir, bool followLinks) public view returns (uint ino, uint dirIno, bytes memory key) {
     require(path.length > 0, 'ENOENT');
     ino = path[0] == '/' ? 1 : curdir == 0 ? 1 : curdir;
     uint j;
@@ -88,6 +88,12 @@ library FileSystemLib {
       j++;
       dirIno = ino;
       ino = self.inodeValue[inode.data[key]].value;
+      if (followLinks) {
+        inode = self.inode[ino];
+        if (inode.fileType == FileSystem.FileType.Symlink) {
+          (ino, dirIno, key) = pathToInode(self, self.inodeExtent[inode.data['']].extent, dirIno, allowNonExistDir, followLinks);
+        }
+      }
     }
     if (ino == 0) {
       require(allowNonExistDir || path[path.length-1] != '/', 'ENOENT');
@@ -108,8 +114,8 @@ library FileSystemLib {
     }
   }
 
-  function pathToInode2(Disk storage self, bytes memory path, uint curdir, bool allowNonExistDir) internal view returns (ResolvedPath memory) {
-    (uint ino, uint dirIno, bytes memory key) = pathToInode(self, path, curdir, allowNonExistDir);
+  function pathToInode2(Disk storage self, bytes memory path, uint curdir, bool allowNonExistDir, bool followLinks) internal view returns (ResolvedPath memory) {
+    (uint ino, uint dirIno, bytes memory key) = pathToInode(self, path, curdir, allowNonExistDir, followLinks);
     return ResolvedPath(ino, dirIno, key);
   }
 
@@ -224,7 +230,7 @@ library FileSystemLib {
   }
 
   function open(Disk storage self, bytes calldata path, uint curdir, uint flags) external onlyOwner(self) returns (uint) {
-    (uint ino, uint dirIno, bytes memory key) = pathToInode(self, path, curdir, false);
+    (uint ino, uint dirIno, bytes memory key) = pathToInode(self, path, curdir, false, flags & Constants.O_NOFOLLOW() == 0);
     if (flags & Constants.O_CREAT() > 0) {
       if (ino > 0) {
         require(flags & Constants.O_EXCL() == 0, 'EEXIST');
@@ -244,7 +250,7 @@ library FileSystemLib {
   }
 
   function openOnly(Disk storage self, bytes calldata path, uint curdir, uint flags) external view onlyOwner(self) returns (uint ino) {
-    (ino,,) = pathToInode(self, path, curdir, false);
+    (ino,,) = pathToInode(self, path, curdir, false, flags & Constants.O_NOFOLLOW() == 0);
     checkOpen(self, ino, flags);
   }
 
@@ -310,7 +316,7 @@ library FileSystemLib {
   }
 
   function stat(Disk storage self, bytes calldata path, uint curdir) external view onlyOwner(self) returns (FileSystem.FileType fileType, uint permissions, uint ino_, address device, uint links, address owner, uint entries, uint size, uint lastModified) {
-    FileSystemLib.ResolvedPath memory res = pathToInode2(self, path, curdir, false);
+    FileSystemLib.ResolvedPath memory res = pathToInode2(self, path, curdir, false, false);
     require(res.ino > 0, 'ENOENT');
     if (res.dirIno == 0) res.dirIno = res.ino;
     checkOpen(self, res.dirIno, 0);

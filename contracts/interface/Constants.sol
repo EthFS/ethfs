@@ -10,6 +10,7 @@ library Constants {
   uint public constant _O_EXCL  = 0x0200;
 
   uint public constant _O_DIRECTORY = 0x00200000;
+  uint public constant _O_NOFOLLOW  = 0x00400000;
 
   function O_RDONLY()  internal pure returns (uint) { return _O_RDONLY; }
   function O_WRONLY()  internal pure returns (uint) { return _O_WRONLY; }
@@ -20,4 +21,5 @@ library Constants {
   function O_EXCL()    internal pure returns (uint) { return _O_EXCL; }
 
   function O_DIRECTORY() internal pure returns (uint) { return _O_DIRECTORY; }
+  function O_NOFOLLOW() internal pure returns (uint) { return _O_NOFOLLOW; }
 }
