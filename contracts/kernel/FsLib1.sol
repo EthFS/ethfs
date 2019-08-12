@@ -36,6 +36,32 @@ library FileSystemLib1 {
     if (--inode.links == 0) self.freeInode(ino);
   }
 
+  function symlink(FileSystemLib.Disk storage self, bytes calldata source, bytes calldata target, uint curdir) external onlyOwner(self) {
+    (uint ino, uint dirIno, bytes memory key) = self.pathToInode(target, curdir, false);
+    require(ino == 0, 'EEXIST');
+    ino = self.allocInode();
+    FileSystemLib.Inode storage inode = self.inode[ino];
+    inode.owner = tx.origin;
+    inode.fileType = FileSystem.FileType.Symlink;
+    inode.links = 1;
+    inode.lastModified = now;
+    uint inoExtent = self.allocInodeExtent();
+    inode.data[''] = inoExtent;
+    inode.keys.push('');
+    FileSystemLib.InodeExtent storage data = self.inodeExtent[inoExtent];
+    data.index = 1;
+    data.extent = source;
+    self.writeToInode(dirIno, key, ino);
+  }
+
+  function readlink(FileSystemLib.Disk storage self, bytes calldata path, uint curdir) external view onlyOwner(self) returns (bytes memory) {
+    (uint ino,,) = self.pathToInode(path, curdir, false);
+    require(ino > 0, 'ENOENT');
+    FileSystemLib.Inode storage inode = self.inode[ino];
+    require(inode.fileType == FileSystem.FileType.Symlink, 'EINVAL');
+    return self.inodeExtent[inode.data['']].extent;
+  }
+
   function mkdir(FileSystemLib.Disk storage self, bytes calldata path, uint curdir) external onlyOwner(self) {
     (uint ino, uint dirIno, bytes memory key) = self.pathToInode(path, curdir, true);
     require(ino == 0, 'EEXIST');

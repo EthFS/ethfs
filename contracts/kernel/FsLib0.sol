@@ -140,7 +140,7 @@ library FileSystemLib {
     }
   }
 
-  function allocInode(Disk storage self) public returns(uint ino) {
+  function allocInode(Disk storage self) public returns (uint ino) {
     if (self.freeIno.length > 0) {
       ino = self.freeIno[self.freeIno.length-1];
       self.freeIno.pop();
@@ -166,7 +166,7 @@ library FileSystemLib {
     self.freeIno.push(ino);
   }
 
-  function allocInodeValue(Disk storage self) public returns(uint index) {
+  function allocInodeValue(Disk storage self) public returns (uint index) {
     if (self.freeInoValue.length > 0) {
       index = self.freeInoValue[self.freeInoValue.length-1];
       self.freeInoValue.pop();
@@ -175,7 +175,7 @@ library FileSystemLib {
     }
   }
 
-  function allocInodeExtent(Disk storage self) public returns(uint index) {
+  function allocInodeExtent(Disk storage self) public returns (uint index) {
     if (self.freeInoExtent.length > 0) {
       index = self.freeInoExtent[self.freeInoExtent.length-1];
       self.freeInoExtent.pop();
@@ -330,11 +330,9 @@ library FileSystemLib {
     links = inode.links;
     owner = inode.owner;
     entries = inode.keys.length;
-    if (fileType == FileSystem.FileType.Regular) {
-      uint inoExtent = inode.data[''];
-      if (inoExtent > 0) {
-        size = self.inodeExtent[inoExtent].extent.length;
-      }
+    uint inoExtent = inode.data[''];
+    if (inoExtent > 0) {
+      size = self.inodeExtent[inoExtent].extent.length;
     }
     lastModified = inode.lastModified;
   }

@@ -1,7 +1,7 @@
 pragma solidity >= 0.5.8;
 
 interface FileSystem {
-  enum FileType { None, Regular, Directory }
+  enum FileType { None, Regular, Directory, Symlink }
 
   function mount() external;
   function unmount() external;
@@ -16,6 +16,8 @@ interface FileSystem {
   function clear(uint ino, bytes calldata key) external;
   function link(bytes calldata source, bytes calldata target, uint curdir) external;
   function unlink(bytes calldata path, uint curdir) external;
+  function symlink(bytes calldata source, bytes calldata target, uint curdir) external;
+  function readlink(bytes calldata path, uint curdir) external view returns (bytes memory);
   function move(bytes calldata source, bytes calldata target, uint curdir) external;
   function copy(bytes calldata source, bytes calldata target, uint curdir) external;
   function mkdir(bytes calldata path, uint curdir) external;

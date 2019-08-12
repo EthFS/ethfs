@@ -64,6 +64,14 @@ contract FileSystemDisk is FileSystem {
     m_disk.unlink(path, curdir);
   }
 
+  function symlink(bytes calldata source, bytes calldata target, uint curdir) external {
+    m_disk.symlink(source, target, curdir);
+  }
+
+  function readlink(bytes calldata path, uint curdir) external view returns (bytes memory) {
+    return m_disk.readlink(path, curdir);
+  }
+
   function move(bytes calldata source, bytes calldata target, uint curdir) external {
     m_disk.move(source, target, curdir);
   }

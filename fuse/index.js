@@ -44,6 +44,9 @@ async function main() {
         size = links = entries
         mode = 0040755
         break
+      case 3:  // Symlink
+        mode = 0120755
+        break
     }
     lastModified = new Date(lastModified * 1e3)
     return {
@@ -223,6 +226,21 @@ async function main() {
       try {
         await kernel.unlink(utf8ToHex(path))
         cb(0)
+      } catch (e) {
+        cb(fuse.ENOENT)
+      }
+    },
+    symlink: async (src, dest, cb) => {
+      try {
+        await kernel.symlink(utf8ToHex(src), utf8ToHex(dest))
+        cb(0)
+      } catch (e) {
+        cb(fuse.ENOENT)
+      }
+    },
+    readlink: async (path, cb) => {
+      try {
+        cb(0, hexToUtf8(await kernel.readlink(utf8ToHex(path))))
       } catch (e) {
         cb(fuse.ENOENT)
       }

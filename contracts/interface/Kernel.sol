@@ -15,6 +15,8 @@ interface Kernel {
   function close(uint fd) external;
   function link(bytes calldata source, bytes calldata target) external;
   function unlink(bytes calldata path) external;
+  function symlink(bytes calldata source, bytes calldata target) external;
+  function readlink(bytes calldata path) external view returns (bytes memory);
   function move(bytes calldata source, bytes calldata target) external;
   function copy(bytes calldata source, bytes calldata target) external;
   function getcwd() external view returns (bytes memory);

@@ -111,6 +111,16 @@ library KernelLib {
     self.fileSystem.unlink(path, u.curdir);
   }
 
+  function symlink(KernelArea storage self, bytes calldata source, bytes calldata target) external {
+    UserArea storage u = self.userArea[tx.origin];
+    self.fileSystem.symlink(source, target, u.curdir);
+  }
+
+  function readlink(KernelArea storage self, bytes calldata path) external view returns (bytes memory) {
+    UserArea storage u = self.userArea[tx.origin];
+    return self.fileSystem.readlink(path, u.curdir);
+  }
+
   function move(KernelArea storage self, bytes calldata source, bytes calldata target) external {
     UserArea storage u = self.userArea[tx.origin];
     self.fileSystem.move(source, target, u.curdir);

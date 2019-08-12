@@ -59,6 +59,14 @@ contract KernelImpl is Kernel {
     m_kernelArea.unlink(path);
   }
 
+  function symlink(bytes calldata source, bytes calldata target) external {
+    m_kernelArea.symlink(source, target);
+  }
+
+  function readlink(bytes calldata path) external view returns (bytes memory) {
+    return m_kernelArea.readlink(path);
+  }
+
   function move(bytes calldata source, bytes calldata target) external {
     m_kernelArea.move(source, target);
   }
