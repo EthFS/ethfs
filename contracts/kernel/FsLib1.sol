@@ -1,6 +1,6 @@
 pragma solidity >= 0.5.8;
 
-import './Lib0.sol';
+import './FsLib0.sol';
 
 library FileSystemLib1 {
   using FileSystemLib for FileSystemLib.Disk;

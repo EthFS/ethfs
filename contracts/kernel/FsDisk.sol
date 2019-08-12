@@ -1,7 +1,7 @@
 pragma solidity >= 0.5.8;
 
-import './Lib0.sol';
-import './Lib1.sol';
+import './FsLib0.sol';
+import './FsLib1.sol';
 
 contract FileSystemDisk is FileSystem {
   using FileSystemLib for FileSystemLib.Disk;

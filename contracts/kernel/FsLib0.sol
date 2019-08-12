@@ -1,8 +1,8 @@
 pragma solidity >= 0.5.8;
 
 import 'solidity-bytes-utils/contracts/BytesLib.sol';
-import '../../interface/Constants.sol';
-import '../../interface/FileSystem.sol';
+import '../interface/Constants.sol';
+import '../interface/FileSystem.sol';
 
 library FileSystemLib {
   struct Disk {
