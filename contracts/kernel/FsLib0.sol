@@ -88,7 +88,7 @@ library FileSystemLib {
       j++;
       dirIno = ino;
       ino = self.inodeValue[inode.data[key]].value;
-      if (followLinks) {
+      if (ino > 0 && followLinks) {
         inode = self.inode[ino];
         if (inode.fileType == FileSystem.FileType.Symlink) {
           (ino, dirIno, key) = pathToInode(self, self.inodeExtent[inode.data['']].extent, dirIno, allowNonExistDir, followLinks);
