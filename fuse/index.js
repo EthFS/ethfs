@@ -189,7 +189,15 @@ async function main() {
       }
     },
     removexattr: async (path, name, cb) => {
-      cb(0)
+      try {
+        await kernel.open(utf8ToHex(path), await constants._O_WRONLY())
+        const fd = Number(await kernel.result())
+        await kernel.clear(fd, utf8ToHex(name))
+        await kernel.close(fd)
+        cb(0)
+      } catch (e) {
+        cb(fuse.ENOENT)
+      }
     },
     link: async (src, dest, cb) => {
       try {
