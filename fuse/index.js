@@ -63,6 +63,7 @@ async function main() {
 
   fuse.mount(mountPath, {
     displayFolder: true,
+    options: ['direct_io'],
     readdir: async (path, cb) => {
       try {
         const path2 = utf8ToHex(path)
