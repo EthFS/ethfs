@@ -270,9 +270,12 @@ library FileSystemLib {
       inoExtent = allocInodeExtent(self);
       inode.data[key] = inoExtent;
       inode.keys.push(key);
-      self.inodeExtent[inoExtent].index = inode.keys.length;  // index+1
+      InodeExtent storage data = self.inodeExtent[inoExtent];
+      data.index = inode.keys.length;  // index+1
+      data.extent = value;
+    } else {
+      BytesLib.concatStorage(self.inodeExtent[inoExtent].extent, value);
     }
-    BytesLib.concatStorage(self.inodeExtent[inoExtent].extent, value);
     inode.lastModified = now;
   }
 
