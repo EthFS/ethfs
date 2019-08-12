@@ -34,6 +34,30 @@ async function main() {
     return i
   }
 
+  function getattr({fileType, permissions, links, owner, entries, size, lastModified}) {
+    let mode
+    switch (Number(fileType)) {
+      case 1:  // Regular
+        mode = 0100644
+        break
+      case 2:  // Directory
+        size = links = entries
+        mode = 0040755
+        break
+    }
+    lastModified = new Date(lastModified * 1e3)
+    return {
+      mtime: lastModified,
+      atime: lastModified,
+      ctime: lastModified,
+      nlink: links,
+      size,
+      mode,
+      uid: process.getuid ? process.getuid() : 0,
+      gid: process.getgid ? process.getgid() : 0,
+    }
+  }
+
   fuse.mount(mountPath, {
     displayFolder: true,
     readdir: async (path, cb) => {
@@ -51,37 +75,14 @@ async function main() {
     },
     getattr: async (path, cb) => {
       try {
-        const path2 = utf8ToHex(path)
-        let {
-          fileType,
-          permissions,
-          links,
-          owner,
-          entries,
-          size,
-          lastModified,
-        } = await kernel.stat(path2)
-        let mode
-        switch (Number(fileType)) {
-          case 1:  // Regular
-            mode = 0100644
-            break
-          case 2:  // Directory
-            size = links = entries
-            mode = 0040755
-            break
-        }
-        lastModified = new Date(lastModified * 1e3)
-        return cb(0, {
-          mtime: lastModified,
-          atime: lastModified,
-          ctime: lastModified,
-          nlink: links,
-          size,
-          mode,
-          uid: process.getuid ? process.getuid() : 0,
-          gid: process.getgid ? process.getgid() : 0,
-        })
+        cb(0, getattr(await kernel.stat(utf8ToHex(path))))
+      } catch (e) {
+        cb(fuse.ENOENT)
+      }
+    },
+    fgetattr: async (path, fd, cb) => {
+      try {
+        cb(0, getattr(await kernel.fstat(fd)))
       } catch (e) {
         cb(fuse.ENOENT)
       }
