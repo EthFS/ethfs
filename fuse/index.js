@@ -157,7 +157,15 @@ async function main() {
       }
     },
     getxattr: async (path, name, buf, len, offset, cb) => {
-      cb(0)
+      try {
+        const data = await kernel.readPath(utf8ToHex(path), utf8ToHex(name))
+        const len2 = data.length/2 - 1
+        if (len == 0) return cb(len2)
+        if (len < len2) return cb(fuse.ERANGE)
+        cb(buf.write(data.slice(2), offset, 'hex'))
+      } catch (e) {
+        cb(fuse.ENOENT)
+      }
     },
     listxattr: async (path, buf, len, cb) => {
       try {
@@ -166,6 +174,7 @@ async function main() {
         let i = 0
         for (let j = 0; j < entries; j++) {
           const data = await kernel.readkeyPath(path2, j)
+          if (!data) continue
           if (len > 0) {
             i += buf.write(data.slice(2), i, 'hex')
             if (i == len) return cb(fuse.ERANGE)
