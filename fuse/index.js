@@ -126,12 +126,23 @@ async function main() {
         cb(0)
       }
     },
+    truncate: async (path, size, cb) => {
+      try {
+        await kernel.open(utf8ToHex(path), await constants._O_WRONLY())
+        const fd = Number(await kernel.result())
+        await kernel.truncate(fd, '0x', size)
+        await kernel.close(fd)
+        cb(0)
+      } catch (e) {
+        cb(fuse.ENOENT)
+      }
+    },
     ftruncate: async (path, fd, size, cb) => {
       try {
         await kernel.truncate(fd, '0x', size)
         cb(0)
       } catch (e) {
-        cb(0)
+        cb(fuse.ENOENT)
       }
     },
     release: async (path, fd, cb) => {
