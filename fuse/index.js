@@ -4,15 +4,18 @@ const HDWalletProvider = require('truffle-hdwallet-provider')
 const {utf8ToHex, hexToUtf8} = require('web3-utils')
 const fuse = require('fuse-bindings')
 
-const mountPath = process.argv[2]
-if (!mountPath) return console.log('Please specify mount path')
+const {argv} = require('yargs')
+  .usage('Usage: $0 -m [mount path] -n [network]')
+  .demandOption(['m'])
+  .describe('m', 'Path to mount filesystem on').alias('m', 'mount-path')
+  .describe('n', `Network to connect to via Infura (e.g. 'rinkeby')`).alias('n', 'network')
 
 async function main() {
   const Kernel = contract(require('../build/contracts/KernelImpl'))
   const Constants = contract(require('../build/contracts/Constants'))
   let url = 'http://localhost:8545'
-  if (process.argv[3]) {
-    url = `https://${process.argv[3]}.infura.io/v3/59389cd0fe54420785906cf571a7d7c0`
+  if (argv.network) {
+    url = `https://${argv.network}.infura.io/v3/59389cd0fe54420785906cf571a7d7c0`
   }
   const provider = new HDWalletProvider(fs.readFileSync('.secret').toString().trim(), url)
   Kernel.setProvider(provider)
@@ -61,6 +64,7 @@ async function main() {
     }
   }
 
+  const {mountPath} = argv
   fuse.mount(mountPath, {
     displayFolder: true,
     options: ['direct_io'],
