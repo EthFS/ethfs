@@ -1,16 +1,16 @@
 pragma solidity >= 0.5.8;
 
 library Constants {
-  uint public constant _O_RDONLY  = 0x0000;
-  uint public constant _O_WRONLY  = 0x0001;
-  uint public constant _O_RDWR    = 0x0002;
-  uint public constant _O_ACCMODE = 0x0003;
+  uint constant _O_RDONLY  = 0x0000;
+  uint constant _O_WRONLY  = 0x0001;
+  uint constant _O_RDWR    = 0x0002;
+  uint constant _O_ACCMODE = 0x0003;
 
-  uint public constant _O_CREAT = 0x0100;
-  uint public constant _O_EXCL  = 0x0200;
+  uint constant _O_CREAT = 0x0100;
+  uint constant _O_EXCL  = 0x0200;
 
-  uint public constant _O_DIRECTORY = 0x00200000;
-  uint public constant _O_NOFOLLOW  = 0x00400000;
+  uint constant _O_DIRECTORY = 0x00200000;
+  uint constant _O_NOFOLLOW  = 0x00400000;
 
   function O_RDONLY()  internal pure returns (uint) { return _O_RDONLY; }
   function O_WRONLY()  internal pure returns (uint) { return _O_WRONLY; }

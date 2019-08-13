@@ -11,20 +11,21 @@ const {argv} = require('yargs')
   .describe('m', 'Path to mount filesystem on').alias('m', 'mount-path')
   .describe('n', `Network to connect to via Infura (e.g. 'rinkeby')`).alias('n', 'network')
 
+const constants = {}
+require('../build/contracts/Constants')
+  .ast.nodes[1].nodes.filter(x => x.value)
+  .forEach(x => constants[x.name.slice(1)] = x.value.value)
+
 async function main() {
   const Kernel = contract(require('../build/contracts/KernelImpl'))
-  const Constants = contract(require('../build/contracts/Constants'))
   let url = 'http://localhost:8545'
   if (argv.network) {
     url = `https://${argv.network}.infura.io/v3/59389cd0fe54420785906cf571a7d7c0`
   }
-  const provider = new HDWalletProvider(fs.readFileSync('.secret').toString().trim(), url)
-  Kernel.setProvider(provider)
-  Constants.setProvider(provider)
+  Kernel.setProvider(new HDWalletProvider(fs.readFileSync('.secret').toString().trim(), url))
   const accounts = await Kernel.web3.eth.getAccounts()
   Kernel.defaults({from: accounts[0]})
   const kernel = await Kernel.deployed()
-  const constants = await Constants.deployed()
 
   async function write(fd, key, buf, len) {
     let i = 0
@@ -109,7 +110,7 @@ async function main() {
     },
     create: async (path, mode, cb) => {
       try {
-        await kernel.open(utf8ToHex(path), await constants._O_WRONLY() | await constants._O_CREAT())
+        await kernel.open(utf8ToHex(path), constants.O_WRONLY | constants.O_CREAT)
         cb(0, Number(await kernel.result()))
       } catch (e) {
         cb(-errno[e.reason])
@@ -139,7 +140,7 @@ async function main() {
     },
     truncate: async (path, size, cb) => {
       try {
-        await kernel.open(utf8ToHex(path), await constants._O_WRONLY())
+        await kernel.open(utf8ToHex(path), constants.O_WRONLY)
         const fd = Number(await kernel.result())
         await kernel.truncate(fd, '0x', size)
         await kernel.close(fd)
@@ -169,7 +170,7 @@ async function main() {
     },
     setxattr: async (path, name, buf, len, offset, flags, cb) => {
       try {
-        await kernel.open(utf8ToHex(path), await constants._O_WRONLY())
+        await kernel.open(utf8ToHex(path), constants.O_WRONLY)
         const fd = Number(await kernel.result())
         await kernel.truncate(fd, utf8ToHex(name), 0)
         const [, e] = await write(fd, utf8ToHex(name), buf, len)
@@ -215,7 +216,7 @@ async function main() {
     },
     removexattr: async (path, name, cb) => {
       try {
-        await kernel.open(utf8ToHex(path), await constants._O_WRONLY())
+        await kernel.open(utf8ToHex(path), constants.O_WRONLY)
         const fd = Number(await kernel.result())
         await kernel.clear(fd, utf8ToHex(name))
         await kernel.close(fd)
