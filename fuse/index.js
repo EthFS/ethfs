@@ -6,10 +6,11 @@ const {utf8ToHex, hexToUtf8} = require('web3-utils')
 const fuse = require('fuse-bindings')
 
 const {argv} = require('yargs')
-  .usage('Usage: $0 -m [mount path] -n [network]')
-  .demandOption(['m'])
-  .describe('m', 'Path to mount filesystem on').alias('m', 'mount-path')
-  .describe('n', `Network to connect to via Infura (e.g. 'rinkeby')`).alias('n', 'network')
+  .usage('Usage: $0 -p [mount path] -n [network] -k [address]')
+  .demandOption(['p'])
+  .describe('p', 'Path to mount filesystem on').alias('p', 'mount-path').nargs('p', 1)
+  .describe('n', `Network to connect to (e.g. 'rinkeby')`).alias('n', 'network').nargs('n', 1)
+  .describe('k', 'Address of kernel to use').alias('k', 'kernel').nargs('k', 1)
 
 const constants = {}
 require('../build/contracts/Constants')
@@ -25,7 +26,7 @@ async function main() {
   Kernel.setProvider(new HDWalletProvider(fs.readFileSync('.secret').toString().trim(), url))
   const accounts = await Kernel.web3.eth.getAccounts()
   Kernel.defaults({from: accounts[0]})
-  const kernel = await Kernel.deployed()
+  const kernel = await(argv.kernel ? Kernel.at(argv.kernel) : Kernel.deployed())
 
   async function write(fd, key, buf, len) {
     let i = 0
