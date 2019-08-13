@@ -186,7 +186,8 @@ async function main() {
     listxattr: async (path, buf, len, cb) => {
       try {
         const path2 = utf8ToHex(path)
-        const {entries} = await kernel.stat(path2)
+        const {fileType, entries} = await kernel.stat(path2)
+        if (fileType != 1) return cb(0)
         let i = 0
         for (let j = 0; j < entries; j++) {
           const data = await kernel.readkeyPath(path2, j)
