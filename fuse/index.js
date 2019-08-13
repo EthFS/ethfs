@@ -1,4 +1,5 @@
 const fs = require('fs')
+const {errno} = require('os').constants
 const contract = require('truffle-contract')
 const HDWalletProvider = require('truffle-hdwallet-provider')
 const {utf8ToHex, hexToUtf8} = require('web3-utils')
@@ -33,8 +34,10 @@ async function main() {
         await kernel.write(fd, key, buf.slice(i, j))
         i = j
       }
-    } catch (e) {}
-    return i
+      return [i]
+    } catch (e) {
+      return [i, -errno[e.reason]]
+    }
   }
 
   function getattr({fileType, permissions, links, owner, entries, size, lastModified}) {
@@ -92,7 +95,7 @@ async function main() {
       try {
         cb(0, getattr(await kernel.fstat(fd)))
       } catch (e) {
-        cb(fuse.ENOENT)
+        cb(-errno[e.reason])
       }
     },
     open: async (path, flags, cb) => {
@@ -101,7 +104,7 @@ async function main() {
         await kernel.open(utf8ToHex(path), flags)
         cb(0, Number(await kernel.result()))
       } catch (e) {
-        cb(fuse.ENOENT)
+        cb(-errno[e.reason])
       }
     },
     create: async (path, mode, cb) => {
@@ -109,7 +112,7 @@ async function main() {
         await kernel.open(utf8ToHex(path), await constants._O_WRONLY() | await constants._O_CREAT())
         cb(0, Number(await kernel.result()))
       } catch (e) {
-        cb(fuse.ENOENT)
+        cb(-errno[e.reason])
       }
     },
     read: async (path, fd, buf, len, pos, cb) => {
@@ -122,16 +125,16 @@ async function main() {
         }
         cb(Buffer.from(data.slice(2), 'hex').copy(buf, 0, pos, pos + len))
       } catch (e) {
-        cb(0)
+        cb(0, -errno[e.reason])
       }
     },
     write: async (path, fd, buf, len, pos, cb) => {
       try {
         const {size} = await kernel.fstat(fd)
         if (pos < size) await kernel.truncate(fd, '0x', pos)
-        cb(await write(fd, '0x', buf, len))
+        cb(...await write(fd, '0x', buf, len))
       } catch (e) {
-        cb(0)
+        cb(0, -errno[e.reason])
       }
     },
     truncate: async (path, size, cb) => {
@@ -142,7 +145,7 @@ async function main() {
         await kernel.close(fd)
         cb(0)
       } catch (e) {
-        cb(fuse.ENOENT)
+        cb(-errno[e.reason])
       }
     },
     ftruncate: async (path, fd, size, cb) => {
@@ -150,7 +153,7 @@ async function main() {
         await kernel.truncate(fd, '0x', size)
         cb(0)
       } catch (e) {
-        cb(fuse.ENOENT)
+        cb(-errno[e.reason])
       }
     },
     release: async (path, fd, cb) => {
@@ -158,7 +161,7 @@ async function main() {
         if (fd != 0xffffffff) await kernel.close(fd)
         cb(0)
       } catch (e) {
-        cb(fuse.ENOENT)
+        cb(-errno[e.reason])
       }
     },
     chmod: async (path, mode, cb) => {
@@ -169,11 +172,12 @@ async function main() {
         await kernel.open(utf8ToHex(path), await constants._O_WRONLY())
         const fd = Number(await kernel.result())
         await kernel.truncate(fd, utf8ToHex(name), 0)
-        await write(fd, utf8ToHex(name), buf, len)
+        const [, e] = await write(fd, utf8ToHex(name), buf, len)
+        if (e) return cb(e)
         await kernel.close(fd)
         cb(0)
       } catch (e) {
-        cb(fuse.ENOENT)
+        cb(-errno[e.reason])
       }
     },
     getxattr: async (path, name, buf, len, offset, cb) => {
@@ -184,7 +188,7 @@ async function main() {
         if (len < len2) return cb(fuse.ERANGE)
         cb(buf.write(data.slice(2), offset, 'hex'))
       } catch (e) {
-        cb(fuse.ENOENT)
+        cb(-errno[e.reason])
       }
     },
     listxattr: async (path, buf, len, cb) => {
@@ -206,7 +210,7 @@ async function main() {
         }
         cb(i)
       } catch (e) {
-        cb(fuse.ENOENT)
+        cb(-errno[e.reason])
       }
     },
     removexattr: async (path, name, cb) => {
@@ -217,7 +221,7 @@ async function main() {
         await kernel.close(fd)
         cb(0)
       } catch (e) {
-        cb(fuse.ENOENT)
+        cb(-errno[e.reason])
       }
     },
     link: async (src, dest, cb) => {
@@ -225,7 +229,7 @@ async function main() {
         await kernel.link(utf8ToHex(src), utf8ToHex(dest))
         cb(0)
       } catch (e) {
-        cb(fuse.ENOENT)
+        cb(-errno[e.reason])
       }
     },
     unlink: async (path, cb) => {
@@ -233,7 +237,7 @@ async function main() {
         await kernel.unlink(utf8ToHex(path))
         cb(0)
       } catch (e) {
-        cb(fuse.ENOENT)
+        cb(-errno[e.reason])
       }
     },
     symlink: async (src, dest, cb) => {
@@ -241,14 +245,14 @@ async function main() {
         await kernel.symlink(utf8ToHex(src), utf8ToHex(dest))
         cb(0)
       } catch (e) {
-        cb(fuse.ENOENT)
+        cb(-errno[e.reason])
       }
     },
     readlink: async (path, cb) => {
       try {
         cb(0, hexToUtf8(await kernel.readlink(utf8ToHex(path))))
       } catch (e) {
-        cb(fuse.ENOENT)
+        cb(-errno[e.reason])
       }
     },
     rename: async (src, dest, cb) => {
@@ -256,7 +260,7 @@ async function main() {
         await kernel.move(utf8ToHex(src), utf8ToHex(dest))
         cb(0)
       } catch (e) {
-        cb(fuse.ENOENT)
+        cb(-errno[e.reason])
       }
     },
     mkdir: async (path, mode, cb) => {
@@ -264,7 +268,7 @@ async function main() {
         await kernel.mkdir(utf8ToHex(path))
         cb(0)
       } catch (e) {
-        cb(fuse.ENOENT)
+        cb(-errno[e.reason])
       }
     },
     rmdir: async (path, cb) => {
@@ -272,7 +276,7 @@ async function main() {
         await kernel.rmdir(utf8ToHex(path))
         cb(0)
       } catch (e) {
-        cb(fuse.ENOENT)
+        cb(-errno[e.reason])
       }
     },
   }, err => {
