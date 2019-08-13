@@ -275,18 +275,18 @@ async function main() {
     if (err) throw err
     console.log('Filesystem mounted on ' + mountPath)
   })
-}
 
-process.on('SIGINT', () => {
-  fuse.unmount(mountPath, err => {
-    if (err) {
-      console.log('Filesystem at ' + mountPath + ' not unmounted', err)
-    } else {
-      console.log('Filesystem at ' + mountPath + ' unmounted')
-      process.exit()
-    }
+  process.on('SIGINT', () => {
+    fuse.unmount(mountPath, err => {
+      if (err) {
+        console.log('Filesystem at ' + mountPath + ' not unmounted', err)
+      } else {
+        console.log('Filesystem at ' + mountPath + ' unmounted')
+        process.exit()
+      }
+    })
   })
-})
+}
 
 main().catch(err => {
   console.log(err)
