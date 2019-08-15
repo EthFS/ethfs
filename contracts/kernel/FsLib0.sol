@@ -229,12 +229,21 @@ library FsLib {
     inode.lastModified = now;
   }
 
-  function checkOpen(Disk storage self, uint ino, uint flags) private view {
+  function checkOpen(Disk storage self, uint ino, uint flags) public view {
     require(ino > 0, 'ENOENT');
     Inode storage inode = self.inode[ino];
-    if (tx.origin != inode.owner) {
-      require(inode.group != inode.owner && Group(inode.group).contains(tx.origin), 'EACCES');
+    uint mode;
+    if (tx.origin == inode.owner) {
+      mode = inode.mode >> 6 & 7;
+    } else if (inode.group != inode.owner && Group(inode.group).contains(tx.origin)) {
+      mode = inode.mode >> 3 & 7;
+    } else {
+      mode = inode.mode & 7;
     }
+    uint accmode = flags & Constants.O_ACCMODE();
+    if (accmode == Constants.O_RDONLY()) require(mode & 4 == 4, 'EACCES');
+    else if (accmode == Constants.O_WRONLY()) require(mode & 2 == 2, 'EACCES');
+    else if (accmode == Constants.O_RDWR()) require(mode & 6 == 6, 'EACCES');
     if (flags & Constants.O_DIRECTORY() > 0) {
       require(inode.fileType == FileSystem.FileType.Directory, 'ENOTDIR');
     }
