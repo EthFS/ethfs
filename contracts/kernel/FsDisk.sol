@@ -3,10 +3,10 @@ pragma solidity >= 0.5.8;
 import './FsLib0.sol';
 import './FsLib1.sol';
 
-contract FileSystemDisk is FileSystem {
-  using FileSystemLib for FileSystemLib.Disk;
-  using FileSystemLib1 for FileSystemLib.Disk;
-  FileSystemLib.Disk m_disk;
+contract FsDisk is FileSystem {
+  using FsLib for FsLib.Disk;
+  using FsLib1 for FsLib.Disk;
+  FsLib.Disk m_disk;
 
   constructor() public {
     m_disk.init();

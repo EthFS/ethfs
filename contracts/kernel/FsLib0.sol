@@ -4,7 +4,7 @@ import 'solidity-bytes-utils/contracts/BytesLib.sol';
 import '../interface/Constants.sol';
 import '../interface/FileSystem.sol';
 
-library FileSystemLib {
+library FsLib {
   struct Disk {
     address owner;
     Inode[] inode;
@@ -321,7 +321,7 @@ library FileSystemLib {
   }
 
   function stat(Disk storage self, bytes calldata path, uint curdir) external view onlyOwner(self) returns (FileSystem.FileType fileType, uint permissions, uint ino_, address device, uint links, address owner, uint entries, uint size, uint lastModified) {
-    FileSystemLib.ResolvedPath memory res = pathToInode2(self, path, curdir, 1);
+    ResolvedPath memory res = pathToInode2(self, path, curdir, 1);
     require(res.ino > 0, 'ENOENT');
     if (res.dirIno == 0) res.dirIno = res.ino;
     checkOpen(self, res.dirIno, 0);
@@ -348,11 +348,11 @@ library FileSystemLib {
     lastModified = inode.lastModified;
   }
 
-  function mkdir(FileSystemLib.Disk storage self, bytes calldata path, uint curdir) external onlyOwner(self) {
+  function mkdir(Disk storage self, bytes calldata path, uint curdir) external onlyOwner(self) {
     (uint ino, uint dirIno, bytes memory key) = pathToInode(self, path, curdir, 1);
     require(ino == 0, 'EEXIST');
     ino = allocInode(self);
-    FileSystemLib.Inode storage inode = self.inode[ino];
+    Inode storage inode = self.inode[ino];
     inode.owner = tx.origin;
     inode.fileType = FileSystem.FileType.Directory;
     inode.refCnt = 1;
@@ -361,11 +361,11 @@ library FileSystemLib {
     writeToInode(self, ino, '..', dirIno);
   }
 
-  function rmdir(FileSystemLib.Disk storage self, bytes calldata path, uint curdir) external onlyOwner(self) {
+  function rmdir(Disk storage self, bytes calldata path, uint curdir) external onlyOwner(self) {
     (uint ino, uint dirIno, bytes memory key) = pathToInode(self, path, curdir, 1);
     require(ino > 0, 'ENOENT');
     require(ino != 1 && ino != curdir, 'EBUSY');
-    FileSystemLib.Inode storage inode = self.inode[ino];
+    Inode storage inode = self.inode[ino];
     require(inode.fileType == FileSystem.FileType.Directory, 'ENOTDIR');
     require(inode.keys.length == 2, 'ENOTEMPTY');
     removeFromInode(self, dirIno, key);

@@ -2,18 +2,18 @@ pragma solidity >= 0.5.8;
 
 import './FsLib0.sol';
 
-library FileSystemLib1 {
-  using FileSystemLib for FileSystemLib.Disk;
+library FsLib1 {
+  using FsLib for FsLib.Disk;
 
-  modifier onlyOwner(FileSystemLib.Disk storage self) {
+  modifier onlyOwner(FsLib.Disk storage self) {
     require(msg.sender == self.owner, 'EPERM');
     _;
   }
 
-  function link(FileSystemLib.Disk storage self, bytes calldata source, bytes calldata target, uint curdir) external onlyOwner(self) {
+  function link(FsLib.Disk storage self, bytes calldata source, bytes calldata target, uint curdir) external onlyOwner(self) {
     (uint ino,, bytes memory key) = self.pathToInode(source, curdir, 2);
     require(ino > 0, 'ENOENT');
-    FileSystemLib.Inode storage inode = self.inode[ino];
+    FsLib.Inode storage inode = self.inode[ino];
     require(inode.fileType != FileSystem.FileType.Directory, 'EISDIR');
     (uint ino2, uint dirIno, bytes memory key2) = self.pathToInode(target, curdir, 2);
     if (ino2 > 0) {
@@ -27,20 +27,20 @@ library FileSystemLib1 {
     inode.links++;
   }
 
-  function unlink(FileSystemLib.Disk storage self, bytes calldata path, uint curdir) external onlyOwner(self) {
+  function unlink(FsLib.Disk storage self, bytes calldata path, uint curdir) external onlyOwner(self) {
     (uint ino, uint dirIno, bytes memory key) = self.pathToInode(path, curdir, 1);
     require(ino > 0, 'ENOENT');
-    FileSystemLib.Inode storage inode = self.inode[ino];
+    FsLib.Inode storage inode = self.inode[ino];
     require(inode.fileType != FileSystem.FileType.Directory, 'EISDIR');
     self.removeFromInode(dirIno, key);
     if (--inode.links == 0) self.freeInode(ino);
   }
 
-  function symlink(FileSystemLib.Disk storage self, bytes calldata source, bytes calldata target, uint curdir) external onlyOwner(self) {
+  function symlink(FsLib.Disk storage self, bytes calldata source, bytes calldata target, uint curdir) external onlyOwner(self) {
     (uint ino, uint dirIno, bytes memory key) = self.pathToInode(target, curdir, 1);
     require(ino == 0, 'EEXIST');
     ino = self.allocInode();
-    FileSystemLib.Inode storage inode = self.inode[ino];
+    FsLib.Inode storage inode = self.inode[ino];
     inode.owner = tx.origin;
     inode.fileType = FileSystem.FileType.Symlink;
     inode.links = 1;
@@ -48,28 +48,28 @@ library FileSystemLib1 {
     uint inoExtent = self.allocInodeExtent();
     inode.data[''] = inoExtent;
     inode.keys.push('');
-    FileSystemLib.InodeExtent storage data = self.inodeExtent[inoExtent];
+    FsLib.InodeExtent storage data = self.inodeExtent[inoExtent];
     data.index = 1;
     data.extent = source;
     self.writeToInode(dirIno, key, ino);
   }
 
-  function readlink(FileSystemLib.Disk storage self, bytes calldata path, uint curdir) external view onlyOwner(self) returns (bytes memory) {
+  function readlink(FsLib.Disk storage self, bytes calldata path, uint curdir) external view onlyOwner(self) returns (bytes memory) {
     (uint ino,,) = self.pathToInode(path, curdir, 1);
     require(ino > 0, 'ENOENT');
-    FileSystemLib.Inode storage inode = self.inode[ino];
+    FsLib.Inode storage inode = self.inode[ino];
     require(inode.fileType == FileSystem.FileType.Symlink, 'EINVAL');
     return self.inodeExtent[inode.data['']].extent;
   }
 
-  function move(FileSystemLib.Disk storage self, bytes calldata sourcePath, bytes calldata targetPath, uint curdir) external onlyOwner(self) {
-    FileSystemLib.ResolvedPath memory source = self.pathToInode2(sourcePath, curdir, 1);
+  function move(FsLib.Disk storage self, bytes calldata sourcePath, bytes calldata targetPath, uint curdir) external onlyOwner(self) {
+    FsLib.ResolvedPath memory source = self.pathToInode2(sourcePath, curdir, 1);
     require(source.ino > 0, 'ENOENT');
     bool sourceIsDir = self.inode[source.ino].fileType == FileSystem.FileType.Directory;
-    FileSystemLib.ResolvedPath memory target = self.pathToInode2(targetPath, curdir, 2);
+    FsLib.ResolvedPath memory target = self.pathToInode2(targetPath, curdir, 2);
     if (source.ino == target.ino) return;
     if (target.ino > 0) {
-      FileSystemLib.Inode storage inode = self.inode[target.ino];
+      FsLib.Inode storage inode = self.inode[target.ino];
       if (inode.fileType == FileSystem.FileType.Directory) {
         target.dirIno = target.ino;
         target.key = source.key;
@@ -106,12 +106,12 @@ library FileSystemLib1 {
     self.writeToInode(target.dirIno, target.key, source.ino);
   }
 
-  function copy(FileSystemLib.Disk storage self, bytes calldata sourcePath, bytes calldata targetPath, uint curdir) external onlyOwner(self) {
-    FileSystemLib.ResolvedPath memory source = self.pathToInode2(sourcePath, curdir, 2);
+  function copy(FsLib.Disk storage self, bytes calldata sourcePath, bytes calldata targetPath, uint curdir) external onlyOwner(self) {
+    FsLib.ResolvedPath memory source = self.pathToInode2(sourcePath, curdir, 2);
     require(source.ino > 0, 'ENOENT');
-    FileSystemLib.Inode storage inode = self.inode[source.ino];
+    FsLib.Inode storage inode = self.inode[source.ino];
     bool sourceIsDir = inode.fileType == FileSystem.FileType.Directory;
-    FileSystemLib.ResolvedPath memory target = self.pathToInode2(targetPath, curdir, 2);
+    FsLib.ResolvedPath memory target = self.pathToInode2(targetPath, curdir, 2);
     if (source.ino == target.ino) return;
     if (sourceIsDir) {
       uint ino = target.dirIno;
@@ -126,12 +126,12 @@ library FileSystemLib1 {
     _copy(self, source, target);
   }
 
-  function _copy(FileSystemLib.Disk storage self, FileSystemLib.ResolvedPath memory source, FileSystemLib.ResolvedPath memory target) private {
-    FileSystemLib.Inode storage inode = self.inode[source.ino];
+  function _copy(FsLib.Disk storage self, FsLib.ResolvedPath memory source, FsLib.ResolvedPath memory target) private {
+    FsLib.Inode storage inode = self.inode[source.ino];
     bool sourceIsDir = inode.fileType == FileSystem.FileType.Directory;
     uint newIno;
     if (target.ino > 0) {
-      FileSystemLib.Inode storage inode2 = self.inode[target.ino];
+      FsLib.Inode storage inode2 = self.inode[target.ino];
       if (inode2.fileType == FileSystem.FileType.Directory) {
         target.dirIno = target.ino;
         target.key = source.key;
@@ -164,9 +164,9 @@ library FileSystemLib1 {
     copyInode(self, source.ino, newIno, target.dirIno);
   }
 
-  function copyInode(FileSystemLib.Disk storage self, uint ino, uint ino2, uint dirIno) private {
-    FileSystemLib.Inode storage inode = self.inode[ino];
-    FileSystemLib.Inode storage inode2 = self.inode[ino2];
+  function copyInode(FsLib.Disk storage self, uint ino, uint ino2, uint dirIno) private {
+    FsLib.Inode storage inode = self.inode[ino];
+    FsLib.Inode storage inode2 = self.inode[ino2];
     bool sourceIsDir = inode.fileType == FileSystem.FileType.Directory;
     if (!sourceIsDir || inode2.keys.length == 0) {
       inode2.owner = inode.owner;
@@ -208,8 +208,8 @@ library FileSystemLib1 {
         inode2.keys[j++] = key;
         if (sourceIsDir) {
           inode2.data[key] = self.allocInodeValue();
-          FileSystemLib.InodeValue storage data = self.inodeValue[inode.data[key]];
-          FileSystemLib.InodeValue storage data2 = self.inodeValue[inode2.data[key]];
+          FsLib.InodeValue storage data = self.inodeValue[inode.data[key]];
+          FsLib.InodeValue storage data2 = self.inodeValue[inode2.data[key]];
           data2.index = j;
           data2.value = self.allocInode();
           copyInode(self, data.value, data2.value, ino2);
@@ -219,8 +219,8 @@ library FileSystemLib1 {
         }
       } else {
         // sourceIsDir == true
-        FileSystemLib.InodeValue storage data = self.inodeValue[inode.data[key]];
-        _copy(self, FileSystemLib.ResolvedPath({ino: data.value, dirIno: ino, key: key}), FileSystemLib.ResolvedPath({ino: ino2, dirIno: ino2, key: key}));
+        FsLib.InodeValue storage data = self.inodeValue[inode.data[key]];
+        _copy(self, FsLib.ResolvedPath({ino: data.value, dirIno: ino, key: key}), FsLib.ResolvedPath({ino: ino2, dirIno: ino2, key: key}));
       }
     }
   }
