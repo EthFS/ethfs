@@ -165,8 +165,9 @@ async function main() {
     },
     chown: async (path, uid, gid, cb) => {
       try {
-        const owner = addressMap.uid[uid]
-        const group = addressMap.gid[gid]
+        const nullAddress = '0x0000000000000000000000000000000000000000'
+        const owner = uid < 0 ? nullAddress : addressMap.uid[uid]
+        const group = gid < 0 ? nullAddress : addressMap.gid[gid]
         await kernel.chown(utf8ToHex(path), owner, group)
         cb(0)
       } catch (e) {

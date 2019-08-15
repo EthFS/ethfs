@@ -14,14 +14,20 @@ library FsLib1 {
     (uint ino,,) = self.pathToInode(path, curdir, 2);
     require(ino > 0, 'ENOENT');
     FsLib.Inode storage inode = self.inode[ino];
-    inode.owner = owner;
-    inode.group = group;
+    require(tx.origin == inode.owner, 'EACCES');
+    if (owner != 0x0000000000000000000000000000000000000000) {
+      inode.owner = owner;
+    }
+    if (group != 0x0000000000000000000000000000000000000000) {
+      inode.group = group;
+    }
   }
 
   function chmod(FsLib.Disk storage self, bytes calldata path, uint mode, uint curdir) external onlyOwner(self) {
     (uint ino,,) = self.pathToInode(path, curdir, 2);
     require(ino > 0, 'ENOENT');
     FsLib.Inode storage inode = self.inode[ino];
+    require(tx.origin == inode.owner, 'EACCES');
     inode.mode = mode & 511;
   }
 
