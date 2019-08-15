@@ -3,6 +3,7 @@ pragma solidity >= 0.5.8;
 import 'solidity-bytes-utils/contracts/BytesLib.sol';
 import '../interface/Constants.sol';
 import '../interface/FileSystem.sol';
+import '../interface/Group.sol';
 
 library FsLib {
   struct Disk {
@@ -231,7 +232,9 @@ library FsLib {
   function checkOpen(Disk storage self, uint ino, uint flags) private view {
     require(ino > 0, 'ENOENT');
     Inode storage inode = self.inode[ino];
-    require(tx.origin == inode.owner, 'EACCES');
+    if (tx.origin != inode.owner) {
+      require(inode.group != inode.owner && Group(inode.group).contains(tx.origin), 'EACCES');
+    }
     if (flags & Constants.O_DIRECTORY() > 0) {
       require(inode.fileType == FileSystem.FileType.Directory, 'ENOTDIR');
     }
