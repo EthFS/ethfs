@@ -10,6 +10,21 @@ library FsLib1 {
     _;
   }
 
+  function chown(FsLib.Disk storage self, bytes calldata path, address owner, address group, uint curdir) external onlyOwner(self) {
+    (uint ino,,) = self.pathToInode(path, curdir, 2);
+    require(ino > 0, 'ENOENT');
+    FsLib.Inode storage inode = self.inode[ino];
+    inode.owner = owner;
+    inode.group = group;
+  }
+
+  function chmod(FsLib.Disk storage self, bytes calldata path, uint mode, uint curdir) external onlyOwner(self) {
+    (uint ino,,) = self.pathToInode(path, curdir, 2);
+    require(ino > 0, 'ENOENT');
+    FsLib.Inode storage inode = self.inode[ino];
+    inode.mode = mode & 511;
+  }
+
   function link(FsLib.Disk storage self, bytes calldata source, bytes calldata target, uint curdir) external onlyOwner(self) {
     (uint ino,, bytes memory key) = self.pathToInode(source, curdir, 2);
     require(ino > 0, 'ENOENT');
@@ -41,9 +56,10 @@ library FsLib1 {
     require(ino == 0, 'EEXIST');
     ino = self.allocInode();
     FsLib.Inode storage inode = self.inode[ino];
-    inode.owner = tx.origin;
     inode.fileType = FileSystem.FileType.Symlink;
+    inode.mode = 511;
     inode.links = 1;
+    inode.owner = inode.group = tx.origin;
     inode.lastModified = now;
     uint inoExtent = self.allocInodeExtent();
     inode.data[''] = inoExtent;
@@ -169,9 +185,10 @@ library FsLib1 {
     FsLib.Inode storage inode2 = self.inode[ino2];
     bool sourceIsDir = inode.fileType == FileSystem.FileType.Directory;
     if (!sourceIsDir || inode2.keys.length == 0) {
-      inode2.owner = inode.owner;
       inode2.fileType = inode.fileType;
-      inode2.permissions = inode.permissions;
+      inode2.mode = inode.mode;
+      inode2.owner = inode.owner;
+      inode2.group = inode.group;
     }
     uint i;
     uint j;

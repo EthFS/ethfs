@@ -16,11 +16,12 @@ library FsLib {
   }
 
   struct Inode {
-    address owner;
     FileSystem.FileType fileType;
-    uint permissions;
-    uint lastModified;
+    uint mode;
     uint links;
+    address owner;
+    address group;
+    uint lastModified;
     uint refCnt;
     bytes[] keys;
     mapping(bytes => uint) data;
@@ -53,8 +54,10 @@ library FsLib {
     self.inode.length = ino+1;
     self.inodeValue.length = 1;
     self.inodeExtent.length = 1;
-    self.inode[ino].owner = tx.origin;
     self.inode[ino].fileType = FileSystem.FileType.Directory;
+    self.inode[ino].mode = 493;
+    self.inode[ino].owner = tx.origin;
+    self.inode[ino].group = tx.origin;
     self.inode[ino].refCnt = 1;
     writeToInode(self, ino, '.', ino);
     writeToInode(self, ino, '..', ino);
@@ -242,10 +245,11 @@ library FsLib {
       } else {
         ino = allocInode(self);
         Inode storage inode = self.inode[ino];
-        inode.owner = tx.origin;
         inode.fileType = FileSystem.FileType.Regular;
-        inode.lastModified = now;
+        inode.mode = 420;
         inode.links = 1;
+        inode.owner = inode.group = tx.origin;
+        inode.lastModified = now;
         writeToInode(self, dirIno, key, ino);
       }
     }
@@ -320,7 +324,7 @@ library FsLib {
     inode.lastModified = now;
   }
 
-  function stat(Disk storage self, bytes calldata path, uint curdir) external view onlyOwner(self) returns (FileSystem.FileType fileType, uint permissions, uint ino_, address device, uint links, address owner, uint entries, uint size, uint lastModified) {
+  function stat(Disk storage self, bytes calldata path, uint curdir) external view onlyOwner(self) returns (FileSystem.FileType fileType, uint mode, uint ino_, uint links, address owner, address group, uint entries, uint size, uint lastModified) {
     ResolvedPath memory res = pathToInode2(self, path, curdir, 1);
     require(res.ino > 0, 'ENOENT');
     if (res.dirIno == 0) res.dirIno = res.ino;
@@ -328,18 +332,21 @@ library FsLib {
     return _fstat(self, res.ino);
   }
 
-  function fstat(Disk storage self, uint ino) external view onlyOwner(self) returns (FileSystem.FileType fileType, uint permissions, uint ino_, address device, uint links, address owner, uint entries, uint size, uint lastModified) {
+  function fstat(Disk storage self, uint ino) external view onlyOwner(self) returns (FileSystem.FileType fileType, uint mode, uint ino_, uint links, address owner, address group, uint entries, uint size, uint lastModified) {
     return _fstat(self, ino);
   }
 
-  function _fstat(Disk storage self, uint ino) private view returns (FileSystem.FileType fileType, uint permissions, uint ino_, address device, uint links, address owner, uint entries, uint size, uint lastModified) {
+  function _fstat(Disk storage self, uint ino) private view returns (FileSystem.FileType fileType, uint mode, uint ino_, uint links, address owner, address group, uint entries, uint size, uint lastModified) {
     Inode storage inode = self.inode[ino];
     fileType = inode.fileType;
-    permissions = inode.permissions;
+    mode = inode.mode;
+    if (fileType == FileSystem.FileType.Regular) mode |= 0x8000;
+    else if (fileType == FileSystem.FileType.Directory) mode |= 0x4000;
+    else if (fileType == FileSystem.FileType.Symlink) mode |= 0xa000;
     ino_ = ino;
-    device = address(this);
     links = inode.links;
     owner = inode.owner;
+    group = inode.group;
     entries = inode.keys.length;
     uint inoExtent = inode.data[''];
     if (inoExtent > 0) {
@@ -353,8 +360,9 @@ library FsLib {
     require(ino == 0, 'EEXIST');
     ino = allocInode(self);
     Inode storage inode = self.inode[ino];
-    inode.owner = tx.origin;
     inode.fileType = FileSystem.FileType.Directory;
+    inode.mode = 493;
+    inode.owner = inode.group = tx.origin;
     inode.refCnt = 1;
     writeToInode(self, dirIno, key, ino);
     writeToInode(self, ino, '.', ino);

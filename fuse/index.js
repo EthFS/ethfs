@@ -28,6 +28,16 @@ async function main() {
   Kernel.defaults({from: accounts[0]})
   const kernel = await(argv.kernel ? Kernel.at(argv.kernel) : Kernel.deployed())
 
+  const addressMap = getAddressMap(accounts[0])
+  addressMap.toUid = {}
+  addressMap.toGid = {}
+  for (let uid in addressMap.uid) {
+    addressMap.toUid[addressMap.uid[uid]] = uid
+  }
+  for (let gid in addressMap.gid) {
+    addressMap.toGid[addressMap.gid[gid]] = gid
+  }
+
   async function write(fd, key, buf, len) {
     let i = 0
     try {
@@ -42,20 +52,7 @@ async function main() {
     }
   }
 
-  function getattr({fileType, permissions, links, owner, entries, size, lastModified}) {
-    let mode
-    switch (Number(fileType)) {
-      case 1:  // Regular
-        mode = 0100644
-        break
-      case 2:  // Directory
-        size = links = entries
-        mode = 0040755
-        break
-      case 3:  // Symlink
-        mode = 0120755
-        break
-    }
+  function getattr({mode, links, owner, group, entries, size, lastModified}) {
     lastModified = new Date(lastModified * 1e3)
     return {
       mtime: lastModified,
@@ -64,8 +61,8 @@ async function main() {
       nlink: links,
       size,
       mode,
-      uid: process.getuid ? process.getuid() : 0,
-      gid: process.getgid ? process.getgid() : 0,
+      uid: addressMap.toUid[owner] !== undefined ? addressMap.toUid[owner] : process.getuid ? process.getuid() : 0,
+      gid: addressMap.toGid[group] !== undefined ? addressMap.toGid[group] : process.getgid ? process.getgid() : 0,
     }
   }
 
@@ -166,8 +163,23 @@ async function main() {
         cb(-errno[e.reason])
       }
     },
+    chown: async (path, uid, gid, cb) => {
+      try {
+        const owner = addressMap.uid[uid]
+        const group = addressMap.gid[gid]
+        await kernel.chown(utf8ToHex(path), owner, group)
+        cb(0)
+      } catch (e) {
+        cb(-errno[e.reason])
+      }
+    },
     chmod: async (path, mode, cb) => {
-      cb(0)
+      try {
+        await kernel.chmod(utf8ToHex(path), mode)
+        cb(0)
+      } catch (e) {
+        cb(-errno[e.reason])
+      }
     },
     setxattr: async (path, name, buf, len, offset, flags, cb) => {
       try {
@@ -296,6 +308,20 @@ async function main() {
       }
     })
   })
+}
+
+function getAddressMap(defaultAddress) {
+  try {
+    return JSON.parse(fs.readFileSync('./address_map.json'))
+  } catch (e) {}
+  const uid = process.getuid ? process.getuid() : 0
+  const gid = process.getgid ? process.getgid() : 0
+  const addressMap = {
+    uid: {[uid]: defaultAddress},
+    gid: {[gid]: defaultAddress},
+  }
+  fs.writeFileSync('./address_map.json', JSON.stringify(addressMap, 0, 2) + '\n')
+  return addressMap
 }
 
 main().catch(err => {

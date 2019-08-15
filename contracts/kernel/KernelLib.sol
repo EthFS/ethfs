@@ -131,6 +131,16 @@ library KernelLib {
     self.fileSystem.copy(source, target, u.curdir);
   }
 
+  function chown(KernelArea storage self, bytes calldata path, address owner, address group) external {
+    UserArea storage u = self.userArea[tx.origin];
+    self.fileSystem.chown(path, owner, group, u.curdir);
+  }
+
+  function chmod(KernelArea storage self, bytes calldata path, uint mode) external {
+    UserArea storage u = self.userArea[tx.origin];
+    self.fileSystem.chmod(path, mode, u.curdir);
+  }
+
   function getcwd(KernelArea storage self) external view returns (bytes memory) {
     UserArea storage u = self.userArea[tx.origin];
     uint ino = u.curdir;
@@ -155,12 +165,12 @@ library KernelLib {
     return self.fileSystem.rmdir(path, u.curdir);
   }
 
-  function stat(KernelArea storage self, bytes calldata path) external view returns (FileSystem.FileType fileType, uint permissions, uint ino, address device, uint links, address owner, uint entries, uint size, uint lastModified) {
+  function stat(KernelArea storage self, bytes calldata path) external view returns (FileSystem.FileType fileType, uint mode, uint ino, uint links, address owner, address group, uint entries, uint size, uint lastModified) {
     UserArea storage u = self.userArea[tx.origin];
     return self.fileSystem.stat(path, u.curdir);
   }
 
-  function fstat(KernelArea storage self, uint fd) external view returns (FileSystem.FileType fileType, uint permissions, uint ino, address device, uint links, address owner, uint entries, uint size, uint lastModified) {
+  function fstat(KernelArea storage self, uint fd) external view returns (FileSystem.FileType fileType, uint mode, uint ino, uint links, address owner, address group, uint entries, uint size, uint lastModified) {
     UserArea storage u = self.userArea[tx.origin];
     FileDescriptor storage fildes = u.fildes[fd];
     require(fildes.ino > 0, 'EBADF');

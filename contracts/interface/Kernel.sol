@@ -19,10 +19,12 @@ interface Kernel {
   function readlink(bytes calldata path) external view returns (bytes memory);
   function move(bytes calldata source, bytes calldata target) external;
   function copy(bytes calldata source, bytes calldata target) external;
+  function chown(bytes calldata path, address owner, address group) external;
+  function chmod(bytes calldata path, uint mode) external;
   function getcwd() external view returns (bytes memory);
   function chdir(bytes calldata path) external;
   function mkdir(bytes calldata path) external;
   function rmdir(bytes calldata path) external;
-  function stat(bytes calldata path) external view returns (FileSystem.FileType fileType, uint permissions, uint ino, address device, uint links, address owner, uint entries, uint size, uint lastModified);
-  function fstat(uint fd) external view returns (FileSystem.FileType fileType, uint permissions, uint ino, address device, uint links, address owner, uint entries, uint size, uint lastModified);
+  function stat(bytes calldata path) external view returns (FileSystem.FileType fileType, uint mode, uint ino, uint links, address owner, address group, uint entries, uint size, uint lastModified);
+  function fstat(uint fd) external view returns (FileSystem.FileType fileType, uint mode, uint ino, uint links, address owner, address group, uint entries, uint size, uint lastModified);
 }

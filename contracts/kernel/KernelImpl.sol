@@ -75,6 +75,14 @@ contract KernelImpl is Kernel {
     m_kernelArea.copy(source, target);
   }
 
+  function chown(bytes calldata path, address owner, address group) external {
+    m_kernelArea.chown(path, owner, group);
+  }
+
+  function chmod(bytes calldata path, uint mode) external {
+    m_kernelArea.chmod(path, mode);
+  }
+
   function getcwd() external view returns (bytes memory) {
     return m_kernelArea.getcwd();
   }
@@ -91,11 +99,11 @@ contract KernelImpl is Kernel {
     m_kernelArea.rmdir(path);
   }
 
-  function stat(bytes calldata path) external view returns (FileSystem.FileType fileType, uint permissions, uint ino, address device, uint links, address owner, uint entries, uint size, uint lastModified) {
+  function stat(bytes calldata path) external view returns (FileSystem.FileType fileType, uint mode, uint ino, uint links, address owner, address group, uint entries, uint size, uint lastModified) {
     return m_kernelArea.stat(path);
   }
 
-  function fstat(uint fd) external view returns (FileSystem.FileType fileType, uint permissions, uint ino, address device, uint links, address owner, uint entries, uint size, uint lastModified) {
+  function fstat(uint fd) external view returns (FileSystem.FileType fileType, uint mode, uint ino, uint links, address owner, address group, uint entries, uint size, uint lastModified) {
     return m_kernelArea.fstat(fd);
   }
 }
