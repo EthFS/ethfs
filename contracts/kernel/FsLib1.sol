@@ -48,15 +48,6 @@ library FsLib1 {
     inode.links++;
   }
 
-  function unlink(FsLib.Disk storage self, bytes calldata path, uint curdir) external onlyOwner(self) {
-    (uint ino, uint dirIno, bytes memory key) = self.pathToInode(path, curdir, 1);
-    require(ino > 0, 'ENOENT');
-    FsLib.Inode storage inode = self.inode[ino];
-    require(inode.fileType != FileSystem.FileType.Directory, 'EISDIR');
-    self.removeFromInode(dirIno, key);
-    if (--inode.links == 0) self.freeInode(ino);
-  }
-
   function symlink(FsLib.Disk storage self, bytes calldata source, bytes calldata target, uint curdir) external onlyOwner(self) {
     (uint ino, uint dirIno, bytes memory key) = self.pathToInode(target, curdir, 1);
     require(ino == 0, 'EEXIST');

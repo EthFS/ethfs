@@ -399,4 +399,13 @@ library FsLib {
     removeFromInode(self, dirIno, key);
     if (--inode.refCnt == 0) freeInode(self, ino);
   }
+
+  function unlink(Disk storage self, bytes calldata path, uint curdir) external onlyOwner(self) {
+    (uint ino, uint dirIno, bytes memory key) = pathToInode(self, path, curdir, 1);
+    require(ino > 0, 'ENOENT');
+    Inode storage inode = self.inode[ino];
+    require(inode.fileType != FileSystem.FileType.Directory, 'EISDIR');
+    removeFromInode(self, dirIno, key);
+    if (--inode.links == 0) freeInode(self, ino);
+  }
 }
