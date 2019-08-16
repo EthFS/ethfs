@@ -183,8 +183,8 @@ library FsLib1 {
   function copyInode(FsLib.Disk storage self, uint ino, uint ino2, uint dirIno) private {
     FsLib.Inode storage inode = self.inode[ino];
     FsLib.Inode storage inode2 = self.inode[ino2];
-    self.checkMode(inode, 4);
     bool sourceIsDir = inode.fileType == FileSystem.FileType.Directory;
+    self.checkMode(inode, sourceIsDir ? 5 : 4);
     if (!sourceIsDir || inode2.keys.length == 0) {
       inode2.fileType = inode.fileType;
       inode2.mode = inode.mode;
