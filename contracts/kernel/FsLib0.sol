@@ -91,7 +91,7 @@ library FsLib {
         inode = self.inode[ino];
       }
       require(inode.fileType == FileSystem.FileType.Directory, 'ENOTDIR');
-      require(tx.origin == inode.owner, 'EACCES');
+      checkMode(inode, 1);
       key = new bytes(i-j);
       for (uint k; j < i;) key[k++] = path[j++];
       j++;
@@ -229,9 +229,7 @@ library FsLib {
     inode.lastModified = now;
   }
 
-  function checkOpen(Disk storage self, uint ino, uint flags) public view {
-    require(ino > 0, 'ENOENT');
-    Inode storage inode = self.inode[ino];
+  function checkMode(Inode storage inode, uint mask) public view {
     uint mode;
     if (tx.origin == inode.owner) {
       mode = inode.mode >> 6 & 7;
@@ -240,10 +238,20 @@ library FsLib {
     } else {
       mode = inode.mode & 7;
     }
+    require(mode & mask == mask, 'EACCES');
+  }
+
+  function checkOpen(Disk storage self, uint ino, uint flags) private view {
+    require(ino > 0, 'ENOENT');
+    Inode storage inode = self.inode[ino];
     uint accmode = flags & Constants.O_ACCMODE();
-    if (accmode == Constants.O_RDONLY()) require(mode & 4 == 4, 'EACCES');
-    else if (accmode == Constants.O_WRONLY()) require(mode & 2 == 2, 'EACCES');
-    else if (accmode == Constants.O_RDWR()) require(mode & 6 == 6, 'EACCES');
+    if (accmode == Constants.O_RDONLY()) {
+      checkMode(inode, 4);
+    } else if (accmode == Constants.O_WRONLY()) {
+      checkMode(inode, 2);
+    } else if (accmode == Constants.O_RDWR()) {
+      checkMode(inode, 6);
+    }
     if (flags & Constants.O_DIRECTORY() > 0) {
       require(inode.fileType == FileSystem.FileType.Directory, 'ENOTDIR');
     }
