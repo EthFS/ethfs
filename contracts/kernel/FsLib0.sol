@@ -91,7 +91,7 @@ library FsLib {
         inode = self.inode[ino];
       }
       require(inode.fileType == FileSystem.FileType.Directory, 'ENOTDIR');
-      checkMode(inode, 1);
+      checkMode(self, inode, 1);
       key = new bytes(i-j);
       for (uint k; j < i;) key[k++] = path[j++];
       j++;
@@ -135,7 +135,7 @@ library FsLib {
     while (ino != 1) {
       uint dirIno = self.inodeValue[inode.data['..']].value;
       inode = self.inode[dirIno];
-      require(tx.origin == inode.owner, 'EACCES');
+      checkMode(self, inode, 1);
       for (uint i;;) {
         bytes storage key = inode.keys[i++];
         if (self.inodeValue[inode.data[key]].value != ino) continue;
@@ -201,6 +201,7 @@ library FsLib {
 
   function writeToInode(Disk storage self, uint ino, bytes memory key, uint value) public {
     Inode storage inode = self.inode[ino];
+    checkMode(self, inode, 2);
     if (inode.data[key] == 0) {
       inode.data[key] = allocInodeValue(self);
       InodeValue storage data = self.inodeValue[inode.data[key]];
@@ -215,6 +216,7 @@ library FsLib {
 
   function removeFromInode(Disk storage self, uint ino, bytes memory key) public {
     Inode storage inode = self.inode[ino];
+    checkMode(self, inode, 2);
     bytes[] storage keys = inode.keys;
     uint inoValue = inode.data[key];
     uint index = self.inodeValue[inoValue].index-1;
@@ -229,7 +231,7 @@ library FsLib {
     inode.lastModified = now;
   }
 
-  function checkMode(Inode storage inode, uint mask) public view {
+  function checkMode(Disk storage, Inode storage inode, uint mask) public view {
     uint mode;
     if (tx.origin == inode.owner) {
       mode = inode.mode >> 6 & 7;
@@ -246,11 +248,11 @@ library FsLib {
     Inode storage inode = self.inode[ino];
     uint accmode = flags & Constants.O_ACCMODE();
     if (accmode == Constants.O_RDONLY()) {
-      checkMode(inode, 4);
+      checkMode(self, inode, 4);
     } else if (accmode == Constants.O_WRONLY()) {
-      checkMode(inode, 2);
+      checkMode(self, inode, 2);
     } else if (accmode == Constants.O_RDWR()) {
-      checkMode(inode, 6);
+      checkMode(self, inode, 6);
     }
     if (flags & Constants.O_DIRECTORY() > 0) {
       require(inode.fileType == FileSystem.FileType.Directory, 'ENOTDIR');
@@ -345,11 +347,9 @@ library FsLib {
   }
 
   function stat(Disk storage self, bytes calldata path, uint curdir) external view onlyOwner(self) returns (FileSystem.FileType fileType, uint mode, uint ino_, uint links, address owner, address group, uint entries, uint size, uint lastModified) {
-    ResolvedPath memory res = pathToInode2(self, path, curdir, 1);
-    require(res.ino > 0, 'ENOENT');
-    if (res.dirIno == 0) res.dirIno = res.ino;
-    checkOpen(self, res.dirIno, 0);
-    return _fstat(self, res.ino);
+    (uint ino,,) = pathToInode(self, path, curdir, 1);
+    require(ino > 0, 'ENOENT');
+    return _fstat(self, ino);
   }
 
   function fstat(Disk storage self, uint ino) external view onlyOwner(self) returns (FileSystem.FileType fileType, uint mode, uint ino_, uint links, address owner, address group, uint entries, uint size, uint lastModified) {

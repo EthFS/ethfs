@@ -158,12 +158,13 @@ library FsLib1 {
         target.dirIno = target.ino;
         target.key = source.key;
         if (target.dirIno == source.dirIno) return;
+        self.checkMode(inode2, 1);
         if (inode2.data[target.key] > 0) {
           uint ino = self.inodeValue[inode2.data[target.key]].value;
           inode2 = self.inode[ino];
           if (sourceIsDir) {
             require(inode2.fileType == FileSystem.FileType.Directory, 'ENOTDIR');
-            require(tx.origin == inode2.owner, 'EACCES');
+            self.checkMode(inode2, 3);
             newIno = ino;
           } else {
             require(inode2.fileType != FileSystem.FileType.Directory, 'EISDIR');
@@ -182,6 +183,8 @@ library FsLib1 {
     if (newIno == 0) {
       newIno = self.allocInode();
       self.writeToInode(target.dirIno, target.key, newIno);
+    } else {
+      self.checkMode(self.inode[target.dirIno], 2);
     }
     copyInode(self, source.ino, newIno, target.dirIno);
   }
@@ -189,6 +192,7 @@ library FsLib1 {
   function copyInode(FsLib.Disk storage self, uint ino, uint ino2, uint dirIno) private {
     FsLib.Inode storage inode = self.inode[ino];
     FsLib.Inode storage inode2 = self.inode[ino2];
+    self.checkMode(inode, 4);
     bool sourceIsDir = inode.fileType == FileSystem.FileType.Directory;
     if (!sourceIsDir || inode2.keys.length == 0) {
       inode2.fileType = inode.fileType;
