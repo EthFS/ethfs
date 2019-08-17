@@ -77,7 +77,7 @@ library FsLib {
     require(path.length > 0, 'ENOENT');
     ino = path[0] == '/' ? 1 : curdir == 0 ? 1 : curdir;
     uint j;
-    for (uint i = 0; i <= path.length; i++) {
+    for (uint i; i <= path.length; i++) {
       while (i < path.length && path[i] != '/') i++;
       if (i == j) {
         j++;
@@ -149,10 +149,7 @@ library FsLib {
       }
       ino = dirIno;
     }
-    if (path.length == 0) {
-      path = new bytes(1);
-      path[0] = '/';
-    }
+    if (path.length == 0) path = '/';
   }
 
   function allocInode(Disk storage self) public returns (uint ino) {
