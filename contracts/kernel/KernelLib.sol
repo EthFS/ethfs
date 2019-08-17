@@ -98,6 +98,7 @@ library KernelLib {
     UserArea storage u = self.userArea[tx.origin];
     FileDescriptor storage fildes = u.fildes[fd];
     require(fildes.ino > 0, 'EBADF');
+    self.fileSystem.close(fildes.ino);
     delete u.fildes[fd];
   }
 
