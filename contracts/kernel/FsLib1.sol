@@ -1,6 +1,6 @@
 pragma solidity >= 0.5.8;
 
-import './FsLib0.sol';
+import './FsLib.sol';
 
 library FsLib1 {
   using FsLib for FsLib.Disk;

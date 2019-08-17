@@ -1,6 +1,6 @@
 pragma solidity >= 0.5.8;
 
-import './FsLib0.sol';
+import './FsLib.sol';
 import './FsLib1.sol';
 
 contract FsDisk is FileSystem {
