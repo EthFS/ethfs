@@ -17,13 +17,13 @@ library FsLib {
   }
 
   struct Inode {
-    FileSystem.FileType fileType;
-    uint mode;
-    uint links;
+    uint8 fileType;
+    uint16 mode;
+    uint32 links;
+    uint32 refCnt;
+    uint64 lastModified;
     address owner;
     address group;
-    uint lastModified;
-    uint refCnt;
     bytes[] keys;
     mapping(bytes => uint) data;
   }
@@ -55,7 +55,7 @@ library FsLib {
     self.inode.length = ino+1;
     self.inodeValue.length = 1;
     self.inodeExtent.length = 1;
-    self.inode[ino].fileType = FileSystem.FileType.Directory;
+    self.inode[ino].fileType = uint8(FileSystem.FileType.Directory);
     self.inode[ino].mode = 493;
     self.inode[ino].owner = tx.origin;
     self.inode[ino].group = tx.origin;
@@ -85,12 +85,12 @@ library FsLib {
       }
       require(ino > 0, 'ENOENT');
       Inode storage inode = self.inode[ino];
-      if (followLinks > 0 && inode.fileType == FileSystem.FileType.Symlink) {
+      if (followLinks > 0 && inode.fileType == uint8(FileSystem.FileType.Symlink)) {
         (ino,,) = pathToInode(self, self.inodeExtent[inode.data['']].extent, dirIno, 2);
         require(ino > 0, 'ENOENT');
         inode = self.inode[ino];
       }
-      require(inode.fileType == FileSystem.FileType.Directory, 'ENOTDIR');
+      require(inode.fileType == uint8(FileSystem.FileType.Directory), 'ENOTDIR');
       checkMode(self, inode, 1);
       key = new bytes(i-j);
       for (uint k; j < i;) key[k++] = path[j++];
@@ -100,13 +100,13 @@ library FsLib {
     }
     if (ino > 0 && followLinks > 1) {
       Inode storage inode = self.inode[ino];
-      if (inode.fileType == FileSystem.FileType.Symlink) {
+      if (inode.fileType == uint8(FileSystem.FileType.Symlink)) {
         (ino, dirIno, key) = pathToInode(self, self.inodeExtent[inode.data['']].extent, dirIno, 2);
       }
     }
     if (ino == 0) {
       require(path[path.length-1] != '/', 'ENOENT');
-    } else if (self.inode[ino].fileType != FileSystem.FileType.Directory) {
+    } else if (self.inode[ino].fileType != uint8(FileSystem.FileType.Directory)) {
       require(path[path.length-1] != '/', 'ENOTDIR');
     }
     if (key.length == 1 && key[0] == '.' ||
@@ -131,7 +131,7 @@ library FsLib {
   function dirInodeToPath(Disk storage self, uint ino_) external view onlyOwner(self) returns (bytes memory path) {
     uint ino = ino_;
     Inode storage inode = self.inode[ino];
-    require(inode.fileType == FileSystem.FileType.Directory, 'ENOTDIR');
+    require(inode.fileType == uint8(FileSystem.FileType.Directory), 'ENOTDIR');
     while (ino != 1) {
       uint dirIno = self.inodeValue[inode.data['..']].value;
       inode = self.inode[dirIno];
@@ -164,7 +164,7 @@ library FsLib {
   function freeInode(Disk storage self, uint ino) public {
     Inode storage inode = self.inode[ino];
     if (inode.links + inode.refCnt > 0) return;
-    bool isDir = inode.fileType == FileSystem.FileType.Directory;
+    bool isDir = inode.fileType == uint8(FileSystem.FileType.Directory);
     for (uint i; i < inode.keys.length;) {
       bytes storage key = inode.keys[i++];
       if (isDir) {
@@ -208,7 +208,7 @@ library FsLib {
     } else {
       self.inodeValue[inode.data[key]].value = value;
     }
-    inode.lastModified = now;
+    inode.lastModified = uint64(now);
   }
 
   function removeFromInode(Disk storage self, uint ino, bytes memory key) public {
@@ -225,11 +225,11 @@ library FsLib {
     keys.pop();
     self.freeInoValue.push(inoValue);
     delete inode.data[key];
-    inode.lastModified = now;
+    inode.lastModified = uint64(now);
   }
 
   function checkMode(Disk storage, Inode storage inode, uint mask) public view {
-    uint mode;
+    uint16 mode;
     if (tx.origin == inode.owner) {
       mode = inode.mode >> 6 & 7;
     } else if (inode.group != inode.owner && Group(inode.group).contains(tx.origin)) {
@@ -252,7 +252,7 @@ library FsLib {
       checkMode(self, inode, 6);
     }
     if (flags & Constants.O_DIRECTORY() > 0) {
-      require(inode.fileType == FileSystem.FileType.Directory, 'ENOTDIR');
+      require(inode.fileType == uint8(FileSystem.FileType.Directory), 'ENOTDIR');
     }
   }
 
@@ -264,11 +264,11 @@ library FsLib {
       } else {
         ino = allocInode(self);
         Inode storage inode = self.inode[ino];
-        inode.fileType = FileSystem.FileType.Regular;
+        inode.fileType = uint8(FileSystem.FileType.Regular);
         inode.mode = 420;
         inode.links = 1;
         inode.owner = inode.group = tx.origin;
-        inode.lastModified = now;
+        inode.lastModified = uint64(now);
         writeToInode(self, dirIno, key, ino);
       }
     }
@@ -298,7 +298,7 @@ library FsLib {
 
   function write(Disk storage self, uint ino, bytes calldata key, bytes calldata value) external onlyOwner(self) {
     Inode storage inode = self.inode[ino];
-    require(inode.fileType == FileSystem.FileType.Regular, 'EPERM');
+    require(inode.fileType == uint8(FileSystem.FileType.Regular), 'EPERM');
     uint inoExtent = inode.data[key];
     if (inoExtent == 0) {
       inoExtent = allocInodeExtent(self);
@@ -310,24 +310,24 @@ library FsLib {
     } else {
       BytesLib.concatStorage(self.inodeExtent[inoExtent].extent, value);
     }
-    inode.lastModified = now;
+    inode.lastModified = uint64(now);
   }
 
   function truncate(Disk storage self, uint ino, bytes calldata key, uint len) external onlyOwner(self) {
     Inode storage inode = self.inode[ino];
-    require(inode.fileType == FileSystem.FileType.Regular, 'EPERM');
+    require(inode.fileType == uint8(FileSystem.FileType.Regular), 'EPERM');
     uint inoExtent = inode.data[key];
     if (inoExtent == 0) {
       require(len == 0, 'EINVAL');
       return;
     }
     self.inodeExtent[inoExtent].extent.length = len;
-    inode.lastModified = now;
+    inode.lastModified = uint64(now);
   }
 
   function clear(Disk storage self, uint ino, bytes calldata key) external onlyOwner(self) {
     Inode storage inode = self.inode[ino];
-    require(inode.fileType == FileSystem.FileType.Regular, 'EPERM');
+    require(inode.fileType == uint8(FileSystem.FileType.Regular), 'EPERM');
     uint inoExtent = inode.data[key];
     require(inoExtent > 0, 'EINVAL');
     bytes[] storage keys = inode.keys;
@@ -340,22 +340,22 @@ library FsLib {
     keys.pop();
     self.freeInoExtent.push(inoExtent);
     delete inode.data[key];
-    inode.lastModified = now;
+    inode.lastModified = uint64(now);
   }
 
-  function stat(Disk storage self, bytes calldata path, uint curdir) external view onlyOwner(self) returns (FileSystem.FileType fileType, uint mode, uint ino_, uint links, address owner, address group, uint entries, uint size, uint lastModified) {
+  function stat(Disk storage self, bytes calldata path, uint curdir) external view onlyOwner(self) returns (FileSystem.FileType fileType, uint16 mode, uint ino_, uint links, address owner, address group, uint entries, uint size, uint lastModified) {
     (uint ino,,) = pathToInode(self, path, curdir, 1);
     require(ino > 0, 'ENOENT');
     return _fstat(self, ino);
   }
 
-  function fstat(Disk storage self, uint ino) external view onlyOwner(self) returns (FileSystem.FileType fileType, uint mode, uint ino_, uint links, address owner, address group, uint entries, uint size, uint lastModified) {
+  function fstat(Disk storage self, uint ino) external view onlyOwner(self) returns (FileSystem.FileType fileType, uint16 mode, uint ino_, uint links, address owner, address group, uint entries, uint size, uint lastModified) {
     return _fstat(self, ino);
   }
 
-  function _fstat(Disk storage self, uint ino) private view returns (FileSystem.FileType fileType, uint mode, uint ino_, uint links, address owner, address group, uint entries, uint size, uint lastModified) {
+  function _fstat(Disk storage self, uint ino) private view returns (FileSystem.FileType fileType, uint16 mode, uint ino_, uint links, address owner, address group, uint entries, uint size, uint lastModified) {
     Inode storage inode = self.inode[ino];
-    fileType = inode.fileType;
+    fileType = FileSystem.FileType(inode.fileType);
     mode = inode.mode;
     if (fileType == FileSystem.FileType.Regular) mode |= 0x8000;
     else if (fileType == FileSystem.FileType.Directory) mode |= 0x4000;
@@ -377,7 +377,7 @@ library FsLib {
     require(ino == 0, 'EEXIST');
     ino = allocInode(self);
     Inode storage inode = self.inode[ino];
-    inode.fileType = FileSystem.FileType.Directory;
+    inode.fileType = uint8(FileSystem.FileType.Directory);
     inode.mode = 493;
     inode.owner = inode.group = tx.origin;
     inode.refCnt = 1;
@@ -391,7 +391,7 @@ library FsLib {
     require(ino > 0, 'ENOENT');
     require(ino != 1 && ino != curdir, 'EBUSY');
     Inode storage inode = self.inode[ino];
-    require(inode.fileType == FileSystem.FileType.Directory, 'ENOTDIR');
+    require(inode.fileType == uint8(FileSystem.FileType.Directory), 'ENOTDIR');
     require(inode.keys.length == 2, 'ENOTEMPTY');
     removeFromInode(self, dirIno, key);
     if (--inode.refCnt == 0) freeInode(self, ino);
@@ -401,7 +401,7 @@ library FsLib {
     (uint ino, uint dirIno, bytes memory key) = pathToInode(self, path, curdir, 1);
     require(ino > 0, 'ENOENT');
     Inode storage inode = self.inode[ino];
-    require(inode.fileType != FileSystem.FileType.Directory, 'EISDIR');
+    require(inode.fileType != uint8(FileSystem.FileType.Directory), 'EISDIR');
     removeFromInode(self, dirIno, key);
     if (--inode.links == 0) freeInode(self, ino);
   }

@@ -21,9 +21,9 @@ interface FileSystem {
   function move(bytes calldata source, bytes calldata target, uint curdir) external;
   function copy(bytes calldata source, bytes calldata target, uint curdir) external;
   function chown(bytes calldata path, address owner, address group, uint curdir) external;
-  function chmod(bytes calldata path, uint mode, uint curdir) external;
+  function chmod(bytes calldata path, uint16 mode, uint curdir) external;
   function mkdir(bytes calldata path, uint curdir) external;
   function rmdir(bytes calldata path, uint curdir) external;
-  function stat(bytes calldata path, uint curdir) external view returns (FileType fileType, uint mode, uint ino_, uint links, address owner, address group, uint entries, uint size, uint lastModified);
-  function fstat(uint ino) external view returns (FileType fileType, uint mode, uint ino_, uint links, address owner, address group, uint entries, uint size, uint lastModified);
+  function stat(bytes calldata path, uint curdir) external view returns (FileType fileType, uint16 mode, uint ino_, uint links, address owner, address group, uint entries, uint size, uint lastModified);
+  function fstat(uint ino) external view returns (FileType fileType, uint16 mode, uint ino_, uint links, address owner, address group, uint entries, uint size, uint lastModified);
 }

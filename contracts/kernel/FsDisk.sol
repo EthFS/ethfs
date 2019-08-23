@@ -84,7 +84,7 @@ contract FsDisk is FileSystem {
     m_disk.chown(path, owner, group, curdir);
   }
 
-  function chmod(bytes calldata path, uint mode, uint curdir) external {
+  function chmod(bytes calldata path, uint16 mode, uint curdir) external {
     m_disk.chmod(path, mode, curdir);
   }
 
@@ -96,11 +96,11 @@ contract FsDisk is FileSystem {
     m_disk.rmdir(path, curdir);
   }
 
-  function stat(bytes calldata path, uint curdir) external view returns (FileType fileType, uint mode, uint ino_, uint links, address owner, address group, uint entries, uint size, uint lastModified) {
+  function stat(bytes calldata path, uint curdir) external view returns (FileType fileType, uint16 mode, uint ino_, uint links, address owner, address group, uint entries, uint size, uint lastModified) {
     return m_disk.stat(path, curdir);
   }
 
-  function fstat(uint ino) external view returns (FileType fileType, uint mode, uint ino_, uint links, address owner, address group, uint entries, uint size, uint lastModified) {
+  function fstat(uint ino) external view returns (FileType fileType, uint16 mode, uint ino_, uint links, address owner, address group, uint entries, uint size, uint lastModified) {
     return m_disk.fstat(ino);
   }
 }
