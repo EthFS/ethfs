@@ -9,8 +9,6 @@ module.exports = async deployer => {
   await deployer.link(FsLib, [FsLib1, FsDisk])
   await deployer.deploy(FsLib1)
   await deployer.link(FsLib1, FsDisk)
-  await deployer.deploy(FsDisk)
   await deployer.deploy(KernelLib)
   await deployer.link(KernelLib, Kernel)
-  await deployer.deploy(Kernel, FsDisk.address)
 }
