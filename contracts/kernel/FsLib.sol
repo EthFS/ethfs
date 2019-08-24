@@ -339,18 +339,25 @@ library FsLib {
     Inode storage inode = self.inode[ino];
     fileType = FileSystem.FileType(inode.fileType);
     mode = inode.mode;
-    if (fileType == FileSystem.FileType.Regular) mode |= 0x8000;
-    else if (fileType == FileSystem.FileType.Directory) mode |= 0x4000;
-    else if (fileType == FileSystem.FileType.Symlink) mode |= 0xa000;
+    if (fileType == FileSystem.FileType.Directory) {
+      mode |= 0x4000;
+      links = inode.keys.length;
+    } else {
+      if (fileType == FileSystem.FileType.Regular) {
+        mode |= 0x8000;
+      } else if (fileType == FileSystem.FileType.Symlink) {
+        mode |= 0xa000;
+      }
+      links = inode.links;
+      uint inoExtent = inode.data[''];
+      if (inoExtent > 0) {
+        size = self.inodeExtent[inoExtent].extent.length;
+      }
+    }
     ino_ = ino;
-    links = inode.links;
     owner = inode.owner;
     group = inode.group;
     entries = inode.keys.length;
-    uint inoExtent = inode.data[''];
-    if (inoExtent > 0) {
-      size = self.inodeExtent[inoExtent].extent.length;
-    }
     lastModified = inode.lastModified;
   }
 
