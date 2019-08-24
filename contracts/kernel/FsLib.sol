@@ -344,6 +344,12 @@ library FsLib {
   }
 
   function stat(Disk storage self, bytes calldata path, uint curdir) external view onlyOwner(self) returns (FileSystem.FileType fileType, uint16 mode, uint ino_, uint links, address owner, address group, uint entries, uint size, uint lastModified) {
+    (uint ino,,) = pathToInode(self, path, curdir, 2);
+    require(ino > 0, 'ENOENT');
+    return _fstat(self, ino);
+  }
+
+  function lstat(Disk storage self, bytes calldata path, uint curdir) external view onlyOwner(self) returns (FileSystem.FileType fileType, uint16 mode, uint ino_, uint links, address owner, address group, uint entries, uint size, uint lastModified) {
     (uint ino,,) = pathToInode(self, path, curdir, 1);
     require(ino > 0, 'ENOENT');
     return _fstat(self, ino);

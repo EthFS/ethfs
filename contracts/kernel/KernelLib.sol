@@ -171,6 +171,11 @@ library KernelLib {
     return self.fileSystem.stat(path, u.curdir);
   }
 
+  function lstat(KernelArea storage self, bytes calldata path) external view returns (FileSystem.FileType fileType, uint16 mode, uint ino, uint links, address owner, address group, uint entries, uint size, uint lastModified) {
+    UserArea storage u = self.userArea[tx.origin];
+    return self.fileSystem.lstat(path, u.curdir);
+  }
+
   function fstat(KernelArea storage self, uint fd) external view returns (FileSystem.FileType fileType, uint16 mode, uint ino, uint links, address owner, address group, uint entries, uint size, uint lastModified) {
     UserArea storage u = self.userArea[tx.origin];
     FileDescriptor storage fildes = u.fildes[fd];

@@ -100,6 +100,10 @@ contract FsDisk is FileSystem {
     return m_disk.stat(path, curdir);
   }
 
+  function lstat(bytes calldata path, uint curdir) external view returns (FileType fileType, uint16 mode, uint ino_, uint links, address owner, address group, uint entries, uint size, uint lastModified) {
+    return m_disk.lstat(path, curdir);
+  }
+
   function fstat(uint ino) external view returns (FileType fileType, uint16 mode, uint ino_, uint links, address owner, address group, uint entries, uint size, uint lastModified) {
     return m_disk.fstat(ino);
   }

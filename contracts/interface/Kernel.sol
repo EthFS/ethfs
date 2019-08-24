@@ -26,5 +26,6 @@ interface Kernel {
   function mkdir(bytes calldata path) external;
   function rmdir(bytes calldata path) external;
   function stat(bytes calldata path) external view returns (FileSystem.FileType fileType, uint16 mode, uint ino, uint links, address owner, address group, uint entries, uint size, uint lastModified);
+  function lstat(bytes calldata path) external view returns (FileSystem.FileType fileType, uint16 mode, uint ino, uint links, address owner, address group, uint entries, uint size, uint lastModified);
   function fstat(uint fd) external view returns (FileSystem.FileType fileType, uint16 mode, uint ino, uint links, address owner, address group, uint entries, uint size, uint lastModified);
 }

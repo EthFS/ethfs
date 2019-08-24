@@ -103,6 +103,10 @@ contract KernelImpl is Kernel {
     return m_kernelArea.stat(path);
   }
 
+  function lstat(bytes calldata path) external view returns (FileSystem.FileType fileType, uint16 mode, uint ino, uint links, address owner, address group, uint entries, uint size, uint lastModified) {
+    return m_kernelArea.lstat(path);
+  }
+
   function fstat(uint fd) external view returns (FileSystem.FileType fileType, uint16 mode, uint ino, uint links, address owner, address group, uint entries, uint size, uint lastModified) {
     return m_kernelArea.fstat(fd);
   }
