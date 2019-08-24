@@ -10,6 +10,30 @@ library FsLib1 {
     _;
   }
 
+  function dirInodeToPath(FsLib.Disk storage self, uint ino_) external view onlyOwner(self) returns (bytes memory path) {
+    uint ino = ino_;
+    FsLib.Inode storage inode = self.inode[ino];
+    require(inode.fileType == uint8(FileSystem.FileType.Directory), 'ENOTDIR');
+    while (ino != 1) {
+      uint dirIno = self.inodeValue[inode.data['..']].value;
+      inode = self.inode[dirIno];
+      self.checkMode(inode, 1);
+      for (uint i;;) {
+        bytes storage key = inode.keys[i++];
+        if (self.inodeValue[inode.data[key]].value != ino) continue;
+        bytes memory path2 = new bytes(key.length + path.length + 1);
+        path2[0] = '/';
+        uint k = 1;
+        for (uint j; j < key.length;) path2[k++] = key[j++];
+        for (uint j; j < path.length;) path2[k++] = path[j++];
+        path = path2;
+        break;
+      }
+      ino = dirIno;
+    }
+    if (path.length == 0) path = '/';
+  }
+
   function chown(FsLib.Disk storage self, bytes calldata path, address owner, address group, uint curdir) external onlyOwner(self) {
     (uint ino,,) = self.pathToInode(path, curdir, 2);
     require(ino > 0, 'ENOENT');
@@ -21,14 +45,6 @@ library FsLib1 {
     if (group != 0x0000000000000000000000000000000000000000) {
       inode.group = group;
     }
-  }
-
-  function chmod(FsLib.Disk storage self, bytes calldata path, uint16 mode, uint curdir) external onlyOwner(self) {
-    (uint ino,,) = self.pathToInode(path, curdir, 2);
-    require(ino > 0, 'ENOENT');
-    FsLib.Inode storage inode = self.inode[ino];
-    require(tx.origin == inode.owner, 'EACCES');
-    inode.mode = mode & 511;
   }
 
   function link(FsLib.Disk storage self, bytes calldata source, bytes calldata target, uint curdir) external onlyOwner(self) {
