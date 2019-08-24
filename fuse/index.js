@@ -85,7 +85,7 @@ async function main() {
     },
     getattr: async (path, cb) => {
       try {
-        cb(0, getattr(await kernel.stat(utf8ToHex(path))))
+        cb(0, getattr(await kernel.lstat(utf8ToHex(path))))
       } catch (e) {
         cb(fuse.ENOENT)
       }
@@ -209,7 +209,7 @@ async function main() {
     listxattr: async (path, buf, len, cb) => {
       try {
         const path2 = utf8ToHex(path)
-        const {fileType, entries} = await kernel.stat(path2)
+        const {fileType, entries} = await kernel.lstat(path2)
         if (fileType != 1) return cb(0)
         let i = 0
         for (let j = 0; j < entries; j++) {
