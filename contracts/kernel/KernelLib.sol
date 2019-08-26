@@ -5,7 +5,6 @@ import '../interface/FileSystem.sol';
 
 library KernelLib {
   struct KernelArea {
-    address rootUser;
     FileSystem fileSystem;
     mapping(address => UserArea) userArea;
   }
@@ -22,7 +21,6 @@ library KernelLib {
   }
 
   function init(KernelArea storage self, FileSystem fileSystem) external {
-    self.rootUser = tx.origin;
     self.fileSystem = fileSystem;
     self.fileSystem.mount();
   }
