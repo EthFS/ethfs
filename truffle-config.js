@@ -69,9 +69,33 @@ module.exports = {
       // skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
     // },
 
+    mainnet: {
+      provider: () => new HDWalletProvider(mnemonic, `https://mainnet.infura.io/v3/59389cd0fe54420785906cf571a7d7c0`),
+      network_id: 1,
+      skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
+    },
+
+    ropsten: {
+      provider: () => new HDWalletProvider(mnemonic, `https://ropsten.infura.io/v3/59389cd0fe54420785906cf571a7d7c0`),
+      network_id: 3,
+      skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
+    },
+
     rinkeby: {
       provider: () => new HDWalletProvider(mnemonic, `https://rinkeby.infura.io/v3/59389cd0fe54420785906cf571a7d7c0`),
       network_id: 4,       // Rinkeby's id
+      skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
+    },
+
+    goerli: {
+      provider: () => new HDWalletProvider(mnemonic, `https://goerli.infura.io/v3/59389cd0fe54420785906cf571a7d7c0`),
+      network_id: 5,
+      skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
+    },
+
+    kovan: {
+      provider: () => new HDWalletProvider(mnemonic, `https://kovan.infura.io/v3/59389cd0fe54420785906cf571a7d7c0`),
+      network_id: 42,
       skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
     },
 
