@@ -1,4 +1,10 @@
 {
+  "name": "ethfs",
+  "version": "0.1.0",
+  "description": "Unix-like filesystem for Ethereum",
+  "repository": "https://github.com/EthFS/ethfs",
+  "author": "Hector Chu",
+  "license": "MIT",
   "dependencies": {
     "fuse-bindings": "^2.11.2",
     "solidity-bytes-utils": "^0.0.8",
