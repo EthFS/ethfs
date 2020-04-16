@@ -7,6 +7,7 @@
       "name": "result",
       "outputs": [
         {
+          "internalType": "uint256",
           "name": "",
           "type": "uint256"
         }
@@ -19,10 +20,12 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "bytes",
           "name": "path",
           "type": "bytes"
         },
         {
+          "internalType": "uint256",
           "name": "flags",
           "type": "uint256"
         }
@@ -30,6 +33,7 @@
       "name": "open",
       "outputs": [
         {
+          "internalType": "uint256",
           "name": "",
           "type": "uint256"
         }
@@ -42,10 +46,12 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "fd",
           "type": "uint256"
         },
         {
+          "internalType": "uint256",
           "name": "index",
           "type": "uint256"
         }
@@ -53,6 +59,7 @@
       "name": "readkey",
       "outputs": [
         {
+          "internalType": "bytes",
           "name": "",
           "type": "bytes"
         }
@@ -65,10 +72,12 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "bytes",
           "name": "path",
           "type": "bytes"
         },
         {
+          "internalType": "uint256",
           "name": "index",
           "type": "uint256"
         }
@@ -76,6 +85,7 @@
       "name": "readkeyPath",
       "outputs": [
         {
+          "internalType": "bytes",
           "name": "",
           "type": "bytes"
         }
@@ -88,10 +98,12 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "fd",
           "type": "uint256"
         },
         {
+          "internalType": "bytes",
           "name": "key",
           "type": "bytes"
         }
@@ -99,6 +111,7 @@
       "name": "read",
       "outputs": [
         {
+          "internalType": "bytes",
           "name": "",
           "type": "bytes"
         }
@@ -111,10 +124,12 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "bytes",
           "name": "path",
           "type": "bytes"
         },
         {
+          "internalType": "bytes",
           "name": "key",
           "type": "bytes"
         }
@@ -122,6 +137,7 @@
       "name": "readPath",
       "outputs": [
         {
+          "internalType": "bytes",
           "name": "",
           "type": "bytes"
         }
@@ -134,14 +150,17 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "fd",
           "type": "uint256"
         },
         {
+          "internalType": "bytes",
           "name": "key",
           "type": "bytes"
         },
         {
+          "internalType": "bytes",
           "name": "value",
           "type": "bytes"
         }
@@ -156,14 +175,17 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "fd",
           "type": "uint256"
         },
         {
+          "internalType": "bytes",
           "name": "key",
           "type": "bytes"
         },
         {
+          "internalType": "uint256",
           "name": "len",
           "type": "uint256"
         }
@@ -178,10 +200,12 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "fd",
           "type": "uint256"
         },
         {
+          "internalType": "bytes",
           "name": "key",
           "type": "bytes"
         }
@@ -196,6 +220,7 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "fd",
           "type": "uint256"
         }
@@ -210,10 +235,12 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "bytes",
           "name": "source",
           "type": "bytes"
         },
         {
+          "internalType": "bytes",
           "name": "target",
           "type": "bytes"
         }
@@ -228,6 +255,7 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "bytes",
           "name": "path",
           "type": "bytes"
         }
@@ -242,10 +270,12 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "bytes",
           "name": "source",
           "type": "bytes"
         },
         {
+          "internalType": "bytes",
           "name": "target",
           "type": "bytes"
         }
@@ -260,6 +290,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "bytes",
           "name": "path",
           "type": "bytes"
         }
@@ -267,6 +298,7 @@
       "name": "readlink",
       "outputs": [
         {
+          "internalType": "bytes",
           "name": "",
           "type": "bytes"
         }
@@ -279,10 +311,12 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "bytes",
           "name": "source",
           "type": "bytes"
         },
         {
+          "internalType": "bytes",
           "name": "target",
           "type": "bytes"
         }
@@ -297,10 +331,12 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "bytes",
           "name": "source",
           "type": "bytes"
         },
         {
+          "internalType": "bytes",
           "name": "target",
           "type": "bytes"
         }
@@ -315,14 +351,17 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "bytes",
           "name": "path",
           "type": "bytes"
         },
         {
+          "internalType": "address",
           "name": "owner",
           "type": "address"
         },
         {
+          "internalType": "address",
           "name": "group",
           "type": "address"
         }
@@ -337,10 +376,12 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "bytes",
           "name": "path",
           "type": "bytes"
         },
         {
+          "internalType": "uint16",
           "name": "mode",
           "type": "uint16"
         }
@@ -357,6 +398,7 @@
       "name": "getcwd",
       "outputs": [
         {
+          "internalType": "bytes",
           "name": "",
           "type": "bytes"
         }
@@ -369,6 +411,7 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "bytes",
           "name": "path",
           "type": "bytes"
         }
@@ -383,6 +426,7 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "bytes",
           "name": "path",
           "type": "bytes"
         }
@@ -397,6 +441,7 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "bytes",
           "name": "path",
           "type": "bytes"
         }
@@ -411,6 +456,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "bytes",
           "name": "path",
           "type": "bytes"
         }
@@ -418,38 +464,47 @@
       "name": "stat",
       "outputs": [
         {
+          "internalType": "enum FileSystem.FileType",
           "name": "fileType",
           "type": "uint8"
         },
         {
+          "internalType": "uint16",
           "name": "mode",
           "type": "uint16"
         },
         {
+          "internalType": "uint256",
           "name": "ino",
           "type": "uint256"
         },
         {
+          "internalType": "uint256",
           "name": "links",
           "type": "uint256"
         },
         {
+          "internalType": "address",
           "name": "owner",
           "type": "address"
         },
         {
+          "internalType": "address",
           "name": "group",
           "type": "address"
         },
         {
+          "internalType": "uint256",
           "name": "entries",
           "type": "uint256"
         },
         {
+          "internalType": "uint256",
           "name": "size",
           "type": "uint256"
         },
         {
+          "internalType": "uint256",
           "name": "lastModified",
           "type": "uint256"
         }
@@ -462,6 +517,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "bytes",
           "name": "path",
           "type": "bytes"
         }
@@ -469,38 +525,47 @@
       "name": "lstat",
       "outputs": [
         {
+          "internalType": "enum FileSystem.FileType",
           "name": "fileType",
           "type": "uint8"
         },
         {
+          "internalType": "uint16",
           "name": "mode",
           "type": "uint16"
         },
         {
+          "internalType": "uint256",
           "name": "ino",
           "type": "uint256"
         },
         {
+          "internalType": "uint256",
           "name": "links",
           "type": "uint256"
         },
         {
+          "internalType": "address",
           "name": "owner",
           "type": "address"
         },
         {
+          "internalType": "address",
           "name": "group",
           "type": "address"
         },
         {
+          "internalType": "uint256",
           "name": "entries",
           "type": "uint256"
         },
         {
+          "internalType": "uint256",
           "name": "size",
           "type": "uint256"
         },
         {
+          "internalType": "uint256",
           "name": "lastModified",
           "type": "uint256"
         }
@@ -513,6 +578,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "fd",
           "type": "uint256"
         }
@@ -520,38 +586,47 @@
       "name": "fstat",
       "outputs": [
         {
+          "internalType": "enum FileSystem.FileType",
           "name": "fileType",
           "type": "uint8"
         },
         {
+          "internalType": "uint16",
           "name": "mode",
           "type": "uint16"
         },
         {
+          "internalType": "uint256",
           "name": "ino",
           "type": "uint256"
         },
         {
+          "internalType": "uint256",
           "name": "links",
           "type": "uint256"
         },
         {
+          "internalType": "address",
           "name": "owner",
           "type": "address"
         },
         {
+          "internalType": "address",
           "name": "group",
           "type": "address"
         },
         {
+          "internalType": "uint256",
           "name": "entries",
           "type": "uint256"
         },
         {
+          "internalType": "uint256",
           "name": "size",
           "type": "uint256"
         },
         {
+          "internalType": "uint256",
           "name": "lastModified",
           "type": "uint256"
         }
@@ -561,15 +636,15 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.5.8+commit.23d335f2\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":false,\"inputs\":[{\"name\":\"path\",\"type\":\"bytes\"}],\"name\":\"chdir\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"fd\",\"type\":\"uint256\"}],\"name\":\"close\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"fd\",\"type\":\"uint256\"},{\"name\":\"key\",\"type\":\"bytes\"},{\"name\":\"len\",\"type\":\"uint256\"}],\"name\":\"truncate\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"path\",\"type\":\"bytes\"},{\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"readkeyPath\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"path\",\"type\":\"bytes\"}],\"name\":\"stat\",\"outputs\":[{\"name\":\"fileType\",\"type\":\"uint8\"},{\"name\":\"mode\",\"type\":\"uint16\"},{\"name\":\"ino\",\"type\":\"uint256\"},{\"name\":\"links\",\"type\":\"uint256\"},{\"name\":\"owner\",\"type\":\"address\"},{\"name\":\"group\",\"type\":\"address\"},{\"name\":\"entries\",\"type\":\"uint256\"},{\"name\":\"size\",\"type\":\"uint256\"},{\"name\":\"lastModified\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"path\",\"type\":\"bytes\"},{\"name\":\"key\",\"type\":\"bytes\"}],\"name\":\"readPath\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"path\",\"type\":\"bytes\"},{\"name\":\"flags\",\"type\":\"uint256\"}],\"name\":\"open\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"path\",\"type\":\"bytes\"}],\"name\":\"lstat\",\"outputs\":[{\"name\":\"fileType\",\"type\":\"uint8\"},{\"name\":\"mode\",\"type\":\"uint16\"},{\"name\":\"ino\",\"type\":\"uint256\"},{\"name\":\"links\",\"type\":\"uint256\"},{\"name\":\"owner\",\"type\":\"address\"},{\"name\":\"group\",\"type\":\"address\"},{\"name\":\"entries\",\"type\":\"uint256\"},{\"name\":\"size\",\"type\":\"uint256\"},{\"name\":\"lastModified\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"result\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"source\",\"type\":\"bytes\"},{\"name\":\"target\",\"type\":\"bytes\"}],\"name\":\"symlink\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"path\",\"type\":\"bytes\"},{\"name\":\"owner\",\"type\":\"address\"},{\"name\":\"group\",\"type\":\"address\"}],\"name\":\"chown\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"path\",\"type\":\"bytes\"}],\"name\":\"mkdir\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"source\",\"type\":\"bytes\"},{\"name\":\"target\",\"type\":\"bytes\"}],\"name\":\"link\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"fd\",\"type\":\"uint256\"},{\"name\":\"key\",\"type\":\"bytes\"}],\"name\":\"read\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"fd\",\"type\":\"uint256\"},{\"name\":\"key\",\"type\":\"bytes\"},{\"name\":\"value\",\"type\":\"bytes\"}],\"name\":\"write\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"source\",\"type\":\"bytes\"},{\"name\":\"target\",\"type\":\"bytes\"}],\"name\":\"copy\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"fd\",\"type\":\"uint256\"}],\"name\":\"fstat\",\"outputs\":[{\"name\":\"fileType\",\"type\":\"uint8\"},{\"name\":\"mode\",\"type\":\"uint16\"},{\"name\":\"ino\",\"type\":\"uint256\"},{\"name\":\"links\",\"type\":\"uint256\"},{\"name\":\"owner\",\"type\":\"address\"},{\"name\":\"group\",\"type\":\"address\"},{\"name\":\"entries\",\"type\":\"uint256\"},{\"name\":\"size\",\"type\":\"uint256\"},{\"name\":\"lastModified\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"fd\",\"type\":\"uint256\"},{\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"readkey\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"fd\",\"type\":\"uint256\"},{\"name\":\"key\",\"type\":\"bytes\"}],\"name\":\"clear\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getcwd\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"source\",\"type\":\"bytes\"},{\"name\":\"target\",\"type\":\"bytes\"}],\"name\":\"move\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"path\",\"type\":\"bytes\"}],\"name\":\"unlink\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"path\",\"type\":\"bytes\"}],\"name\":\"readlink\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"path\",\"type\":\"bytes\"},{\"name\":\"mode\",\"type\":\"uint16\"}],\"name\":\"chmod\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"path\",\"type\":\"bytes\"}],\"name\":\"rmdir\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/hector/work/ethfs/contracts/interface/Kernel.sol\":\"Kernel\"},\"evmVersion\":\"petersburg\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/hector/work/ethfs/contracts/interface/FileSystem.sol\":{\"keccak256\":\"0x71e804b86f96ed28b3756f8a8fcdb6c86000225089c885fcc5c9e27dcb6a4d16\",\"urls\":[\"bzzr://c0cde93315aa09c860bce9ed3bef0fd4b02f16651a8411558154d27f92d7d75e\"]},\"/Users/hector/work/ethfs/contracts/interface/Kernel.sol\":{\"keccak256\":\"0xb684db8dbc73cbf3255cb21f3023ac0e936f8b1768729bc263e245758d12c9a5\",\"urls\":[\"bzzr://8902dadbad7adb2c0e4ed6e4181c4f2521971d53218ed7e32bd7cf0a35976870\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.5.16+commit.9c3226ce\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":false,\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"path\",\"type\":\"bytes\"}],\"name\":\"chdir\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"path\",\"type\":\"bytes\"},{\"internalType\":\"uint16\",\"name\":\"mode\",\"type\":\"uint16\"}],\"name\":\"chmod\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"path\",\"type\":\"bytes\"},{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"group\",\"type\":\"address\"}],\"name\":\"chown\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"fd\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"key\",\"type\":\"bytes\"}],\"name\":\"clear\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"fd\",\"type\":\"uint256\"}],\"name\":\"close\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"source\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"target\",\"type\":\"bytes\"}],\"name\":\"copy\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"fd\",\"type\":\"uint256\"}],\"name\":\"fstat\",\"outputs\":[{\"internalType\":\"enum FileSystem.FileType\",\"name\":\"fileType\",\"type\":\"uint8\"},{\"internalType\":\"uint16\",\"name\":\"mode\",\"type\":\"uint16\"},{\"internalType\":\"uint256\",\"name\":\"ino\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"links\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"group\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"entries\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"size\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"lastModified\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getcwd\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"source\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"target\",\"type\":\"bytes\"}],\"name\":\"link\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"path\",\"type\":\"bytes\"}],\"name\":\"lstat\",\"outputs\":[{\"internalType\":\"enum FileSystem.FileType\",\"name\":\"fileType\",\"type\":\"uint8\"},{\"internalType\":\"uint16\",\"name\":\"mode\",\"type\":\"uint16\"},{\"internalType\":\"uint256\",\"name\":\"ino\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"links\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"group\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"entries\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"size\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"lastModified\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"path\",\"type\":\"bytes\"}],\"name\":\"mkdir\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"source\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"target\",\"type\":\"bytes\"}],\"name\":\"move\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"path\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"flags\",\"type\":\"uint256\"}],\"name\":\"open\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"fd\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"key\",\"type\":\"bytes\"}],\"name\":\"read\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"path\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"key\",\"type\":\"bytes\"}],\"name\":\"readPath\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"fd\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"readkey\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"path\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"readkeyPath\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"path\",\"type\":\"bytes\"}],\"name\":\"readlink\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"result\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"path\",\"type\":\"bytes\"}],\"name\":\"rmdir\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"path\",\"type\":\"bytes\"}],\"name\":\"stat\",\"outputs\":[{\"internalType\":\"enum FileSystem.FileType\",\"name\":\"fileType\",\"type\":\"uint8\"},{\"internalType\":\"uint16\",\"name\":\"mode\",\"type\":\"uint16\"},{\"internalType\":\"uint256\",\"name\":\"ino\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"links\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"group\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"entries\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"size\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"lastModified\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"source\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"target\",\"type\":\"bytes\"}],\"name\":\"symlink\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"fd\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"key\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"len\",\"type\":\"uint256\"}],\"name\":\"truncate\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"path\",\"type\":\"bytes\"}],\"name\":\"unlink\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"fd\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"key\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"value\",\"type\":\"bytes\"}],\"name\":\"write\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/home/hector/ethfs/contracts/interface/Kernel.sol\":\"Kernel\"},\"evmVersion\":\"byzantium\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/home/hector/ethfs/contracts/interface/FileSystem.sol\":{\"keccak256\":\"0x71e804b86f96ed28b3756f8a8fcdb6c86000225089c885fcc5c9e27dcb6a4d16\",\"urls\":[\"bzz-raw://7724f69c9960ec426b4361afaafa95b829d2797618fc261ef86a9abec7800707\",\"dweb:/ipfs/QmY1DqT9HYCTdwcrdJ8e8ZSceUnzHBz1jXgrGxQYXLNnrE\"]},\"/home/hector/ethfs/contracts/interface/Kernel.sol\":{\"keccak256\":\"0xb684db8dbc73cbf3255cb21f3023ac0e936f8b1768729bc263e245758d12c9a5\",\"urls\":[\"bzz-raw://9bf52bef2f4c90c46ada9758b9e677966c6d535ca05b2607b2657280102c851f\",\"dweb:/ipfs/QmeR7wSSKytr1rmEd4BMLpupvDekS2RCi16eKadJBVFCSt\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "pragma solidity >= 0.5.8;\n\nimport './FileSystem.sol';\n\ninterface Kernel {\n  function result() external view returns (uint);\n  function open(bytes calldata path, uint flags) external returns (uint);\n  function readkey(uint fd, uint index) external view returns (bytes memory);\n  function readkeyPath(bytes calldata path, uint index) external view returns (bytes memory);\n  function read(uint fd, bytes calldata key) external view returns (bytes memory);\n  function readPath(bytes calldata path, bytes calldata key) external view returns (bytes memory);\n  function write(uint fd, bytes calldata key, bytes calldata value) external;\n  function truncate(uint fd, bytes calldata key, uint len) external;\n  function clear(uint fd, bytes calldata key) external;\n  function close(uint fd) external;\n  function link(bytes calldata source, bytes calldata target) external;\n  function unlink(bytes calldata path) external;\n  function symlink(bytes calldata source, bytes calldata target) external;\n  function readlink(bytes calldata path) external view returns (bytes memory);\n  function move(bytes calldata source, bytes calldata target) external;\n  function copy(bytes calldata source, bytes calldata target) external;\n  function chown(bytes calldata path, address owner, address group) external;\n  function chmod(bytes calldata path, uint16 mode) external;\n  function getcwd() external view returns (bytes memory);\n  function chdir(bytes calldata path) external;\n  function mkdir(bytes calldata path) external;\n  function rmdir(bytes calldata path) external;\n  function stat(bytes calldata path) external view returns (FileSystem.FileType fileType, uint16 mode, uint ino, uint links, address owner, address group, uint entries, uint size, uint lastModified);\n  function lstat(bytes calldata path) external view returns (FileSystem.FileType fileType, uint16 mode, uint ino, uint links, address owner, address group, uint entries, uint size, uint lastModified);\n  function fstat(uint fd) external view returns (FileSystem.FileType fileType, uint16 mode, uint ino, uint links, address owner, address group, uint entries, uint size, uint lastModified);\n}\n",
-  "sourcePath": "/Users/hector/work/ethfs/contracts/interface/Kernel.sol",
+  "sourcePath": "/home/hector/ethfs/contracts/interface/Kernel.sol",
   "ast": {
-    "absolutePath": "/Users/hector/work/ethfs/contracts/interface/Kernel.sol",
+    "absolutePath": "/home/hector/ethfs/contracts/interface/Kernel.sol",
     "exportedSymbols": {
       "Kernel": [
         636
@@ -590,7 +665,7 @@
         "src": "0:25:4"
       },
       {
-        "absolutePath": "/Users/hector/work/ethfs/contracts/interface/FileSystem.sol",
+        "absolutePath": "/home/hector/ethfs/contracts/interface/FileSystem.sol",
         "file": "./FileSystem.sol",
         "id": 410,
         "nodeType": "ImportDirective",
@@ -3294,7 +3369,7 @@
     "src": "0:2143:4"
   },
   "legacyAST": {
-    "absolutePath": "/Users/hector/work/ethfs/contracts/interface/Kernel.sol",
+    "absolutePath": "/home/hector/ethfs/contracts/interface/Kernel.sol",
     "exportedSymbols": {
       "Kernel": [
         636
@@ -3315,7 +3390,7 @@
         "src": "0:25:4"
       },
       {
-        "absolutePath": "/Users/hector/work/ethfs/contracts/interface/FileSystem.sol",
+        "absolutePath": "/home/hector/ethfs/contracts/interface/FileSystem.sol",
         "file": "./FileSystem.sol",
         "id": 410,
         "nodeType": "ImportDirective",
@@ -6020,11 +6095,11 @@
   },
   "compiler": {
     "name": "solc",
-    "version": "0.5.8+commit.23d335f2.Emscripten.clang"
+    "version": "0.5.16+commit.9c3226ce.Emscripten.clang"
   },
   "networks": {},
-  "schemaVersion": "3.0.12",
-  "updatedAt": "2019-08-27T20:04:48.570Z",
+  "schemaVersion": "3.1.0",
+  "updatedAt": "2020-04-16T18:51:02.848Z",
   "devdoc": {
     "methods": {}
   },

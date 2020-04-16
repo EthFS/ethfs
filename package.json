@@ -1,15 +1,15 @@
 {
   "name": "ethfs",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Unix-like filesystem for Ethereum",
   "repository": "https://github.com/EthFS/ethfs",
   "author": "Hector Chu",
   "license": "MIT",
   "dependencies": {
-    "fuse-bindings": "^2.11.2",
+    "@truffle/contract": "^4.2.0",
+    "@truffle/hdwallet-provider": "^1.0.34",
+    "fuse-native": "^2.2.1",
     "solidity-bytes-utils": "^0.0.8",
-    "truffle-contract": "^4.0.30",
-    "truffle-hdwallet-provider": "^1.0.17",
     "yargs": "^14.0.0"
   }
 }

@@ -34,19 +34,6 @@ library FsLib1 {
     if (path.length == 0) path = '/';
   }
 
-  function chown(FsLib.Disk storage self, bytes calldata path, address owner, address group, uint curdir) external onlyOwner(self) {
-    (uint ino,,) = self.pathToInode(path, curdir, 2);
-    require(ino > 0, 'ENOENT');
-    FsLib.Inode storage inode = self.inode[ino];
-    require(tx.origin == inode.owner, 'EACCES');
-    if (owner != 0x0000000000000000000000000000000000000000) {
-      inode.owner = owner;
-    }
-    if (group != 0x0000000000000000000000000000000000000000) {
-      inode.group = group;
-    }
-  }
-
   function link(FsLib.Disk storage self, bytes calldata source, bytes calldata target, uint curdir) external onlyOwner(self) {
     (uint ino,, bytes memory key) = self.pathToInode(source, curdir, 2);
     require(ino > 0, 'ENOENT');

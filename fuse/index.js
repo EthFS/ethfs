@@ -1,9 +1,9 @@
 const fs = require('fs')
 const {errno} = require('os').constants
-const contract = require('truffle-contract')
-const HDWalletProvider = require('truffle-hdwallet-provider')
+const contract = require('@truffle/contract')
+const HDWalletProvider = require('@truffle/hdwallet-provider')
 const {utf8ToHex, hexToUtf8} = require('web3-utils')
-const fuse = require('fuse-bindings')
+const Fuse = require('fuse-native')
 
 const {argv} = require('yargs')
   .usage('Usage: $0 -p [mount path] -n [network] -k [address]')
@@ -67,9 +67,7 @@ async function main() {
   }
 
   const {mountPath} = argv
-  fuse.mount(mountPath, {
-    displayFolder: true,
-    options: ['direct_io'],
+  const fuse = new Fuse(mountPath, {
     readdir: async (path, cb) => {
       try {
         const path2 = utf8ToHex(path)
@@ -80,14 +78,14 @@ async function main() {
         }
         cb(0, keys)
       } catch (e) {
-        cb(fuse.ENOENT)
+        cb(Fuse.ENOENT)
       }
     },
     getattr: async (path, cb) => {
       try {
         cb(0, getattr(await kernel.lstat(utf8ToHex(path))))
       } catch (e) {
-        cb(fuse.ENOENT)
+        cb(Fuse.ENOENT)
       }
     },
     fgetattr: async (path, fd, cb) => {
@@ -182,12 +180,12 @@ async function main() {
         cb(-errno[e.reason])
       }
     },
-    setxattr: async (path, name, buf, len, offset, flags, cb) => {
+    setxattr: async (path, name, buf, pos, flags, cb) => {
       try {
         await kernel.open(utf8ToHex(path), constants.O_WRONLY)
         const fd = Number(await kernel.result())
         await kernel.truncate(fd, utf8ToHex(name), 0)
-        const [, e] = await write(fd, utf8ToHex(name), buf, len)
+        const [, e] = await write(fd, utf8ToHex(name), buf, buf.length)
         if (e) return cb(e)
         await kernel.close(fd)
         cb(0)
@@ -195,35 +193,26 @@ async function main() {
         cb(-errno[e.reason])
       }
     },
-    getxattr: async (path, name, buf, len, offset, cb) => {
+    getxattr: async (path, name, pos, cb) => {
       try {
         const data = await kernel.readPath(utf8ToHex(path), utf8ToHex(name))
-        const len2 = data.length/2 - 1
-        if (len == 0) return cb(len2)
-        if (len < len2) return cb(fuse.ERANGE)
-        cb(buf.write(data.slice(2), offset, 'hex'))
+        cb(0, Buffer.from(data.slice(2), 'hex'))
       } catch (e) {
         cb(-errno[e.reason])
       }
     },
-    listxattr: async (path, buf, len, cb) => {
+    listxattr: async (path, cb) => {
       try {
         const path2 = utf8ToHex(path)
         const {fileType, entries} = await kernel.lstat(path2)
         if (fileType != 1) return cb(0)
-        let i = 0
-        for (let j = 0; j < entries; j++) {
-          const data = await kernel.readkeyPath(path2, j)
+        const keys = []
+        for (let i = 0; i < entries; i++) {
+          const data = await kernel.readkeyPath(path2, i)
           if (!data) continue
-          if (len > 0) {
-            i += buf.write(data.slice(2), i, 'hex')
-            if (i == len) return cb(fuse.ERANGE)
-            buf.write('00', i++, 'hex')
-          } else {
-            i += data.length/2
-          }
+          keys.push(hexToUtf8(data))
         }
-        cb(i)
+        cb(0, keys)
       } catch (e) {
         cb(-errno[e.reason])
       }
@@ -294,13 +283,18 @@ async function main() {
         cb(-errno[e.reason])
       }
     },
-  }, err => {
+  }, {
+    displayFolder: 'EthFS',
+    directIo: true,
+    timeout: false,
+  })
+  fuse.mount(err => {
     if (err) throw err
     console.log('Filesystem mounted on ' + mountPath)
   })
 
   process.on('SIGINT', () => {
-    fuse.unmount(mountPath, err => {
+    fuse.unmount(err => {
       if (err) {
         console.log('Filesystem at ' + mountPath + ' not unmounted', err)
       } else {

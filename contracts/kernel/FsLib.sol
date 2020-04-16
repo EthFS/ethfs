@@ -21,9 +21,9 @@ library FsLib {
     uint16 mode;
     uint32 links;
     uint32 refCnt;
-    uint64 lastModified;
     address owner;
     address group;
+    uint64 lastModified;
     bytes[] keys;
     mapping(bytes => uint) data;
   }
@@ -393,6 +393,19 @@ library FsLib {
     require(inode.fileType != uint8(FileSystem.FileType.Directory), 'EISDIR');
     removeFromInode(self, dirIno, key);
     if (--inode.links == 0) freeInode(self, ino);
+  }
+
+  function chown(Disk storage self, bytes calldata path, address owner, address group, uint curdir) external onlyOwner(self) {
+    (uint ino,,) = pathToInode(self, path, curdir, 2);
+    require(ino > 0, 'ENOENT');
+    Inode storage inode = self.inode[ino];
+    require(tx.origin == inode.owner, 'EACCES');
+    if (owner != 0x0000000000000000000000000000000000000000) {
+      inode.owner = owner;
+    }
+    if (group != 0x0000000000000000000000000000000000000000) {
+      inode.group = group;
+    }
   }
 
   function chmod(Disk storage self, bytes calldata path, uint16 mode, uint curdir) external onlyOwner(self) {

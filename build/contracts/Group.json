@@ -5,6 +5,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "address",
           "name": "user",
           "type": "address"
         }
@@ -12,6 +13,7 @@
       "name": "contains",
       "outputs": [
         {
+          "internalType": "bool",
           "name": "",
           "type": "bool"
         }
@@ -21,15 +23,15 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.5.8+commit.23d335f2\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":true,\"inputs\":[{\"name\":\"user\",\"type\":\"address\"}],\"name\":\"contains\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/hector/work/ethfs/contracts/interface/Group.sol\":\"Group\"},\"evmVersion\":\"petersburg\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/hector/work/ethfs/contracts/interface/Group.sol\":{\"keccak256\":\"0x33283b1dcf56e74f373f3f02d72d69989d9c37bd272c610d112978603fd1ff7d\",\"urls\":[\"bzzr://408c13b7fe9b12985326175095079d7d0b488e1cec1cb56e6507973e84461ad1\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.5.16+commit.9c3226ce\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"}],\"name\":\"contains\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/home/hector/ethfs/contracts/interface/Group.sol\":\"Group\"},\"evmVersion\":\"byzantium\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/home/hector/ethfs/contracts/interface/Group.sol\":{\"keccak256\":\"0x33283b1dcf56e74f373f3f02d72d69989d9c37bd272c610d112978603fd1ff7d\",\"urls\":[\"bzz-raw://008549603ae5fcc8c4c61f55dbb620d574985cd6dd205eecb614c2d25f7892d1\",\"dweb:/ipfs/QmQGWUPzAqGjxQZ2JGLNamTvKDHx67jkH4xuCmD4i8wuAD\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "pragma solidity >= 0.5.8;\n\ninterface Group {\n  function contains(address user) external view returns (bool);\n}\n",
-  "sourcePath": "/Users/hector/work/ethfs/contracts/interface/Group.sol",
+  "sourcePath": "/home/hector/ethfs/contracts/interface/Group.sol",
   "ast": {
-    "absolutePath": "/Users/hector/work/ethfs/contracts/interface/Group.sol",
+    "absolutePath": "/home/hector/ethfs/contracts/interface/Group.sol",
     "exportedSymbols": {
       "Group": [
         407
@@ -152,7 +154,7 @@
     "src": "0:111:3"
   },
   "legacyAST": {
-    "absolutePath": "/Users/hector/work/ethfs/contracts/interface/Group.sol",
+    "absolutePath": "/home/hector/ethfs/contracts/interface/Group.sol",
     "exportedSymbols": {
       "Group": [
         407
@@ -276,11 +278,11 @@
   },
   "compiler": {
     "name": "solc",
-    "version": "0.5.8+commit.23d335f2.Emscripten.clang"
+    "version": "0.5.16+commit.9c3226ce.Emscripten.clang"
   },
   "networks": {},
-  "schemaVersion": "3.0.12",
-  "updatedAt": "2019-08-27T20:04:48.570Z",
+  "schemaVersion": "3.1.0",
+  "updatedAt": "2020-04-16T18:51:02.847Z",
   "devdoc": {
     "methods": {}
   },
