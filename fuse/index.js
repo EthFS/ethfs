@@ -107,6 +107,7 @@ async function main() {
     create: async (path, mode, cb) => {
       try {
         await kernel.open(utf8ToHex(path), constants.O_WRONLY | constants.O_CREAT)
+        await kernel.chmod(utf8ToHex(path), mode)
         cb(0, Number(await kernel.result()))
       } catch (e) {
         cb(-errno[e.reason])
@@ -270,6 +271,7 @@ async function main() {
     mkdir: async (path, mode, cb) => {
       try {
         await kernel.mkdir(utf8ToHex(path))
+        await kernel.chmod(utf8ToHex(path), mode)
         cb(0)
       } catch (e) {
         cb(-errno[e.reason])
@@ -284,8 +286,8 @@ async function main() {
       }
     },
   }, {
-    displayFolder: 'EthFS',
-    directIo: true,
+    autoCache: true,
+    displayFolder: true,
     timeout: false,
   })
   fuse.mount(err => {
