@@ -2,7 +2,6 @@
   "contractName": "Group",
   "abi": [
     {
-      "constant": true,
       "inputs": [
         {
           "internalType": "address",
@@ -18,30 +17,33 @@
           "type": "bool"
         }
       ],
-      "payable": false,
       "stateMutability": "view",
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.5.16+commit.9c3226ce\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"}],\"name\":\"contains\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/home/hector/ethfs/contracts/interface/Group.sol\":\"Group\"},\"evmVersion\":\"byzantium\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/home/hector/ethfs/contracts/interface/Group.sol\":{\"keccak256\":\"0x33283b1dcf56e74f373f3f02d72d69989d9c37bd272c610d112978603fd1ff7d\",\"urls\":[\"bzz-raw://008549603ae5fcc8c4c61f55dbb620d574985cd6dd205eecb614c2d25f7892d1\",\"dweb:/ipfs/QmQGWUPzAqGjxQZ2JGLNamTvKDHx67jkH4xuCmD4i8wuAD\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.4+commit.c7e474f2\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"}],\"name\":\"contains\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/home/hector/src/ethfs/contracts/interface/Group.sol\":\"Group\"},\"evmVersion\":\"byzantium\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/home/hector/src/ethfs/contracts/interface/Group.sol\":{\"keccak256\":\"0x2ea0f7b974d9bf71487f7a12d80a44a96c49a031d513579cd3203cf654780005\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://9dc9f9df87fc8fefb0c0cabb5f6e7a91be5861b1703a899def362632bc06eafe\",\"dweb:/ipfs/QmQjoDL4LJLi41Zi5XYWveH9eoywU73QKN1KnbWHTEsMaB\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
+  "immutableReferences": {},
+  "generatedSources": [],
+  "deployedGeneratedSources": [],
   "sourceMap": "",
   "deployedSourceMap": "",
-  "source": "pragma solidity >= 0.5.8;\n\ninterface Group {\n  function contains(address user) external view returns (bool);\n}\n",
-  "sourcePath": "/home/hector/ethfs/contracts/interface/Group.sol",
+  "source": "// SPDX-License-Identifier: MIT\npragma solidity >= 0.5.8;\n\ninterface Group {\n  function contains(address user) external view returns (bool);\n}\n",
+  "sourcePath": "/home/hector/src/ethfs/contracts/interface/Group.sol",
   "ast": {
-    "absolutePath": "/home/hector/ethfs/contracts/interface/Group.sol",
+    "absolutePath": "/home/hector/src/ethfs/contracts/interface/Group.sol",
     "exportedSymbols": {
       "Group": [
-        407
+        411
       ]
     },
-    "id": 408,
+    "id": 412,
+    "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 399,
+        "id": 403,
         "literals": [
           "solidity",
           ">=",
@@ -49,41 +51,44 @@
           ".8"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:25:3"
+        "src": "32:25:3"
       },
       {
+        "abstract": false,
         "baseContracts": [],
         "contractDependencies": [],
         "contractKind": "interface",
-        "documentation": null,
         "fullyImplemented": false,
-        "id": 407,
+        "id": 411,
         "linearizedBaseContracts": [
-          407
+          411
         ],
         "name": "Group",
+        "nameLocation": "69:5:3",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
-            "body": null,
-            "documentation": null,
-            "id": 406,
+            "functionSelector": "5dbe47e8",
+            "id": 410,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "contains",
+            "nameLocation": "88:8:3",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 402,
+              "id": 406,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 401,
+                  "id": 405,
+                  "mutability": "mutable",
                   "name": "user",
+                  "nameLocation": "105:4:3",
                   "nodeType": "VariableDeclaration",
-                  "scope": 406,
-                  "src": "65:12:3",
+                  "scope": 410,
+                  "src": "97:12:3",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -91,33 +96,34 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 400,
+                    "id": 404,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "65:7:3",
+                    "src": "97:7:3",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
                       "typeString": "address"
                     }
                   },
-                  "value": null,
                   "visibility": "internal"
                 }
               ],
-              "src": "64:14:3"
+              "src": "96:14:3"
             },
             "returnParameters": {
-              "id": 405,
+              "id": 409,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 404,
+                  "id": 408,
+                  "mutability": "mutable",
                   "name": "",
+                  "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
-                  "scope": 406,
-                  "src": "102:4:3",
+                  "scope": 410,
+                  "src": "134:4:3",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -125,46 +131,47 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 403,
+                    "id": 407,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "102:4:3",
+                    "src": "134:4:3",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
                     }
                   },
-                  "value": null,
                   "visibility": "internal"
                 }
               ],
-              "src": "101:6:3"
+              "src": "133:6:3"
             },
-            "scope": 407,
-            "src": "47:61:3",
+            "scope": 411,
+            "src": "79:61:3",
             "stateMutability": "view",
-            "superFunction": null,
+            "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 408,
-        "src": "27:83:3"
+        "scope": 412,
+        "src": "59:83:3",
+        "usedErrors": []
       }
     ],
-    "src": "0:111:3"
+    "src": "32:111:3"
   },
   "legacyAST": {
-    "absolutePath": "/home/hector/ethfs/contracts/interface/Group.sol",
+    "absolutePath": "/home/hector/src/ethfs/contracts/interface/Group.sol",
     "exportedSymbols": {
       "Group": [
-        407
+        411
       ]
     },
-    "id": 408,
+    "id": 412,
+    "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 399,
+        "id": 403,
         "literals": [
           "solidity",
           ">=",
@@ -172,41 +179,44 @@
           ".8"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:25:3"
+        "src": "32:25:3"
       },
       {
+        "abstract": false,
         "baseContracts": [],
         "contractDependencies": [],
         "contractKind": "interface",
-        "documentation": null,
         "fullyImplemented": false,
-        "id": 407,
+        "id": 411,
         "linearizedBaseContracts": [
-          407
+          411
         ],
         "name": "Group",
+        "nameLocation": "69:5:3",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
-            "body": null,
-            "documentation": null,
-            "id": 406,
+            "functionSelector": "5dbe47e8",
+            "id": 410,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "contains",
+            "nameLocation": "88:8:3",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 402,
+              "id": 406,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 401,
+                  "id": 405,
+                  "mutability": "mutable",
                   "name": "user",
+                  "nameLocation": "105:4:3",
                   "nodeType": "VariableDeclaration",
-                  "scope": 406,
-                  "src": "65:12:3",
+                  "scope": 410,
+                  "src": "97:12:3",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -214,33 +224,34 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 400,
+                    "id": 404,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "65:7:3",
+                    "src": "97:7:3",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
                       "typeString": "address"
                     }
                   },
-                  "value": null,
                   "visibility": "internal"
                 }
               ],
-              "src": "64:14:3"
+              "src": "96:14:3"
             },
             "returnParameters": {
-              "id": 405,
+              "id": 409,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 404,
+                  "id": 408,
+                  "mutability": "mutable",
                   "name": "",
+                  "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
-                  "scope": 406,
-                  "src": "102:4:3",
+                  "scope": 410,
+                  "src": "134:4:3",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -248,45 +259,49 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 403,
+                    "id": 407,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "102:4:3",
+                    "src": "134:4:3",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
                     }
                   },
-                  "value": null,
                   "visibility": "internal"
                 }
               ],
-              "src": "101:6:3"
+              "src": "133:6:3"
             },
-            "scope": 407,
-            "src": "47:61:3",
+            "scope": 411,
+            "src": "79:61:3",
             "stateMutability": "view",
-            "superFunction": null,
+            "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 408,
-        "src": "27:83:3"
+        "scope": 412,
+        "src": "59:83:3",
+        "usedErrors": []
       }
     ],
-    "src": "0:111:3"
+    "src": "32:111:3"
   },
   "compiler": {
     "name": "solc",
-    "version": "0.5.16+commit.9c3226ce.Emscripten.clang"
+    "version": "0.8.4+commit.c7e474f2.Emscripten.clang"
   },
   "networks": {},
-  "schemaVersion": "3.1.0",
-  "updatedAt": "2020-04-16T18:51:02.847Z",
+  "schemaVersion": "3.4.1",
+  "updatedAt": "2021-05-25T20:00:30.711Z",
   "devdoc": {
-    "methods": {}
+    "kind": "dev",
+    "methods": {},
+    "version": 1
   },
   "userdoc": {
-    "methods": {}
+    "kind": "user",
+    "methods": {},
+    "version": 1
   }
 }

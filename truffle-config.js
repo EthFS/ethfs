@@ -19,7 +19,7 @@
  */
 
 const HDWalletProvider = require('@truffle/hdwallet-provider');
-const {TruffleProvider} = require("@harmony-js/core");
+const {TruffleProvider} = require('@harmony-js/core');
 // const infuraKey = "fj4jll3k.....";
 //
 const fs = require('fs');
@@ -78,25 +78,25 @@ module.exports = {
     // },
 
     mainnet: {
-      provider: () => newProvider(`https://mainnet.infura.io/v3/59389cd0fe54420785906cf571a7d7c0`),
+      provider: () => newProvider('https://mainnet.infura.io/v3/59389cd0fe54420785906cf571a7d7c0'),
       network_id: 1,
       skipDryRun: true,
     },
 
     ropsten: {
-      provider: () => newProvider(`https://ropsten.infura.io/v3/59389cd0fe54420785906cf571a7d7c0`),
+      provider: () => newProvider('https://ropsten.infura.io/v3/59389cd0fe54420785906cf571a7d7c0'),
       network_id: 3,
       skipDryRun: true,
     },
 
     rinkeby: {
-      provider: () => newProvider(`https://rinkeby.infura.io/v3/59389cd0fe54420785906cf571a7d7c0`),
+      provider: () => newProvider('https://rinkeby.infura.io/v3/59389cd0fe54420785906cf571a7d7c0'),
       network_id: 4,
       skipDryRun: true,
     },
 
     goerli: {
-      provider: () => newProvider(`https://goerli.infura.io/v3/59389cd0fe54420785906cf571a7d7c0`),
+      provider: () => newProvider('https://goerli.infura.io/v3/59389cd0fe54420785906cf571a7d7c0'),
       network_id: 5,
       skipDryRun: true,
     },
@@ -111,7 +111,7 @@ module.exports = {
           'https://api.s0.t.hmny.io',
           { memonic },
           { shardID: 0, chainId: 1 },
-          { gasLimit: 3321900, gasPrice: 1000000000 }
+          { gasLimit: 1e7, gasPrice: 1 }
         );
         if (!memonic) {
           truffleProvider.setSigner(truffleProvider.addByPrivateKey(secret));
@@ -138,14 +138,14 @@ module.exports = {
   // Configure your compilers
   compilers: {
     solc: {
-      version: "0.8.4",       // Fetch exact version from solc-bin (default: truffle's version)
+      version: '0.8.4',       // Fetch exact version from solc-bin (default: truffle's version)
       // docker: true,        // Use "0.5.1" you've installed locally with docker (default: false)
       settings: {             // See the solidity docs for advice about optimization and evmVersion
         optimizer: {
           enabled: true,
           runs: 200
         },
-        evmVersion: "byzantium"
+        evmVersion: 'byzantium'
       }
     }
   }
