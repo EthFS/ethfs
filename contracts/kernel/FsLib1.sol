@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity >= 0.5.8;
 
 import './FsLib.sol';
@@ -60,7 +61,7 @@ library FsLib1 {
     inode.mode = 511;
     inode.links = 1;
     inode.owner = inode.group = tx.origin;
-    inode.lastModified = uint64(now);
+    inode.lastModified = uint64(block.timestamp);
     uint inoExtent = self.allocInodeExtent();
     inode.data[''] = inoExtent;
     inode.keys.push('');

@@ -416,6 +416,142 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@harmony-js/account@npm:0.1.56":
+  version: 0.1.56
+  resolution: "@harmony-js/account@npm:0.1.56"
+  dependencies:
+    "@harmony-js/core": 0.1.56
+    "@harmony-js/crypto": 0.1.56
+    "@harmony-js/network": 0.1.56
+    "@harmony-js/staking": 0.1.56
+    "@harmony-js/transaction": 0.1.56
+    "@harmony-js/utils": 0.1.56
+  checksum: 0f065eeed1d8d40303805dc6492faf4e091da45d1feeb5dbffe0485b29ffe603dde9895e7865c87db2d3d5672c979499c4f4d1662e71fc88f4dc120af5e03d0f
+  languageName: node
+  linkType: hard
+
+"@harmony-js/account@npm:0.1.57":
+  version: 0.1.57
+  resolution: "@harmony-js/account@npm:0.1.57"
+  dependencies:
+    "@harmony-js/core": 0.1.57
+    "@harmony-js/crypto": 0.1.56
+    "@harmony-js/network": 0.1.56
+    "@harmony-js/staking": 0.1.56
+    "@harmony-js/transaction": 0.1.56
+    "@harmony-js/utils": 0.1.56
+  checksum: f92dd6a052d445c4c925178c286757469b19634b56ba4f97874481fa142e91e08559d17c3b33685eb9e47ab42d9a0691bd2bab06726537bcdcc1b988a6c55e07
+  languageName: node
+  linkType: hard
+
+"@harmony-js/contract@npm:0.1.56":
+  version: 0.1.56
+  resolution: "@harmony-js/contract@npm:0.1.56"
+  dependencies:
+    "@harmony-js/account": 0.1.56
+    "@harmony-js/crypto": 0.1.56
+    "@harmony-js/network": 0.1.56
+    "@harmony-js/transaction": 0.1.56
+    "@harmony-js/utils": 0.1.56
+  checksum: 9d99810064ee6d36264f8916ee058de5c19cab2a4a688669fbf095b3d1320a10665b88b1c80627e80c041551927972a1f7ef1e518f7ca3a715046b7b3cc043cf
+  languageName: node
+  linkType: hard
+
+"@harmony-js/core@npm:0.1.56":
+  version: 0.1.56
+  resolution: "@harmony-js/core@npm:0.1.56"
+  dependencies:
+    "@harmony-js/account": 0.1.56
+    "@harmony-js/contract": 0.1.56
+    "@harmony-js/crypto": 0.1.56
+    "@harmony-js/network": 0.1.56
+    "@harmony-js/staking": 0.1.56
+    "@harmony-js/transaction": 0.1.56
+    "@harmony-js/utils": 0.1.56
+  checksum: 8a70092b739f29a0f0526110ba82e51dfa18032b763f93856169c4e115388b5ee514b1c8dcff2a292b24797d09e8ce034eba38d5811858deea7dabcaef3451de
+  languageName: node
+  linkType: hard
+
+"@harmony-js/core@npm:0.1.57, @harmony-js/core@npm:^0.1.57":
+  version: 0.1.57
+  resolution: "@harmony-js/core@npm:0.1.57"
+  dependencies:
+    "@harmony-js/account": 0.1.57
+    "@harmony-js/contract": 0.1.56
+    "@harmony-js/crypto": 0.1.56
+    "@harmony-js/network": 0.1.56
+    "@harmony-js/staking": 0.1.56
+    "@harmony-js/transaction": 0.1.56
+    "@harmony-js/utils": 0.1.56
+  checksum: 1da73d731bbd3fb221d870335c5c8a9020079725b87f5d3fc137eb0bceec3653e034bb6071a226f857ad83bb952599bec9ea22500598705bbb21f1b0b63703c2
+  languageName: node
+  linkType: hard
+
+"@harmony-js/crypto@npm:0.1.56":
+  version: 0.1.56
+  resolution: "@harmony-js/crypto@npm:0.1.56"
+  dependencies:
+    "@harmony-js/utils": 0.1.56
+    aes-js: ^3.1.2
+    bip39: ^2.5.0
+    bn.js: ^4.11.8
+    elliptic: ^6.4.1
+    hdkey: ^1.1.1
+    hmac-drbg: ^1.0.1
+    js-sha3: ^0.8.0
+    pbkdf2: ^3.0.17
+    scrypt-shim: "github:web3-js/scrypt-shim"
+    uuid: ^3.3.2
+  checksum: 96bb45af89e760ee91a6f4855b1150fd5b7cb8114c86ce42e8287998f2acd79a6c19461bbf14c63a5c5d732bdb91e4057fe60d3d35ec1725965f517fe58b4e11
+  languageName: node
+  linkType: hard
+
+"@harmony-js/network@npm:0.1.56":
+  version: 0.1.56
+  resolution: "@harmony-js/network@npm:0.1.56"
+  dependencies:
+    "@harmony-js/utils": 0.1.56
+    cross-fetch: ^3.0.2
+    mitt: ^1.2.0
+    websocket: ^1.0.28
+  checksum: 60cbd3b6837f9791818efe4b7c541f6faf43b7e6046661bf405e2cc4e9293e90c5334426afb21f8a2bcfac3265ada2ea0725f0d2abb6c483d4673461d336e390
+  languageName: node
+  linkType: hard
+
+"@harmony-js/staking@npm:0.1.56":
+  version: 0.1.56
+  resolution: "@harmony-js/staking@npm:0.1.56"
+  dependencies:
+    "@harmony-js/crypto": 0.1.56
+    "@harmony-js/network": 0.1.56
+    "@harmony-js/transaction": 0.1.56
+    "@harmony-js/utils": 0.1.56
+    text-encoding: ^0.7.0
+  checksum: 49a29e1576d3873edb8b119bf2212c7d2c7dc3cdcd1c66581cab190ae4debf68bec20a18325baac183a1a09ff163cd75f37e90c9ad3f31d9b0e3b4a8fed4171e
+  languageName: node
+  linkType: hard
+
+"@harmony-js/transaction@npm:0.1.56":
+  version: 0.1.56
+  resolution: "@harmony-js/transaction@npm:0.1.56"
+  dependencies:
+    "@harmony-js/crypto": 0.1.56
+    "@harmony-js/network": 0.1.56
+    "@harmony-js/utils": 0.1.56
+  checksum: 8ff6b9b1f7aa06c2b99445edf0c2542b9812603e09577135f2706f97cad0f5c5c63d343b8453be3d3e7d9cfe1b8432732cf67d88438d8b8afafd7216d6abbee8
+  languageName: node
+  linkType: hard
+
+"@harmony-js/utils@npm:0.1.56":
+  version: 0.1.56
+  resolution: "@harmony-js/utils@npm:0.1.56"
+  dependencies:
+    "@types/bn.js": ^4.11.3
+    bn.js: ^4.11.8
+  checksum: 9a2771b618ffe12d217f7a59552525c6c4225c6c88e28e059d9b212bc541c9b3cebc9c672b494ca7e07bbade470094c73992e88e4f86fd457f70b9571f163dbb
+  languageName: node
+  linkType: hard
+
 "@npmcli/move-file@npm:^1.0.1":
   version: 1.1.2
   resolution: "@npmcli/move-file@npm:1.1.2"
@@ -529,7 +665,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@truffle/hdwallet-provider@npm:^1.4.0, @truffle/hdwallet-provider@npm:latest":
+"@truffle/hdwallet-provider@npm:^1.4.0":
   version: 1.4.0
   resolution: "@truffle/hdwallet-provider@npm:1.4.0"
   dependencies:
@@ -777,7 +913,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"aes-js@npm:^3.1.1":
+"aes-js@npm:^3.1.1, aes-js@npm:^3.1.2":
   version: 3.1.2
   resolution: "aes-js@npm:3.1.2"
   checksum: ab4633f4054e3d32d69af61bb941e47e188629c7e038d898600f3bd55674739c043b0811225fe4b58c00224f9a027a432f65e5c88681d2e49cbaa5d51f6ea941
@@ -1133,6 +1269,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bip39@npm:^2.5.0":
+  version: 2.6.0
+  resolution: "bip39@npm:2.6.0"
+  dependencies:
+    create-hash: ^1.1.0
+    pbkdf2: ^3.0.9
+    randombytes: ^2.0.1
+    safe-buffer: ^5.0.1
+    unorm: ^1.3.3
+  checksum: 4ec18f56b4c3939ac3b79ce22aee592ed8685498fdd0e52b42494725a0fd5b27e10ba96cb6c26eca13af741df24bb4b542837b9cd2872dc254ab7f07cc37be23
+  languageName: node
+  linkType: hard
+
+"bip66@npm:^1.1.5":
+  version: 1.1.5
+  resolution: "bip66@npm:1.1.5"
+  dependencies:
+    safe-buffer: ^5.0.1
+  checksum: cf83531dc486619df484225bf5e01dfe1341941dc3b7bf6d296b1a76244a9dcc2af36886a8039eafe0e27d72daaeccfce1686eee72b2119b99b90985bc55cf10
+  languageName: node
+  linkType: hard
+
 "blakejs@npm:^1.1.0":
   version: 1.1.0
   resolution: "blakejs@npm:1.1.0"
@@ -1210,7 +1368,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"browserify-aes@npm:^1.0.0, browserify-aes@npm:^1.0.4, browserify-aes@npm:^1.2.0":
+"browserify-aes@npm:^1.0.0, browserify-aes@npm:^1.0.4, browserify-aes@npm:^1.0.6, browserify-aes@npm:^1.2.0":
   version: 1.2.0
   resolution: "browserify-aes@npm:1.2.0"
   dependencies:
@@ -1757,6 +1915,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"cross-fetch@npm:^3.0.2":
+  version: 3.1.4
+  resolution: "cross-fetch@npm:3.1.4"
+  dependencies:
+    node-fetch: 2.6.1
+  checksum: 47b33bc773d53f19805eeac914e7d76e022a1aee3b7a55277fae3d3d1a0cff354b92c4ec6c5d99aeef3e5757c2719e94c37879ba846c33de892e68a655758b61
+  languageName: node
+  linkType: hard
+
 "crypto-browserify@npm:3.12.0":
   version: 3.12.0
   resolution: "crypto-browserify@npm:3.12.0"
@@ -1985,6 +2152,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"drbg.js@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "drbg.js@npm:1.0.1"
+  dependencies:
+    browserify-aes: ^1.0.6
+    create-hash: ^1.1.2
+    create-hmac: ^1.1.4
+  checksum: 57de7be981a8dddede102443bca1a8ed72edb943a2c72fdc297216ea1ed91c57f3336f250e273fa7dbcf6b95f3699fed3a90ebd8e6ba7c2ab1ae9e81f6c9d80f
+  languageName: node
+  linkType: hard
+
 "duplexer3@npm:^0.1.4":
   version: 0.1.4
   resolution: "duplexer3@npm:0.1.4"
@@ -2031,7 +2209,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"elliptic@npm:6.5.4, elliptic@npm:^6.4.0, elliptic@npm:^6.5.2, elliptic@npm:^6.5.3":
+"elliptic@npm:6.5.4, elliptic@npm:^6.4.0, elliptic@npm:^6.4.1, elliptic@npm:^6.5.2, elliptic@npm:^6.5.3":
   version: 6.5.4
   resolution: "elliptic@npm:6.5.4"
   dependencies:
@@ -2539,10 +2717,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "ethfs@workspace:."
   dependencies:
+    "@harmony-js/core": ^0.1.57
     "@truffle/contract": ^4.3.17
     "@truffle/hdwallet-provider": ^1.4.0
     fuse-native: ^2.2.6
-    solidity-bytes-utils: ^0.8.0
+    pify: ^5.0.0
+    tslib: ^2.2.0
     yargs: ^17.0.1
   languageName: unknown
   linkType: soft
@@ -3102,6 +3282,17 @@ __metadata:
     inherits: ^2.0.3
     minimalistic-assert: ^1.0.1
   checksum: fceb7fb87e224f4b399212f902d3a34c3ed8512560868b56dde92f617fac9c66b501e583bab2996ed7493be5ab3385e05a69d2209fa6a9144391b22e1c2d245b
+  languageName: node
+  linkType: hard
+
+"hdkey@npm:^1.1.1":
+  version: 1.1.2
+  resolution: "hdkey@npm:1.1.2"
+  dependencies:
+    bs58check: ^2.1.2
+    safe-buffer: ^5.1.1
+    secp256k1: ^3.0.1
+  checksum: f34175107af24aa1ee2d9cc7b15ca47d0ef614a6f1e52c452761fac79f41667d974d9a2249f28b1ca75b618dacd9e26ced3a61fdd30d400031f8179b5829f0b1
   languageName: node
   linkType: hard
 
@@ -4118,6 +4309,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"mitt@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "mitt@npm:1.2.0"
+  checksum: d6222a9d8bc0e7d6ec3d44220476830dcf545a0488b6ce59a08044c116b0832781bf8d1a2b9e6ac9422e0c11e8e0f997a6c58a86a81f5ef346ab347dbd9ec5da
+  languageName: node
+  linkType: hard
+
 "mkdirp-promise@npm:^5.0.1":
   version: 5.0.1
   resolution: "mkdirp-promise@npm:5.0.1"
@@ -4232,6 +4430,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"nan@npm:^2.14.0":
+  version: 2.14.2
+  resolution: "nan@npm:2.14.2"
+  dependencies:
+    node-gyp: latest
+  checksum: 36349b2e5df4182aa0d0cc43fcd6cc782ca560a83c2764743d80c14ba5028d0c54041a2f464b8d4cb18a884e04415034a0a764c745e1d5502ea34a5cb6470a39
+  languageName: node
+  linkType: hard
+
 "nano-json-stream-parser@npm:^0.1.2":
   version: 0.1.2
   resolution: "nano-json-stream-parser@npm:0.1.2"
@@ -4282,6 +4489,13 @@ __metadata:
   version: 2.1.2
   resolution: "node-fetch@npm:2.1.2"
   checksum: 9f9fcdc37df8780e61ac8e5089d7c765c61dc8c8afa614f71fec74b3b95b47d0d6bf842b6d91cb0baf75566f9a60aa367acd0c394f22482fb301125168db29dd
+  languageName: node
+  linkType: hard
+
+"node-fetch@npm:2.6.1":
+  version: 2.6.1
+  resolution: "node-fetch@npm:2.6.1"
+  checksum: cbb171635e538162b977eac5dfe7a1e07a9a02e991924377a6435502291e2f823d306b95aabc455caebf4a118ccf836868462bc70ccc3095af02bb9da61fda37
   languageName: node
   linkType: hard
 
@@ -4580,7 +4794,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pbkdf2@npm:^3.0.17, pbkdf2@npm:^3.0.3":
+"pbkdf2@npm:^3.0.17, pbkdf2@npm:^3.0.3, pbkdf2@npm:^3.0.9":
   version: 3.1.2
   resolution: "pbkdf2@npm:3.1.2"
   dependencies:
@@ -4604,6 +4818,13 @@ __metadata:
   version: 3.0.0
   resolution: "pify@npm:3.0.0"
   checksum: 18af2b29148c4d6fd4c7741dbd953ff76beea17d1b4a6d5792d7ff1d7202f43671c3f29313aa5ec01a66d050dbdbb0cf23f17de69531da8dc8bda42d327cf960
+  languageName: node
+  linkType: hard
+
+"pify@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "pify@npm:5.0.0"
+  checksum: 4c28d29597a49bbf320c0c6526fac7858d53b8398a46bfa6ed1a120a922773c7ef50bea166e27952bbc476bce1c72cf3e7d648462ac82e704e62431bdec95cec
   languageName: node
   linkType: hard
 
@@ -5005,6 +5226,40 @@ resolve@^1.14.2:
   languageName: node
   linkType: hard
 
+"scrypt-shim@github:web3-js/scrypt-shim":
+  version: 0.1.0
+  resolution: "scrypt-shim@https://github.com/web3-js/scrypt-shim.git#commit=aafdadda13e660e25e1c525d1f5b2443f5eb1ebb"
+  dependencies:
+    scryptsy: ^2.1.0
+    semver: ^6.3.0
+  checksum: e2eb72648155f225926f35adc317785cd622385c3c7d4bd3ee421bd9b3d732976280a4364e9c5ed23be9427100ec61badcc076ae1b668afe87209dad2051739c
+  languageName: node
+  linkType: hard
+
+"scryptsy@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "scryptsy@npm:2.1.0"
+  checksum: 9fd847955caa9d13a6d58a0360ba8fb31f8e7e7da9250b4c09c67db784a0f6dda757bc837313b0860c0e35f84a56ba068394c682dd4fba81c5899d82832aa7d6
+  languageName: node
+  linkType: hard
+
+"secp256k1@npm:^3.0.1":
+  version: 3.8.0
+  resolution: "secp256k1@npm:3.8.0"
+  dependencies:
+    bindings: ^1.5.0
+    bip66: ^1.1.5
+    bn.js: ^4.11.8
+    create-hash: ^1.2.0
+    drbg.js: ^1.0.1
+    elliptic: ^6.5.2
+    nan: ^2.14.0
+    node-gyp: latest
+    safe-buffer: ^5.1.2
+  checksum: 8c3c8fa6c0db00fd295f5cba4efe84beaacc563f2f63a4b82519141658bbde8893988976035eb4aed67e612cad87952598c16ed6e83a64331b1f10916647ebe1
+  languageName: node
+  linkType: hard
+
 "secp256k1@npm:^4.0.1":
   version: 4.0.2
   resolution: "secp256k1@npm:4.0.2"
@@ -5205,15 +5460,6 @@ resolve@^1.14.2:
     ip: ^1.1.5
     smart-buffer: ^4.1.0
   checksum: 9a5735cf9be6f756006b4c5ed23f17c15ffbfc0afb04b5d1b49516b7a27818c807a6a5b5419a65a140a1964149ec9ebb6cd8f0e06d7c60282912204d781371db
-  languageName: node
-  linkType: hard
-
-"solidity-bytes-utils@npm:^0.8.0":
-  version: 0.8.0
-  resolution: "solidity-bytes-utils@npm:0.8.0"
-  dependencies:
-    "@truffle/hdwallet-provider": latest
-  checksum: ece14acdf912fcd315260669ababaf626ee7cd2875face0e26b7abeea2b4a0b3f4080cf84ce283e66d746772e6d85c0b7aad133e5b69d75ed24f75a8950c3042
   languageName: node
   linkType: hard
 
@@ -5452,6 +5698,13 @@ resolve@^1.14.2:
   languageName: node
   linkType: hard
 
+"text-encoding@npm:^0.7.0":
+  version: 0.7.0
+  resolution: "text-encoding@npm:0.7.0"
+  checksum: 476a7565817bf24460e35832f1d41a888586242536c4703273496d8d706447df0bce8fa8e70c50c050345d6533747ead5925e11cf7869f027200d8dcfe0690b6
+  languageName: node
+  linkType: hard
+
 "timed-out@npm:^4.0.0, timed-out@npm:^4.0.1":
   version: 4.0.1
   resolution: "timed-out@npm:4.0.1"
@@ -5601,6 +5854,13 @@ resolve@^1.14.2:
   version: 0.1.2
   resolution: "universalify@npm:0.1.2"
   checksum: 420fc6547357782c700d53e9a92506a8e95345b13e97684c8f9ab75237912ec2ebb6af8ac10d4f7406b7b6bd21c58f6c5c0811414fb0b4091b78b4743fa6806e
+  languageName: node
+  linkType: hard
+
+"unorm@npm:^1.3.3":
+  version: 1.6.0
+  resolution: "unorm@npm:1.6.0"
+  checksum: 2c3e10ad8c09edf5f0104a57b7b1277e3ca4aeeaf726596c93e940d94661b2bf167c160f3d4ee2d4d9e02742706a56d548462b45d52e9d91db2dcbb524a7b750
   languageName: node
   linkType: hard
 
@@ -6029,7 +6289,7 @@ resolve@^1.14.2:
   languageName: node
   linkType: hard
 
-"websocket@npm:^1.0.32":
+"websocket@npm:^1.0.28, websocket@npm:^1.0.32":
   version: 1.0.34
   resolution: "websocket@npm:1.0.34"
   dependencies:

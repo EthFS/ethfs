@@ -19,10 +19,18 @@
  */
 
 const HDWalletProvider = require('@truffle/hdwallet-provider');
+const {TruffleProvider} = require("@harmony-js/core");
 // const infuraKey = "fj4jll3k.....";
 //
 const fs = require('fs');
-const mnemonic = fs.readFileSync('.secret').toString().trim();
+const secret = fs.readFileSync('.secret').toString().trim();
+
+function newProvider(providerOrUrl) {
+  if (secret.split(' ').length == 12) {
+    return new HDWalletProvider({mnemonic: secret, providerOrUrl});
+  }
+  return new HDWalletProvider({privateKeys: [secret], providerOrUrl});
+}
 
 module.exports = {
   /**
@@ -43,7 +51,7 @@ module.exports = {
     // options below to some value.
     //
     development: {
-      provider: () => new HDWalletProvider(mnemonic, 'http://127.0.0.1:8545'),
+      provider: () => newProvider('http://127.0.0.1:8545'),
       network_id: '*',
       gasPrice: 1e9,
     },
@@ -70,33 +78,48 @@ module.exports = {
     // },
 
     mainnet: {
-      provider: () => new HDWalletProvider(mnemonic, `https://mainnet.infura.io/v3/59389cd0fe54420785906cf571a7d7c0`),
+      provider: () => newProvider(`https://mainnet.infura.io/v3/59389cd0fe54420785906cf571a7d7c0`),
       network_id: 1,
-      skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
+      skipDryRun: true,
     },
 
     ropsten: {
-      provider: () => new HDWalletProvider(mnemonic, `https://ropsten.infura.io/v3/59389cd0fe54420785906cf571a7d7c0`),
+      provider: () => newProvider(`https://ropsten.infura.io/v3/59389cd0fe54420785906cf571a7d7c0`),
       network_id: 3,
-      skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
+      skipDryRun: true,
     },
 
     rinkeby: {
-      provider: () => new HDWalletProvider(mnemonic, `https://rinkeby.infura.io/v3/59389cd0fe54420785906cf571a7d7c0`),
-      network_id: 4,       // Rinkeby's id
-      skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
+      provider: () => newProvider(`https://rinkeby.infura.io/v3/59389cd0fe54420785906cf571a7d7c0`),
+      network_id: 4,
+      skipDryRun: true,
     },
 
     goerli: {
-      provider: () => new HDWalletProvider(mnemonic, `https://goerli.infura.io/v3/59389cd0fe54420785906cf571a7d7c0`),
+      provider: () => newProvider(`https://goerli.infura.io/v3/59389cd0fe54420785906cf571a7d7c0`),
       network_id: 5,
-      skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
+      skipDryRun: true,
     },
 
-    kovan: {
-      provider: () => new HDWalletProvider(mnemonic, `https://kovan.infura.io/v3/59389cd0fe54420785906cf571a7d7c0`),
-      network_id: 42,
-      skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
+    harmony: {
+      provider: () => {
+        let memonic;
+        if (secret.split(' ').length == 12) {
+          memonic = secret;
+        }
+        const truffleProvider = new TruffleProvider(
+          'https://api.s0.t.hmny.io',
+          { memonic },
+          { shardID: 0, chainId: 1 },
+          { gasLimit: 3321900, gasPrice: 1000000000 }
+        );
+        if (!memonic) {
+          truffleProvider.setSigner(truffleProvider.addByPrivateKey(secret));
+        }
+        return truffleProvider;
+      },
+      network_id: 1,
+      skipDryRun: true,
     },
 
     // Useful for private networks
@@ -115,7 +138,7 @@ module.exports = {
   // Configure your compilers
   compilers: {
     solc: {
-      // version: "0.5.1",    // Fetch exact version from solc-bin (default: truffle's version)
+      version: "0.8.4",       // Fetch exact version from solc-bin (default: truffle's version)
       // docker: true,        // Use "0.5.1" you've installed locally with docker (default: false)
       settings: {             // See the solidity docs for advice about optimization and evmVersion
         optimizer: {

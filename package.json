@@ -6,10 +6,12 @@
   "author": "Hector Chu",
   "license": "MIT",
   "dependencies": {
+    "@harmony-js/core": "^0.1.57",
     "@truffle/contract": "^4.3.17",
     "@truffle/hdwallet-provider": "^1.4.0",
     "fuse-native": "^2.2.6",
-    "solidity-bytes-utils": "^0.8.0",
+    "pify": "^5.0.0",
+    "tslib": "^2.2.0",
     "yargs": "^17.0.1"
   }
 }

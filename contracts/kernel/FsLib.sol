@@ -1,6 +1,7 @@
+// SPDX-License-Identifier: MIT
 pragma solidity >= 0.5.8;
 
-import 'solidity-bytes-utils/contracts/BytesLib.sol';
+import 'bytes/BytesLib.sol';
 import '../interface/Constants.sol';
 import '../interface/FileSystem.sol';
 import '../interface/Group.sol';
@@ -184,7 +185,7 @@ library FsLib {
     } else {
       self.inodeValue[inode.data[key]].value = value;
     }
-    inode.lastModified = uint64(now);
+    inode.lastModified = uint64(block.timestamp);
   }
 
   function removeFromInode(Disk storage self, uint ino, bytes memory key) public {
@@ -201,7 +202,7 @@ library FsLib {
     keys.pop();
     self.freeInoValue.push(inoValue);
     delete inode.data[key];
-    inode.lastModified = uint64(now);
+    inode.lastModified = uint64(block.timestamp);
   }
 
   function checkMode(Disk storage, Inode storage inode, uint mask) public view {
@@ -244,7 +245,7 @@ library FsLib {
         inode.mode = 420;
         inode.links = 1;
         inode.owner = inode.group = tx.origin;
-        inode.lastModified = uint64(now);
+        inode.lastModified = uint64(block.timestamp);
         writeToInode(self, dirIno, key, ino);
       }
     }
@@ -286,7 +287,7 @@ library FsLib {
     } else {
       BytesLib.concatStorage(self.inodeExtent[inoExtent].extent, value);
     }
-    inode.lastModified = uint64(now);
+    inode.lastModified = uint64(block.timestamp);
   }
 
   function truncate(Disk storage self, uint ino, bytes calldata key, uint len) external onlyOwner(self) {
@@ -298,7 +299,7 @@ library FsLib {
       return;
     }
     self.inodeExtent[inoExtent].extent.length = len;
-    inode.lastModified = uint64(now);
+    inode.lastModified = uint64(block.timestamp);
   }
 
   function clear(Disk storage self, uint ino, bytes calldata key) external onlyOwner(self) {
@@ -316,7 +317,7 @@ library FsLib {
     keys.pop();
     self.freeInoExtent.push(inoExtent);
     delete inode.data[key];
-    inode.lastModified = uint64(now);
+    inode.lastModified = uint64(block.timestamp);
   }
 
   function stat(Disk storage self, bytes calldata path, uint curdir) external view onlyOwner(self) returns (FileSystem.FileType fileType, uint16 mode, uint ino_, uint links, address owner, address group, uint entries, uint size, uint lastModified) {
