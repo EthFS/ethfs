@@ -196,21 +196,11 @@ library FsLib1 {
       inode2.group = inode.group;
     }
     uint i;
-    uint j;
     if (sourceIsDir) {
-      j = inode2.keys.length;
-      if (j == 0) {
+      if (inode2.keys.length == 0) {
         inode2.refCnt = 1;
         self.writeToInode(ino2, '.', ino2);
         self.writeToInode(ino2, '..', dirIno);
-        inode2.keys.length = inode.keys.length;
-        j = 2;
-      } else {
-        uint k;
-        for (i = 2; i < inode.keys.length;) {
-          if (inode2.data[inode.keys[i++]] == 0) k++;
-        }
-        inode2.keys.length = j+k;
       }
       i = 2;
     } else {
@@ -220,19 +210,19 @@ library FsLib1 {
         self.freeInoExtent.push(inode2.data[key]);
         delete inode2.data[key];
       }
-      inode2.keys.length = inode.keys.length;
+      delete inode2.keys;
       i = 0;
     }
     inode2.lastModified = inode.lastModified;
     while (i < inode.keys.length) {
       bytes storage key = inode.keys[i++];
       if (inode2.data[key] == 0) {
-        inode2.keys[j++] = key;
+        inode2.keys.push(key);
         if (sourceIsDir) {
           inode2.data[key] = self.allocInodeValue();
           FsLib.InodeValue storage data = self.inodeValue[inode.data[key]];
           FsLib.InodeValue storage data2 = self.inodeValue[inode2.data[key]];
-          data2.index = j;
+          data2.index = inode2.keys.length;
           data2.value = self.allocInode();
           copyInode(self, data.value, data2.value, ino2);
         } else {

@@ -53,9 +53,10 @@ library FsLib {
   function init(Disk storage self) external {
     // Set up root inode
     uint ino = 1;
-    self.inode.length = ino+1;
-    self.inodeValue.length = 1;
-    self.inodeExtent.length = 1;
+    self.inode.push();
+    self.inode.push();
+    self.inodeValue.push();
+    self.inodeExtent.push();
     self.inode[ino].fileType = uint8(FileSystem.FileType.Directory);
     self.inode[ino].mode = 493;
     self.inode[ino].owner = tx.origin;
@@ -134,7 +135,8 @@ library FsLib {
       ino = self.freeIno[self.freeIno.length-1];
       self.freeIno.pop();
     } else {
-      ino = self.inode.length++;
+      ino = self.inode.length;
+      self.inode.push();
     }
   }
 
@@ -151,7 +153,7 @@ library FsLib {
       }
       delete inode.data[key];
     }
-    inode.keys.length = 0;
+    delete inode.keys;
     self.freeIno.push(ino);
   }
 
@@ -160,7 +162,8 @@ library FsLib {
       index = self.freeInoValue[self.freeInoValue.length-1];
       self.freeInoValue.pop();
     } else {
-      index = self.inodeValue.length++;
+      index = self.inodeValue.length;
+      self.inodeValue.push();
     }
   }
 
@@ -169,7 +172,8 @@ library FsLib {
       index = self.freeInoExtent[self.freeInoExtent.length-1];
       self.freeInoExtent.pop();
     } else {
-      index = self.inodeExtent.length++;
+      index = self.inodeExtent.length;
+      self.inodeExtent.push();
     }
   }
 
