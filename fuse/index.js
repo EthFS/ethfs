@@ -20,7 +20,9 @@ require('../build/contracts/Constants')
 async function main() {
   const Kernel = contract(require('../build/contracts/KernelImpl'))
   let url = 'http://localhost:8545'
-  if (argv.network) {
+  if (argv.network == 'harmony') {
+    url = 'https://api.s0.t.hmny.io'
+  } else if (argv.network) {
     url = `https://${argv.network}.infura.io/v3/59389cd0fe54420785906cf571a7d7c0`
   }
   Kernel.setProvider(new HDWalletProvider(fs.readFileSync('.secret').toString().trim(), url))
