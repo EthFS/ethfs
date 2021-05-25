@@ -302,7 +302,9 @@ library FsLib {
       require(len == 0, 'EINVAL');
       return;
     }
-    self.inodeExtent[inoExtent].extent.length = len;
+    bytes storage extent = self.inodeExtent[inoExtent].extent;
+    while (extent.length < len) extent.push();
+    while (extent.length > len) extent.pop();
     inode.lastModified = uint64(block.timestamp);
   }
 
