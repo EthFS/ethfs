@@ -303,7 +303,20 @@ library FsLib {
       return;
     }
     bytes storage extent = self.inodeExtent[inoExtent].extent;
-    assembly { sstore(extent.slot, len) }
+    while (extent.length > len) {
+      if (extent.length > 32) {
+        assembly { sstore(extent.slot, 65) }
+      } else {
+        extent.pop();
+      }
+    }
+    while (extent.length < len) {
+      if (extent.length < 32) {
+        extent.push();
+      } else {
+        assembly { sstore(extent.slot, add(mul(len, 2), 1)) }
+      }
+    }
     inode.lastModified = uint64(block.timestamp);
   }
 
