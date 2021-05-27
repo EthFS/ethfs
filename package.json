@@ -1,6 +1,6 @@
 {
   "name": "ethfs",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Unix-like filesystem for Ethereum",
   "repository": "https://github.com/EthFS/ethfs",
   "author": "Hector Chu",
