@@ -317,6 +317,15 @@ library FsLib {
         assembly { sstore(extent.slot, add(mul(len, 2), 1)) }
       }
     }
+    if (len >= 32) {
+      assembly {
+        mstore(0x0, extent.slot)
+        let sc := add(keccak256(0x0, 0x20), div(len, 32))
+        let submod := sub(32, mod(len, 32))
+        let mask := not(sub(exp(0x100, submod), 1))
+        sstore(sc, and(sload(sc), mask))
+      }
+    }
     inode.lastModified = uint64(block.timestamp);
   }
 
