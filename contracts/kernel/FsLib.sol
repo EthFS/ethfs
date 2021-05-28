@@ -302,6 +302,10 @@ library FsLib {
       require(len == 0, 'EINVAL');
       return;
     }
+    if (len == 0) {
+      _clear(self, ino, key);
+      return;
+    }
     bytes storage extent = self.inodeExtent[inoExtent].extent;
     while (extent.length > len) {
       if (extent.length > 32) {
@@ -330,6 +334,10 @@ library FsLib {
   }
 
   function clear(Disk storage self, uint ino, bytes calldata key) external onlyOwner(self) {
+    _clear(self, ino, key);
+  }
+
+  function _clear(Disk storage self, uint ino, bytes calldata key) internal {
     Inode storage inode = self.inode[ino];
     require(inode.fileType == uint8(FileSystem.FileType.Regular), 'EPERM');
     uint inoExtent = inode.data[key];
