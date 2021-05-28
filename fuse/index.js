@@ -10,7 +10,7 @@ const {argv} = require('yargs')
   .demandOption(['p'])
   .describe('p', 'Path to mount filesystem on').alias('p', 'mount-path').nargs('p', 1)
   .describe('n', `Network to connect to (e.g. 'rinkeby')`).alias('n', 'network').nargs('n', 1)
-  .describe('k', 'Address of kernel to use').alias('k', 'kernel').nargs('k', 1)
+  .describe('k', 'Address of kernel to use').alias('k', 'kernel').nargs('k', 1).string('k')
 
 const constants = {}
 require('../build/contracts/Constants')
