@@ -1,11 +1,14 @@
 {
   "name": "ethfs",
-  "version": "0.2.4",
+  "version": "0.2.6",
   "description": "Unix-like filesystem for Ethereum",
   "repository": "https://github.com/EthFS/ethfs",
   "author": "Hector Chu",
   "license": "MIT",
-  "dependencies": {
+  "files": [
+    "build"
+  ],
+  "devDependencies": {
     "@harmony-js/core": "^0.1.57",
     "@truffle/contract": "^4.3.17",
     "@truffle/hdwallet-provider": "^1.4.0",

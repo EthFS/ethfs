@@ -18,6 +18,7 @@
  *
  */
 
+require('./.pnp').setup();
 const HDWalletProvider = require('@truffle/hdwallet-provider');
 const {TruffleProvider} = require('@harmony-js/core');
 // const infuraKey = "fj4jll3k.....";
