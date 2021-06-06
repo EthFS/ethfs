@@ -41,8 +41,8 @@ contract FsDisk is FileSystem {
     return m_disk.readkey(ino, index);
   }
 
-  function read(uint ino, bytes calldata key) external view override returns (bytes memory) {
-    return m_disk.read(ino, key);
+  function read(uint ino, bytes calldata key, uint256 start, uint256 length) external view override returns (bytes memory) {
+    return m_disk.read(ino, key, start, length);
   }
 
   function write(uint ino, bytes calldata key, bytes calldata value) external override {

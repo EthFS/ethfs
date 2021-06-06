@@ -11,7 +11,7 @@ interface FileSystem {
   function openOnly(bytes calldata path, uint curdir, uint flags) external view returns (uint);
   function close(uint ino) external;
   function readkey(uint ino, uint index) external view returns (bytes memory);
-  function read(uint ino, bytes calldata key) external view returns (bytes memory);
+  function read(uint ino, bytes calldata key, uint256 start, uint256 length) external view returns (bytes memory);
   function write(uint ino, bytes calldata key, bytes calldata value) external;
   function truncate(uint ino, bytes calldata key, uint len) external;
   function clear(uint ino, bytes calldata key) external;

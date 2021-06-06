@@ -271,10 +271,12 @@ library FsLib {
     return self.inode[ino].keys[index];
   }
 
-  function read(Disk storage self, uint ino, bytes calldata key) external view onlyOwner(self) returns (bytes memory) {
+  function read(Disk storage self, uint ino, bytes calldata key, uint256 start, uint256 length) external view onlyOwner(self) returns (bytes memory) {
     uint index = self.inode[ino].data[key];
     require(index > 0, 'EINVAL');
-    return self.inodeExtent[index].extent;
+    bytes storage extent = self.inodeExtent[index].extent;
+    if (start == 0 && length == 0) return extent;
+    return BytesLib.slice(extent, start, length);
   }
 
   function write(Disk storage self, uint ino, bytes calldata key, bytes calldata value) external onlyOwner(self) {

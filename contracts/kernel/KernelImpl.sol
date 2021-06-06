@@ -28,12 +28,12 @@ contract KernelImpl is Kernel {
     return m_kernelArea.readkeyPath(path, index);
   }
 
-  function read(uint fd, bytes calldata key) external view override returns (bytes memory) {
-    return m_kernelArea.read(fd, key);
+  function read(uint fd, bytes calldata key, uint256 start, uint256 length) external view override returns (bytes memory) {
+    return m_kernelArea.read(fd, key, start, length);
   }
 
-  function readPath(bytes calldata path, bytes calldata key) external view override returns (bytes memory) {
-    return m_kernelArea.readPath(path, key);
+  function readPath(bytes calldata path, bytes calldata key, uint256 start, uint256 length) external view override returns (bytes memory) {
+    return m_kernelArea.readPath(path, key, start, length);
   }
 
   function write(uint fd, bytes calldata key, bytes calldata value) external override {

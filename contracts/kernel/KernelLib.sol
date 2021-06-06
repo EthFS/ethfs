@@ -55,18 +55,18 @@ library KernelLib {
     return self.fileSystem.readkey(ino, index);
   }
 
-  function read(KernelArea storage self, uint fd, bytes calldata key) external view returns (bytes memory) {
+  function read(KernelArea storage self, uint fd, bytes calldata key, uint256 start, uint256 length) external view returns (bytes memory) {
     UserArea storage u = self.userArea[tx.origin];
     FileDescriptor storage fildes = u.fildes[fd];
     require(fildes.ino > 0, 'EBADF');
     require(fildes.flags == Constants.O_RDONLY() || fildes.flags == Constants.O_RDWR(), 'EBADF');
-    return self.fileSystem.read(fildes.ino, key);
+    return self.fileSystem.read(fildes.ino, key, start, length);
   }
 
-  function readPath(KernelArea storage self, bytes calldata path, bytes calldata key) external view returns (bytes memory) {
+  function readPath(KernelArea storage self, bytes calldata path, bytes calldata key, uint256 start, uint256 length) external view returns (bytes memory) {
     UserArea storage u = self.userArea[tx.origin];
     uint ino = self.fileSystem.openOnly(path, u.curdir, 0);
-    return self.fileSystem.read(ino, key);
+    return self.fileSystem.read(ino, key, start, length);
   }
 
   function write(KernelArea storage self, uint fd, bytes calldata key, bytes calldata value) external {

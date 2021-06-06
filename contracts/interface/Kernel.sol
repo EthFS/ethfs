@@ -8,8 +8,8 @@ interface Kernel {
   function open(bytes calldata path, uint flags) external returns (uint);
   function readkey(uint fd, uint index) external view returns (bytes memory);
   function readkeyPath(bytes calldata path, uint index) external view returns (bytes memory);
-  function read(uint fd, bytes calldata key) external view returns (bytes memory);
-  function readPath(bytes calldata path, bytes calldata key) external view returns (bytes memory);
+  function read(uint fd, bytes calldata key, uint256 start, uint256 length) external view returns (bytes memory);
+  function readPath(bytes calldata path, bytes calldata key, uint256 start, uint256 length) external view returns (bytes memory);
   function write(uint fd, bytes calldata key, bytes calldata value) external;
   function truncate(uint fd, bytes calldata key, uint len) external;
   function clear(uint fd, bytes calldata key) external;
