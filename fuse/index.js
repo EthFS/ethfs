@@ -1,9 +1,12 @@
 const fs = require('fs')
 const {errno} = require('os').constants
-const contract = require('@truffle/contract')
-const HDWalletProvider = require('@truffle/hdwallet-provider')
-const {utf8ToHex, hexToUtf8} = require('web3-utils')
 const Fuse = require('fuse-native')
+const {
+  ethers,
+  constants: {MaxUint256},
+  utils: {arrayify, toUtf8Bytes, toUtf8String},
+} = require('ethers')
+const KernelImpl = require('../build/contracts/KernelImpl')
 
 const {argv} = require('yargs')
   .usage('Usage: $0 -p [mount path] -n [network] -k [address]')
@@ -18,19 +21,20 @@ require('../build/contracts/Constants')
   .forEach(x => constants[x.name.slice(1)] = x.value.value)
 
 async function main() {
-  const Kernel = contract(require('../build/contracts/KernelImpl'))
   let url = 'http://localhost:8545'
   if (argv.network == 'harmony') {
-    url = 'https://api.s0.t.hmny.io'
+    url = 'https://api.harmony.one'
   } else if (argv.network) {
     url = `https://${argv.network}.infura.io/v3/59389cd0fe54420785906cf571a7d7c0`
   }
-  Kernel.setProvider(new HDWalletProvider(fs.readFileSync('.secret').toString().trim(), url))
-  const accounts = await Kernel.web3.eth.getAccounts()
-  Kernel.defaults({from: accounts[0]})
-  const kernel = await(argv.kernel ? Kernel.at(argv.kernel) : Kernel.deployed())
+  const privateKey = fs.readFileSync('.secret').toString().trim()
+  const provider = new ethers.providers.JsonRpcProvider(url)
+  const signer = new ethers.Wallet(privateKey, provider)
+  const {chainId} = await provider.getNetwork()
+  const address = argv.kernel || KernelImpl.networks[chainId].address
+  const kernel = new ethers.Contract(address, KernelImpl.abi, signer)
 
-  const addressMap = getAddressMap(accounts[0])
+  const addressMap = getAddressMap(signer.getAddress())
   addressMap.toUid = {}
   addressMap.toGid = {}
   for (let uid in addressMap.uid) {
@@ -45,7 +49,8 @@ async function main() {
     try {
       while (i < len) {
         const j = Math.min(len, i+8192)
-        await kernel.write(fd, key, buf.slice(i, j))
+        const tx = await kernel.write(fd, key, buf.slice(i, j))
+        await tx.wait()
         i = j
       }
       return [i]
@@ -68,15 +73,19 @@ async function main() {
     }
   }
 
+  class MyFuse extends Fuse {
+    _fuseOptions() { return super._fuseOptions() + ',sync_read' }
+  }
+
   const {mountPath} = argv
-  const fuse = new Fuse(mountPath, {
+  const fuse = new MyFuse(mountPath, {
     readdir: async (path, cb) => {
       try {
-        const path2 = utf8ToHex(path)
+        const path2 = toUtf8Bytes(path)
         const {nEntries} = await kernel.stat(path2)
         const keys = []
         for (let i = 0; i < nEntries; i++) {
-          keys.push(hexToUtf8(await kernel.readkeyPath(path2, i)))
+          keys.push(toUtf8String(await kernel.readkeyPath(path2, i)))
         }
         cb(0, keys)
       } catch (e) {
@@ -85,7 +94,7 @@ async function main() {
     },
     getattr: async (path, cb) => {
       try {
-        cb(0, getattr(await kernel.lstat(utf8ToHex(path))))
+        cb(0, getattr(await kernel.lstat(toUtf8Bytes(path))))
       } catch (e) {
         cb(Fuse.ENOENT)
       }
@@ -100,7 +109,8 @@ async function main() {
     open: async (path, flags, cb) => {
       try {
         if ((flags & 3) == 0) return cb(0, 0xffffffff)
-        await kernel.open(utf8ToHex(path), flags)
+        const tx = await kernel.open(toUtf8Bytes(path), flags)
+        await tx.wait()
         cb(0, Number(await kernel.result()))
       } catch (e) {
         cb(-errno[e.reason])
@@ -108,8 +118,10 @@ async function main() {
     },
     create: async (path, mode, cb) => {
       try {
-        await kernel.open(utf8ToHex(path), constants.O_WRONLY | constants.O_CREAT)
-        await kernel.chmod(utf8ToHex(path), mode)
+        let tx = await kernel.open(toUtf8Bytes(path), constants.O_WRONLY | constants.O_CREAT)
+        await tx.wait()
+        tx = await kernel.chmod(toUtf8Bytes(path), mode)
+        await tx.wait()
         cb(0, Number(await kernel.result()))
       } catch (e) {
         cb(-errno[e.reason])
@@ -119,11 +131,13 @@ async function main() {
       try {
         let data
         if (fd == 0xffffffff) {
-          data = await kernel.readPath(utf8ToHex(path), '0x')
+          data = await kernel.readPath(toUtf8Bytes(path), '0x', pos, len)
         } else {
-          data = await kernel.read(fd, '0x')
+          data = await kernel.read(fd, '0x', pos, len)
         }
-        cb(Buffer.from(data.slice(2), 'hex').copy(buf, 0, pos, pos + len))
+        data = arrayify(data)
+        buf.set(data)
+        cb(data.length)
       } catch (e) {
         cb(0, -errno[e.reason])
       }
@@ -131,7 +145,10 @@ async function main() {
     write: async (path, fd, buf, len, pos, cb) => {
       try {
         const {size} = await kernel.fstat(fd)
-        if (pos < size) await kernel.truncate(fd, '0x', pos)
+        if (pos < size) {
+          const tx = await kernel.truncate(fd, '0x', pos)
+          await tx.wait()
+        }
         cb(...await write(fd, '0x', buf, len))
       } catch (e) {
         cb(0, -errno[e.reason])
@@ -139,10 +156,13 @@ async function main() {
     },
     truncate: async (path, size, cb) => {
       try {
-        await kernel.open(utf8ToHex(path), constants.O_WRONLY)
+        let tx = await kernel.open(toUtf8Bytes(path), constants.O_WRONLY)
+        await tx.wait()
         const fd = Number(await kernel.result())
-        await kernel.truncate(fd, '0x', size)
-        await kernel.close(fd)
+        tx = await kernel.truncate(fd, '0x', size)
+        await tx.wait()
+        tx = await kernel.close(fd)
+        await tx.wait()
         cb(0)
       } catch (e) {
         cb(-errno[e.reason])
@@ -150,7 +170,8 @@ async function main() {
     },
     ftruncate: async (path, fd, size, cb) => {
       try {
-        await kernel.truncate(fd, '0x', size)
+        const tx = await kernel.truncate(fd, '0x', size)
+        await tx.wait()
         cb(0)
       } catch (e) {
         cb(-errno[e.reason])
@@ -158,7 +179,10 @@ async function main() {
     },
     release: async (path, fd, cb) => {
       try {
-        if (fd != 0xffffffff) await kernel.close(fd)
+        if (fd != 0xffffffff) {
+          const tx = await kernel.close(fd)
+          await tx.wait()
+        }
         cb(0)
       } catch (e) {
         cb(-errno[e.reason])
@@ -169,7 +193,8 @@ async function main() {
         const nullAddress = '0x0000000000000000000000000000000000000000'
         const owner = uid < 0 ? nullAddress : addressMap.uid[uid]
         const group = gid < 0 ? nullAddress : addressMap.gid[gid]
-        await kernel.chown(utf8ToHex(path), owner, group)
+        const tx = await kernel.chown(toUtf8Bytes(path), owner, group)
+        await tx.wait()
         cb(0)
       } catch (e) {
         cb(-errno[e.reason])
@@ -177,7 +202,8 @@ async function main() {
     },
     chmod: async (path, mode, cb) => {
       try {
-        await kernel.chmod(utf8ToHex(path), mode)
+        const tx = await kernel.chmod(toUtf8Bytes(path), mode)
+        await tx.wait()
         cb(0)
       } catch (e) {
         cb(-errno[e.reason])
@@ -185,12 +211,15 @@ async function main() {
     },
     setxattr: async (path, name, buf, pos, flags, cb) => {
       try {
-        await kernel.open(utf8ToHex(path), constants.O_WRONLY)
+        let tx = await kernel.open(toUtf8Bytes(path), constants.O_WRONLY)
+        await tx.wait()
         const fd = Number(await kernel.result())
-        await kernel.truncate(fd, utf8ToHex(name), 0)
-        const [, e] = await write(fd, utf8ToHex(name), buf, buf.length)
+        tx = await kernel.truncate(fd, toUtf8Bytes(name), 0)
+        await tx.wait()
+        const [, e] = await write(fd, toUtf8Bytes(name), buf, buf.length)
         if (e) return cb(e)
-        await kernel.close(fd)
+        tx = await kernel.close(fd)
+        await tx.wait()
         cb(0)
       } catch (e) {
         cb(-errno[e.reason])
@@ -198,22 +227,22 @@ async function main() {
     },
     getxattr: async (path, name, pos, cb) => {
       try {
-        const data = await kernel.readPath(utf8ToHex(path), utf8ToHex(name))
-        cb(0, Buffer.from(data.slice(2), 'hex'))
+        const data = await kernel.readPath(toUtf8Bytes(path), toUtf8Bytes(name), 0, MaxUint256)
+        cb(0, Buffer.from(arrayify(data)))
       } catch (e) {
         cb(-errno[e.reason])
       }
     },
     listxattr: async (path, cb) => {
       try {
-        const path2 = utf8ToHex(path)
+        const path2 = toUtf8Bytes(path)
         const {fileType, nEntries} = await kernel.lstat(path2)
         if (fileType != 1) return cb(0)
         const keys = []
         for (let i = 0; i < nEntries; i++) {
           const data = await kernel.readkeyPath(path2, i)
-          if (!data) continue
-          keys.push(hexToUtf8(data))
+          if (data === '0x') continue
+          keys.push(toUtf8String(data))
         }
         cb(0, keys)
       } catch (e) {
@@ -222,10 +251,13 @@ async function main() {
     },
     removexattr: async (path, name, cb) => {
       try {
-        await kernel.open(utf8ToHex(path), constants.O_WRONLY)
+        let tx = await kernel.open(toUtf8Bytes(path), constants.O_WRONLY)
+        await tx.wait()
         const fd = Number(await kernel.result())
-        await kernel.clear(fd, utf8ToHex(name))
-        await kernel.close(fd)
+        tx = await kernel.clear(fd, toUtf8Bytes(name))
+        await tx.wait()
+        tx = await kernel.close(fd)
+        await tx.wait()
         cb(0)
       } catch (e) {
         cb(-errno[e.reason])
@@ -233,7 +265,8 @@ async function main() {
     },
     link: async (src, dest, cb) => {
       try {
-        await kernel.link(utf8ToHex(src), utf8ToHex(dest))
+        const tx = await kernel.link(toUtf8Bytes(src), toUtf8Bytes(dest))
+        await tx.wait()
         cb(0)
       } catch (e) {
         cb(-errno[e.reason])
@@ -241,7 +274,8 @@ async function main() {
     },
     unlink: async (path, cb) => {
       try {
-        await kernel.unlink(utf8ToHex(path))
+        const tx = await kernel.unlink(toUtf8Bytes(path))
+        await tx.wait()
         cb(0)
       } catch (e) {
         cb(-errno[e.reason])
@@ -249,7 +283,8 @@ async function main() {
     },
     symlink: async (src, dest, cb) => {
       try {
-        await kernel.symlink(utf8ToHex(src), utf8ToHex(dest))
+        const tx = await kernel.symlink(toUtf8Bytes(src), toUtf8Bytes(dest))
+        await tx.wait()
         cb(0)
       } catch (e) {
         cb(-errno[e.reason])
@@ -257,14 +292,15 @@ async function main() {
     },
     readlink: async (path, cb) => {
       try {
-        cb(0, hexToUtf8(await kernel.readlink(utf8ToHex(path))))
+        cb(0, toUtf8String(await kernel.readlink(toUtf8Bytes(path))))
       } catch (e) {
         cb(-errno[e.reason])
       }
     },
     rename: async (src, dest, cb) => {
       try {
-        await kernel.move(utf8ToHex(src), utf8ToHex(dest))
+        const tx = await kernel.move(toUtf8Bytes(src), toUtf8Bytes(dest))
+        await tx.wait()
         cb(0)
       } catch (e) {
         cb(-errno[e.reason])
@@ -272,8 +308,10 @@ async function main() {
     },
     mkdir: async (path, mode, cb) => {
       try {
-        await kernel.mkdir(utf8ToHex(path))
-        await kernel.chmod(utf8ToHex(path), mode)
+        let tx = await kernel.mkdir(toUtf8Bytes(path))
+        await tx.wait()
+        tx = await kernel.chmod(toUtf8Bytes(path), mode)
+        await tx.wait()
         cb(0)
       } catch (e) {
         cb(-errno[e.reason])
@@ -281,7 +319,8 @@ async function main() {
     },
     rmdir: async (path, cb) => {
       try {
-        await kernel.rmdir(utf8ToHex(path))
+        const tx = await kernel.rmdir(toUtf8Bytes(path))
+        await tx.wait()
         cb(0)
       } catch (e) {
         cb(-errno[e.reason])
@@ -290,6 +329,7 @@ async function main() {
   }, {
     autoCache: true,
     displayFolder: true,
+    maxRead: 32768,
     timeout: false,
   })
   fuse.mount(err => {

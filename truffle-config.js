@@ -20,9 +20,6 @@
 
 require('./.pnp').setup();
 const HDWalletProvider = require('@truffle/hdwallet-provider');
-const {TruffleProvider} = require('@harmony-js/core');
-// const infuraKey = "fj4jll3k.....";
-//
 const fs = require('fs');
 const secret = fs.readFileSync('.secret').toString().trim();
 
@@ -103,23 +100,9 @@ module.exports = {
     },
 
     harmony: {
-      provider: () => {
-        let memonic;
-        if (secret.split(' ').length == 12) {
-          memonic = secret;
-        }
-        const truffleProvider = new TruffleProvider(
-          'https://api.s0.t.hmny.io',
-          { memonic },
-          { shardID: 0, chainId: 1 },
-          { gasLimit: 1e7, gasPrice: 1 }
-        );
-        if (!memonic) {
-          truffleProvider.setSigner(truffleProvider.addByPrivateKey(secret));
-        }
-        return truffleProvider;
-      },
-      network_id: 1,
+      provider: () => newProvider('https://api.harmony.one'),
+      network_id: 1666600000,
+      gasPrice: 1,
       skipDryRun: true,
     },
 
