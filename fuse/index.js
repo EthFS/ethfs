@@ -54,7 +54,7 @@ async function main() {
     }
   }
 
-  function getattr({mode, links, owner, group, entries, size, lastModified}) {
+  function getattr({mode, links, owner, group, nEntries, size, lastModified}) {
     lastModified = new Date(lastModified * 1e3)
     return {
       mtime: lastModified,
@@ -73,9 +73,9 @@ async function main() {
     readdir: async (path, cb) => {
       try {
         const path2 = utf8ToHex(path)
-        const {entries} = await kernel.stat(path2)
+        const {nEntries} = await kernel.stat(path2)
         const keys = []
-        for (let i = 0; i < entries; i++) {
+        for (let i = 0; i < nEntries; i++) {
           keys.push(hexToUtf8(await kernel.readkeyPath(path2, i)))
         }
         cb(0, keys)
@@ -207,10 +207,10 @@ async function main() {
     listxattr: async (path, cb) => {
       try {
         const path2 = utf8ToHex(path)
-        const {fileType, entries} = await kernel.lstat(path2)
+        const {fileType, nEntries} = await kernel.lstat(path2)
         if (fileType != 1) return cb(0)
         const keys = []
-        for (let i = 0; i < entries; i++) {
+        for (let i = 0; i < nEntries; i++) {
           const data = await kernel.readkeyPath(path2, i)
           if (!data) continue
           keys.push(hexToUtf8(data))

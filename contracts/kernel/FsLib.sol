@@ -357,23 +357,23 @@ library FsLib {
     inode.lastModified = uint64(block.timestamp);
   }
 
-  function stat(Disk storage self, bytes calldata path, uint curdir) external view onlyOwner(self) returns (FileSystem.FileType fileType, uint16 mode, uint ino_, uint links, address owner, address group, uint entries, uint size, uint lastModified) {
+  function stat(Disk storage self, bytes calldata path, uint curdir) external view onlyOwner(self) returns (FileSystem.FileType fileType, uint16 mode, uint ino_, uint links, address owner, address group, uint nEntries, uint size, uint lastModified) {
     (uint ino,,) = pathToInode(self, path, curdir, 2);
     require(ino > 0, 'ENOENT');
     return _fstat(self, ino);
   }
 
-  function lstat(Disk storage self, bytes calldata path, uint curdir) external view onlyOwner(self) returns (FileSystem.FileType fileType, uint16 mode, uint ino_, uint links, address owner, address group, uint entries, uint size, uint lastModified) {
+  function lstat(Disk storage self, bytes calldata path, uint curdir) external view onlyOwner(self) returns (FileSystem.FileType fileType, uint16 mode, uint ino_, uint links, address owner, address group, uint nEntries, uint size, uint lastModified) {
     (uint ino,,) = pathToInode(self, path, curdir, 1);
     require(ino > 0, 'ENOENT');
     return _fstat(self, ino);
   }
 
-  function fstat(Disk storage self, uint ino) external view onlyOwner(self) returns (FileSystem.FileType fileType, uint16 mode, uint ino_, uint links, address owner, address group, uint entries, uint size, uint lastModified) {
+  function fstat(Disk storage self, uint ino) external view onlyOwner(self) returns (FileSystem.FileType fileType, uint16 mode, uint ino_, uint links, address owner, address group, uint nEntries, uint size, uint lastModified) {
     return _fstat(self, ino);
   }
 
-  function _fstat(Disk storage self, uint ino) private view returns (FileSystem.FileType fileType, uint16 mode, uint ino_, uint links, address owner, address group, uint entries, uint size, uint lastModified) {
+  function _fstat(Disk storage self, uint ino) private view returns (FileSystem.FileType fileType, uint16 mode, uint ino_, uint links, address owner, address group, uint nEntries, uint size, uint lastModified) {
     Inode storage inode = self.inode[ino];
     fileType = FileSystem.FileType(inode.fileType);
     mode = inode.mode;
@@ -395,7 +395,7 @@ library FsLib {
     ino_ = ino;
     owner = inode.owner;
     group = inode.group;
-    entries = inode.keys.length;
+    nEntries = inode.keys.length;
     lastModified = inode.lastModified;
   }
 

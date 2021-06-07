@@ -100,15 +100,15 @@ contract KernelImpl is Kernel {
     m_kernelArea.rmdir(path);
   }
 
-  function stat(bytes calldata path) external view override returns (FileSystem.FileType fileType, uint16 mode, uint ino, uint links, address owner, address group, uint entries, uint size, uint lastModified) {
+  function stat(bytes calldata path) external view override returns (FileSystem.FileType fileType, uint16 mode, uint ino, uint links, address owner, address group, uint nEntries, uint size, uint lastModified) {
     return m_kernelArea.stat(path);
   }
 
-  function lstat(bytes calldata path) external view override returns (FileSystem.FileType fileType, uint16 mode, uint ino, uint links, address owner, address group, uint entries, uint size, uint lastModified) {
+  function lstat(bytes calldata path) external view override returns (FileSystem.FileType fileType, uint16 mode, uint ino, uint links, address owner, address group, uint nEntries, uint size, uint lastModified) {
     return m_kernelArea.lstat(path);
   }
 
-  function fstat(uint fd) external view override returns (FileSystem.FileType fileType, uint16 mode, uint ino, uint links, address owner, address group, uint entries, uint size, uint lastModified) {
+  function fstat(uint fd) external view override returns (FileSystem.FileType fileType, uint16 mode, uint ino, uint links, address owner, address group, uint nEntries, uint size, uint lastModified) {
     return m_kernelArea.fstat(fd);
   }
 }
