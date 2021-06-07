@@ -275,7 +275,11 @@ library FsLib {
     uint index = self.inode[ino].data[key];
     require(index > 0, 'EINVAL');
     bytes storage extent = self.inodeExtent[index].extent;
-    if (start == 0 && length == 0) return extent;
+    if (start >= extent.length) return '';
+    uint256 end = start + length;
+    if (end > extent.length || end < start) {
+      length = extent.length - start;
+    }
     return BytesLib.slice(extent, start, length);
   }
 
