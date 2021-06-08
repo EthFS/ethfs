@@ -273,7 +273,7 @@ library FsLib {
 
   function read(Disk storage self, uint ino, bytes calldata key, uint256 start, uint256 length) external view onlyOwner(self) returns (bytes memory) {
     uint index = self.inode[ino].data[key];
-    require(index > 0, 'EINVAL');
+    require(index > 0, 'ENODATA');
     bytes storage extent = self.inodeExtent[index].extent;
     if (start >= extent.length) return '';
     uint256 end = start + length;
@@ -305,7 +305,7 @@ library FsLib {
     require(inode.fileType == uint8(FileSystem.FileType.Regular), 'EPERM');
     uint inoExtent = inode.data[key];
     if (inoExtent == 0) {
-      require(len == 0, 'EINVAL');
+      require(len == 0, 'ENODATA');
       return;
     }
     if (len == 0) {
@@ -347,7 +347,7 @@ library FsLib {
     Inode storage inode = self.inode[ino];
     require(inode.fileType == uint8(FileSystem.FileType.Regular), 'EPERM');
     uint inoExtent = inode.data[key];
-    require(inoExtent > 0, 'EINVAL');
+    require(inoExtent > 0, 'ENODATA');
     bytes[] storage keys = inode.keys;
     uint index = self.inodeExtent[inoExtent].index-1;
     if (index < keys.length-1) {
