@@ -23,7 +23,7 @@ require('../build/contracts/Constants')
 async function main() {
   let url = 'http://localhost:8545'
   if (argv.network == 'harmony') {
-    url = 'https://api.harmony.one'
+    url = 'https://s1.api.harmony.one'
   } else if (argv.network) {
     url = `https://${argv.network}.infura.io/v3/59389cd0fe54420785906cf571a7d7c0`
   }

@@ -100,8 +100,8 @@ module.exports = {
     },
 
     harmony: {
-      provider: () => newProvider('https://api.harmony.one'),
-      network_id: 1666600000,
+      provider: () => newProvider('https://s1.api.harmony.one'),
+      network_id: 1666600001,
       gasPrice: 1,
       skipDryRun: true,
     },
