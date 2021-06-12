@@ -99,10 +99,17 @@ module.exports = {
       skipDryRun: true,
     },
 
-    harmony: {
+    'harmony-s0': {
+      provider: () => newProvider('https://api.harmony.one'),
+      network_id: 1666600000,
+      gasPrice: 1e9,
+      skipDryRun: true,
+    },
+
+    'harmony-s1': {
       provider: () => newProvider('https://s1.api.harmony.one'),
       network_id: 1666600001,
-      gasPrice: 1,
+      gasPrice: 1e9,
       skipDryRun: true,
     },
 

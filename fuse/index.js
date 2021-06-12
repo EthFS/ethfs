@@ -22,10 +22,17 @@ require('../build/contracts/Constants')
 
 async function main() {
   let url = 'http://localhost:8545'
-  if (argv.network == 'harmony') {
+  switch (argv.network) {
+  case 'harmony-s0':
+    url = 'https://api.harmony.one'
+    break
+  case 'harmony-s1':
     url = 'https://s1.api.harmony.one'
-  } else if (argv.network) {
-    url = `https://${argv.network}.infura.io/v3/59389cd0fe54420785906cf571a7d7c0`
+    break
+  default:
+    if (argv.network) {
+      url = `https://${argv.network}.infura.io/v3/59389cd0fe54420785906cf571a7d7c0`
+    }
   }
   const privateKey = fs.readFileSync('.secret').toString().trim()
   const provider = new ethers.providers.JsonRpcProvider(url)
