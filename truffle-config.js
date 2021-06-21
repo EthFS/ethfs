@@ -113,6 +113,20 @@ module.exports = {
       skipDryRun: true,
     },
 
+    'harmony-s2': {
+      provider: () => newProvider('https://s2.api.harmony.one'),
+      network_id: 1666600002,
+      gasPrice: 1e9,
+      skipDryRun: true,
+    },
+
+    'harmony-s3': {
+      provider: () => newProvider('https://s3.api.harmony.one'),
+      network_id: 1666600003,
+      gasPrice: 1e9,
+      skipDryRun: true,
+    },
+
     // Useful for private networks
     // private: {
       // provider: () => new HDWalletProvider(mnemonic, `https://network.io`),

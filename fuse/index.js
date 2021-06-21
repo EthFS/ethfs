@@ -29,6 +29,12 @@ async function main() {
   case 'harmony-s1':
     url = 'https://s1.api.harmony.one'
     break
+  case 'harmony-s2':
+    url = 'https://s2.api.harmony.one'
+    break
+  case 'harmony-s3':
+    url = 'https://s3.api.harmony.one'
+    break
   default:
     if (argv.network) {
       url = `https://${argv.network}.infura.io/v3/59389cd0fe54420785906cf571a7d7c0`
